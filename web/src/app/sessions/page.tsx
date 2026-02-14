@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { API_BASE } from '../../components/api';
+import { apiFetch } from '../../components/api-client';
 
 type SessionItem = {
   id: number;
@@ -16,13 +16,7 @@ export default function SessionsPage() {
   const [message, setMessage] = useState('');
 
   async function load() {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return setMessage('로그인 후 이용해주세요.');
-
-    const r = await fetch(`${API_BASE}/api/v1/auth/sessions`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
-    });
+    const r = await apiFetch('/api/v1/auth/sessions', { cache: 'no-store' });
     const json = await r.json();
     if (!r.ok) return setMessage(json.message ?? '조회 실패');
     setItems(json.sessions ?? []);
@@ -30,12 +24,7 @@ export default function SessionsPage() {
   }
 
   async function revoke(id: number) {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return setMessage('로그인 후 이용해주세요.');
-    const r = await fetch(`${API_BASE}/api/v1/auth/sessions/${id}/revoke`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const r = await apiFetch(`/api/v1/auth/sessions/${id}/revoke`, { method: 'POST' });
     const json = await r.json();
     if (!r.ok) return setMessage(json.message ?? '세션 해제 실패');
     setMessage('세션 해제 완료');

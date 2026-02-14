@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { API_BASE } from '../../components/api';
+import { apiFetch } from '../../components/api-client';
 
 type Summary = {
   users: number;
@@ -27,27 +27,21 @@ export default function DashboardPage() {
 
   async function load() {
     setMessage('');
-    let token = localStorage.getItem('accessToken');
-    if (!token) return setMessage('관리자 로그인 후 이용해주세요.');
+    const me = await apiFetch('/api/v1/auth/me', { cache: 'no-store' });
+    if (!me.ok) return setMessage('로그인 후 이용해주세요.');
+    const meJson = await me.json();
+    if (meJson.role !== 'ADMIN') return setMessage('관리자 전용 화면입니다.');
 
     const q = new URLSearchParams();
     if (from && to) {
       q.set('from', toIso(from));
       q.set('to', toIso(to));
     }
-    const url = `${API_BASE}/api/v1/ops/summary${q.toString() ? `?${q.toString()}` : ''}`;
 
-    try {
-      const r = await fetch(url, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const json = await r.json();
-      if (!r.ok) return setMessage(json.message ?? '지표 조회 실패');
-      setSummary(json);
-    } catch {
-      setMessage('지표 조회 실패');
-    }
+    const r = await apiFetch(`/api/v1/ops/summary${q.toString() ? `?${q.toString()}` : ''}`, { cache: 'no-store' });
+    const json = await r.json();
+    if (!r.ok) return setMessage(json.message ?? '지표 조회 실패');
+    setSummary(json);
   }
 
   return (

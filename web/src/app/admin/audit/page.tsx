@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { API_BASE } from '../../../components/api';
+import { apiFetch } from '../../../components/api-client';
+import { getAccessToken } from '../../../components/auth-client';
 
 type Audit = { id: number; userId: number; action: string; targetType: string; targetId: number; createdAt: string };
 
@@ -27,14 +29,17 @@ export default function AdminAuditPage() {
     return q.toString() ? `?${q.toString()}` : '';
   }
 
-  async function load() {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return setMessage('관리자 로그인 후 이용해주세요.');
+  async function guardAdmin() {
+    const me = await apiFetch('/api/v1/auth/me', { cache: 'no-store' });
+    if (!me.ok) return false;
+    const meJson = await me.json();
+    return meJson.role === 'ADMIN';
+  }
 
-    const r = await fetch(`${API_BASE}/api/v1/admin/audit${buildQuery()}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
-    });
+  async function load() {
+    if (!(await guardAdmin())) return setMessage('관리자 로그인 후 이용해주세요.');
+
+    const r = await apiFetch(`/api/v1/admin/audit${buildQuery()}`, { cache: 'no-store' });
     const json = await r.json();
     if (!r.ok) return setMessage(json.message ?? '조회 실패');
     setItems(json);
@@ -42,9 +47,9 @@ export default function AdminAuditPage() {
   }
 
   async function downloadCsv() {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return setMessage('관리자 로그인 후 이용해주세요.');
+    if (!(await guardAdmin())) return setMessage('관리자 로그인 후 이용해주세요.');
 
+    const token = getAccessToken();
     const r = await fetch(`${API_BASE}/api/v1/admin/audit/csv${buildQuery()}`, {
       headers: { Authorization: `Bearer ${token}` },
     });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { API_BASE } from '../../../components/api';
+import { apiFetch } from '../../../components/api-client';
 
 type Booking = {
   id: number;
@@ -18,13 +18,7 @@ export default function MyBookingsPage() {
   const [message, setMessage] = useState('');
 
   async function load() {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return setMessage('로그인이 필요합니다.');
-
-    const r = await fetch(`${API_BASE}/api/v1/bookings/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
-    });
+    const r = await apiFetch('/api/v1/bookings/me', { cache: 'no-store' });
     const json = await r.json();
     if (!r.ok) {
       setMessage(json.message ?? '조회 실패');
@@ -38,13 +32,7 @@ export default function MyBookingsPage() {
   }, []);
 
   async function cancelBooking(id: number) {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return setMessage('로그인이 필요합니다.');
-
-    const r = await fetch(`${API_BASE}/api/v1/bookings/${id}/cancel`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const r = await apiFetch(`/api/v1/bookings/${id}/cancel`, { method: 'POST' });
     const json = await r.json();
     if (!r.ok) return setMessage(json.message ?? '취소 실패');
 
