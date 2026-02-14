@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { apiFetch } from '../../../components/api-client';
 import { RequireAdmin } from '../../../components/route-guard';
+import { Card, StatusBadge } from '../../../components/ui';
 
 type Audit = { id: number; userId: number; action: string; targetType: string; targetId: number; createdAt: string };
 
@@ -11,12 +12,15 @@ function toIso(dateTimeLocal: string) {
   return new Date(dateTimeLocal).toISOString();
 }
 
+const PAGE_SIZE = 10;
+
 export default function AdminAuditPage() {
   const [items, setItems] = useState<Audit[]>([]);
   const [message, setMessage] = useState('');
   const [action, setAction] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+  const [page, setPage] = useState(1);
 
   function buildQuery() {
     const q = new URLSearchParams();
@@ -33,6 +37,7 @@ export default function AdminAuditPage() {
     const json = await r.json();
     if (!r.ok) return setMessage(json.message ?? '조회 실패');
     setItems(json);
+    setPage(1);
     setMessage(`조회 완료 (${json.length}건)`);
   }
 
@@ -51,28 +56,43 @@ export default function AdminAuditPage() {
     setMessage('CSV 다운로드 완료');
   }
 
+  const paged = useMemo(() => items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [items, page]);
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+
   return (
     <RequireAdmin>
-    <main style={{ padding: 24 }}>
-      <h2>감사로그(최근 50건)</h2>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input placeholder="action (예: AUTH_LOGIN)" value={action} onChange={(e) => setAction(e.target.value)} />
-        <label>시작 <input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
-        <label>종료 <input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} /></label>
-        <button onClick={load}>불러오기</button>
-        <button onClick={downloadCsv}>CSV 다운로드</button>
-      </div>
-      <p>{message}</p>
-      <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 8 }}>
-        {items.map((a) => (
-          <li key={a.id} style={{ border: '1px solid #334155', borderRadius: 8, padding: 10 }}>
-            <div>#{a.id} {a.action}</div>
-            <div>user={a.userId}, target={a.targetType}:{a.targetId}</div>
-            <div>{new Date(a.createdAt).toLocaleString('ko-KR')}</div>
-          </li>
-        ))}
-      </ul>
-    </main>
+      <main style={{ padding: 24, display: 'grid', gap: 12 }}>
+        <h2 style={{ margin: 0 }}>감사로그</h2>
+
+        <Card>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <input placeholder="action (예: AUTH_LOGIN)" value={action} onChange={(e) => setAction(e.target.value)} />
+            <label>시작 <input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
+            <label>종료 <input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} /></label>
+            <button onClick={load}>불러오기</button>
+            <button onClick={downloadCsv}>CSV 다운로드</button>
+          </div>
+          <p style={{ marginBottom: 0 }}>{message}</p>
+        </Card>
+
+        <div style={{ display: 'grid', gap: 8 }}>
+          {paged.map((a) => (
+            <Card key={a.id}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                <div><b>#{a.id}</b> · {new Date(a.createdAt).toLocaleString('ko-KR')}</div>
+                <StatusBadge value={a.action} />
+              </div>
+              <div style={{ marginTop: 8, color: '#cbd5e1' }}>user={a.userId}, target={a.targetType}:{a.targetId}</div>
+            </Card>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</button>
+          <span>{page} / {totalPages}</span>
+          <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>다음</button>
+        </div>
+      </main>
     </RequireAdmin>
   );
 }

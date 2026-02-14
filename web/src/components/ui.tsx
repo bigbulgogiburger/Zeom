@@ -23,3 +23,13 @@ export function Card({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+export function StatCard({ title, value, hint }: { title: string; value: string | number; hint?: string }) {
+  return (
+    <Card>
+      <div style={{ color: '#93c5fd', fontSize: 13, marginBottom: 4 }}>{title}</div>
+      <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.2 }}>{value}</div>
+      {hint && <div style={{ color: '#94a3b8', fontSize: 12, marginTop: 4 }}>{hint}</div>}
+    </Card>
+  );
+}
