@@ -1,6 +1,7 @@
 package com.cheonjiyeon.api.auth;
 
 import com.cheonjiyeon.api.audit.AuditLogService;
+import com.cheonjiyeon.api.alert.AlertWebhookService;
 import com.cheonjiyeon.api.auth.refresh.RefreshTokenEntity;
 import com.cheonjiyeon.api.auth.refresh.RefreshTokenRepository;
 import com.cheonjiyeon.api.common.ApiException;
@@ -21,16 +22,19 @@ public class AuthService {
     private final TokenStore tokenStore;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuditLogService auditLogService;
+    private final AlertWebhookService alertWebhookService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public AuthService(UserRepository userRepository,
                        TokenStore tokenStore,
                        RefreshTokenRepository refreshTokenRepository,
-                       AuditLogService auditLogService) {
+                       AuditLogService auditLogService,
+                       AlertWebhookService alertWebhookService) {
         this.userRepository = userRepository;
         this.tokenStore = tokenStore;
         this.refreshTokenRepository = refreshTokenRepository;
         this.auditLogService = auditLogService;
+        this.alertWebhookService = alertWebhookService;
     }
 
     @Transactional
@@ -53,9 +57,15 @@ public class AuthService {
     @Transactional
     public AuthDtos.AuthResponse login(AuthDtos.LoginRequest req) {
         UserEntity user = userRepository.findByEmail(req.email())
-                .orElseThrow(() -> new ApiException(401, "이메일 또는 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(() -> {
+                    alertWebhookService.sendFailureEvent("AUTH_LOGIN_FAIL", "email=" + req.email());
+                    auditLogService.log(0L, "AUTH_LOGIN_FAIL", "EMAIL", 0L);
+                    return new ApiException(401, "이메일 또는 비밀번호가 올바르지 않습니다.");
+                });
 
         if (!encoder.matches(req.password(), user.getPasswordHash())) {
+            alertWebhookService.sendFailureEvent("AUTH_LOGIN_FAIL", "email=" + req.email());
+            auditLogService.log(user.getId(), "AUTH_LOGIN_FAIL", "USER", user.getId());
             throw new ApiException(401, "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
@@ -96,6 +106,7 @@ public class AuthService {
                     refreshTokenRepository.save(t);
                 });
                 auditLogService.log(suspectedUserId, "AUTH_REFRESH_REUSE_DETECTED", "USER", suspectedUserId);
+                alertWebhookService.sendFailureEvent("AUTH_REFRESH_REUSE_DETECTED", "userId=" + suspectedUserId);
             }
             throw new ApiException(401, "유효하지 않은 refresh token 입니다.");
         }

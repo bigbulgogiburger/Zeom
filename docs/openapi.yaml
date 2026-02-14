@@ -189,3 +189,24 @@ paths:
         - in: query
           name: to
           schema: { type: string, format: date-time }
+  /api/v1/admin/audit/csv:
+    get:
+      summary: 관리자 감사로그 CSV 다운로드
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: action
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string

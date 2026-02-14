@@ -54,12 +54,19 @@ public class OpsController {
             canceled = auditLogRepository.countByAction("BOOKING_CANCELED");
         }
 
+        long authLogin = auditLogRepository.countByAction("AUTH_LOGIN");
+        long authFail = auditLogRepository.countByAction("AUTH_LOGIN_FAIL");
+        long authReuse = auditLogRepository.countByAction("AUTH_REFRESH_REUSE_DETECTED");
+
         return Map.of(
                 "users", userRepository.count(),
                 "counselors", counselorRepository.count(),
                 "availableSlots", slotRepository.countByAvailableTrue(),
                 "booked", booked,
-                "canceled", canceled
+                "canceled", canceled,
+                "authLogin", authLogin,
+                "authFail", authFail,
+                "authReuse", authReuse
         );
     }
 }

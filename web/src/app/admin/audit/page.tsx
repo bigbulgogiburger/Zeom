@@ -17,18 +17,21 @@ export default function AdminAuditPage() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
 
-  async function load() {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return setMessage('관리자 로그인 후 이용해주세요.');
-
+  function buildQuery() {
     const q = new URLSearchParams();
     if (action) q.set('action', action);
     if (from && to) {
       q.set('from', toIso(from));
       q.set('to', toIso(to));
     }
+    return q.toString() ? `?${q.toString()}` : '';
+  }
 
-    const r = await fetch(`${API_BASE}/api/v1/admin/audit${q.toString() ? `?${q.toString()}` : ''}`, {
+  async function load() {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return setMessage('관리자 로그인 후 이용해주세요.');
+
+    const r = await fetch(`${API_BASE}/api/v1/admin/audit${buildQuery()}`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     });
@@ -36,6 +39,26 @@ export default function AdminAuditPage() {
     if (!r.ok) return setMessage(json.message ?? '조회 실패');
     setItems(json);
     setMessage(`조회 완료 (${json.length}건)`);
+  }
+
+  async function downloadCsv() {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return setMessage('관리자 로그인 후 이용해주세요.');
+
+    const r = await fetch(`${API_BASE}/api/v1/admin/audit/csv${buildQuery()}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!r.ok) return setMessage('CSV 다운로드 실패');
+
+    const text = await r.text();
+    const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'audit_logs.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    setMessage('CSV 다운로드 완료');
   }
 
   return (
@@ -46,6 +69,7 @@ export default function AdminAuditPage() {
         <label>시작 <input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
         <label>종료 <input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} /></label>
         <button onClick={load}>불러오기</button>
+        <button onClick={downloadCsv}>CSV 다운로드</button>
       </div>
       <p>{message}</p>
       <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 8 }}>

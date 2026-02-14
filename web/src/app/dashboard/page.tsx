@@ -9,6 +9,9 @@ type Summary = {
   availableSlots: number;
   booked: number;
   canceled: number;
+  authLogin: number;
+  authFail: number;
+  authReuse: number;
 };
 
 function toIso(dateTimeLocal: string) {
@@ -64,13 +67,25 @@ export default function DashboardPage() {
 
       {message && <p>{message}</p>}
       {summary && (
-        <ul style={{ display: 'grid', gap: 8, listStyle: 'none', padding: 0, marginTop: 12 }}>
-          <li>가입 유저: {summary.users}</li>
-          <li>상담사 수: {summary.counselors}</li>
-          <li>예약 가능 슬롯: {summary.availableSlots}</li>
-          <li>예약 생성(기간): {summary.booked}</li>
-          <li>예약 취소(기간): {summary.canceled}</li>
-        </ul>
+        <div style={{ display: 'grid', gap: 12, marginTop: 12 }}>
+          <ul style={{ display: 'grid', gap: 8, listStyle: 'none', padding: 0 }}>
+            <li><b>[Booking]</b></li>
+            <li>예약 가능 슬롯: {summary.availableSlots}</li>
+            <li>예약 생성(기간): {summary.booked}</li>
+            <li>예약 취소(기간): {summary.canceled}</li>
+          </ul>
+          <ul style={{ display: 'grid', gap: 8, listStyle: 'none', padding: 0 }}>
+            <li><b>[Auth]</b></li>
+            <li>로그인 성공 누적: {summary.authLogin}</li>
+            <li>로그인 실패 누적: {summary.authFail}</li>
+            <li>Refresh 재사용 탐지: {summary.authReuse}</li>
+          </ul>
+          <ul style={{ display: 'grid', gap: 8, listStyle: 'none', padding: 0 }}>
+            <li><b>[Base]</b></li>
+            <li>가입 유저: {summary.users}</li>
+            <li>상담사 수: {summary.counselors}</li>
+          </ul>
+        </div>
       )}
     </main>
   );
