@@ -1,10 +1,15 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { API_BASE } from '../../components/api';
+import { setTokens } from '../../components/auth-client';
+import { useAuth } from '../../components/auth-context';
 
 export default function SignupPage() {
   const [message, setMessage] = useState('');
+  const router = useRouter();
+  const { refreshMe } = useAuth();
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,8 +30,9 @@ export default function SignupPage() {
     const json = await res.json();
     if (!res.ok) return setMessage(json.message ?? '실패');
 
-    localStorage.setItem('accessToken', json.accessToken);
-    setMessage(`가입 완료: ${json.user.name}`);
+    setTokens(json.accessToken, json.refreshToken);
+    await refreshMe();
+    router.push('/counselors');
   }
 
   return (

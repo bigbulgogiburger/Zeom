@@ -1,10 +1,15 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { API_BASE } from '../../../components/api';
+import { setTokens } from '../../../components/auth-client';
+import { useAuth } from '../../../components/auth-context';
 
 export default function AdminLoginPage() {
   const [message, setMessage] = useState('');
+  const router = useRouter();
+  const { refreshMe } = useAuth();
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,9 +29,9 @@ export default function AdminLoginPage() {
     const json = await res.json();
     if (!res.ok) return setMessage(json.message ?? '실패');
 
-    localStorage.setItem('accessToken', json.accessToken);
-    localStorage.setItem('refreshToken', json.refreshToken);
-    setMessage('관리자 로그인 완료');
+    setTokens(json.accessToken, json.refreshToken);
+    await refreshMe();
+    router.push('/dashboard');
   }
 
   return (
