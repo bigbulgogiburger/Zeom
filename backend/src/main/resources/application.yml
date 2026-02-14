@@ -10,5 +10,8 @@ spring:
       ddl-auto: none
   flyway:
     enabled: true
+jwt:
+  secret: ${JWT_SECRET:dev-secret-dev-secret-dev-secret-32chars}
+
 server:
   port: ${SERVER_PORT:8080}

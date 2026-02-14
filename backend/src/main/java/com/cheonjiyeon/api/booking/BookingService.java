@@ -1,5 +1,6 @@
 package com.cheonjiyeon.api.booking;
 
+import com.cheonjiyeon.api.audit.AuditLogService;
 import com.cheonjiyeon.api.auth.TokenStore;
 import com.cheonjiyeon.api.auth.UserEntity;
 import com.cheonjiyeon.api.auth.UserRepository;
@@ -21,17 +22,20 @@ public class BookingService {
     private final CounselorRepository counselorRepository;
     private final SlotRepository slotRepository;
     private final TokenStore tokenStore;
+    private final AuditLogService auditLogService;
 
     public BookingService(BookingRepository bookingRepository,
                           UserRepository userRepository,
                           CounselorRepository counselorRepository,
                           SlotRepository slotRepository,
-                          TokenStore tokenStore) {
+                          TokenStore tokenStore,
+                          AuditLogService auditLogService) {
         this.bookingRepository = bookingRepository;
         this.userRepository = userRepository;
         this.counselorRepository = counselorRepository;
         this.slotRepository = slotRepository;
         this.tokenStore = tokenStore;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -60,6 +64,7 @@ public class BookingService {
 
         try {
             BookingEntity saved = bookingRepository.save(booking);
+            auditLogService.log(user.getId(), "BOOKING_CREATED", "BOOKING", saved.getId());
             return toResponse(saved);
         } catch (DataIntegrityViolationException ex) {
             throw new ApiException(409, "이미 예약된 슬롯입니다.");
@@ -88,6 +93,7 @@ public class BookingService {
         booking.getSlot().setAvailable(true);
         slotRepository.save(booking.getSlot());
         BookingEntity saved = bookingRepository.save(booking);
+        auditLogService.log(user.getId(), "BOOKING_CANCELED", "BOOKING", saved.getId());
         return toResponse(saved);
     }
 

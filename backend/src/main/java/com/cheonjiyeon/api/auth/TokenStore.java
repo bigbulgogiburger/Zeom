@@ -1,23 +1,42 @@
 package com.cheonjiyeon.api.auth;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class TokenStore {
-    private final Map<String, Long> tokenToUserId = new ConcurrentHashMap<>();
+    private final SecretKey key;
+
+    public TokenStore(@Value("${jwt.secret}") String secret) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String issue(Long userId) {
-        String token = "zm_" + UUID.randomUUID();
-        tokenToUserId.put(token, userId);
-        return token;
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject(String.valueOf(userId))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plus(7, ChronoUnit.DAYS)))
+                .signWith(key)
+                .compact();
     }
 
     public Optional<Long> resolve(String token) {
-        return Optional.ofNullable(tokenToUserId.get(token));
+        try {
+            Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+            return Optional.of(Long.parseLong(claims.getSubject()));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }
