@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { API_BASE } from '../../components/api';
 import { setTokens } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
+import { Card, InlineError, PageTitle } from '../../components/ui';
 
 export default function SignupPage() {
   const [message, setMessage] = useState('');
@@ -36,15 +37,23 @@ export default function SignupPage() {
   }
 
   return (
-    <main style={{ padding: 24 }}>
-      <h2>회원가입</h2>
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8, maxWidth: 320 }}>
-        <input name="email" placeholder="이메일" />
-        <input name="name" placeholder="이름" />
-        <input name="password" type="password" placeholder="비밀번호(8자+)" />
-        <button type="submit">가입하기</button>
-      </form>
-      <p>{message}</p>
+    <main style={{ padding: 24, display: 'grid', gap: 12 }}>
+      <PageTitle>회원가입</PageTitle>
+      <Card>
+        <form onSubmit={onSubmit} style={{ display: 'grid', gap: 10, maxWidth: 360 }}>
+          <label htmlFor="email">이메일</label>
+          <input id="email" name="email" type="email" required autoComplete="email" placeholder="you@example.com" style={{ minHeight: 40, padding: '0 10px' }} />
+
+          <label htmlFor="name">이름</label>
+          <input id="name" name="name" required autoComplete="name" placeholder="이름" style={{ minHeight: 40, padding: '0 10px' }} />
+
+          <label htmlFor="password">비밀번호</label>
+          <input id="password" name="password" type="password" required autoComplete="new-password" placeholder="8자 이상" style={{ minHeight: 40, padding: '0 10px' }} />
+
+          <button type="submit" style={{ minHeight: 42 }}>가입하기</button>
+        </form>
+        <div style={{ marginTop: 8 }}><InlineError message={message} /></div>
+      </Card>
     </main>
   );
 }
