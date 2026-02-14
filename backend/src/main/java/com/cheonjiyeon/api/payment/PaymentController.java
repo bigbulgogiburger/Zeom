@@ -4,6 +4,9 @@ import com.cheonjiyeon.api.auth.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
@@ -49,5 +52,14 @@ public class PaymentController {
     ) {
         authService.me(authHeader);
         return paymentService.get(id);
+    }
+
+    @GetMapping("/{id}/logs")
+    public List<Map<String, Object>> logs(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id
+    ) {
+        authService.requireAdmin(authHeader);
+        return paymentService.logs(id);
     }
 }

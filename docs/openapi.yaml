@@ -195,6 +195,15 @@ paths:
           name: id
           required: true
           schema: { type: integer }
+  /api/v1/payments/{id}/logs:
+    get:
+      summary: 결제 상태 전이 로그 조회 (관리자)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
   /api/v1/chats/by-booking/{bookingId}:
     get:
       summary: 결제 완료 후 생성된 상담방 조회

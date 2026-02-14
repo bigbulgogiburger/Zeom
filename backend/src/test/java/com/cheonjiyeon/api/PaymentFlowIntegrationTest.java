@@ -55,5 +55,18 @@ class PaymentFlowIntegrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.providerRoomId").value("fake_room_" + bookingId));
+
+        String admin = mvc.perform(post("/api/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"admin_paylog@zeom.com\",\"password\":\"Password123!\",\"name\":\"관리자\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()
+                .replaceAll(".*\"accessToken\":\"([^\"]+)\".*", "$1");
+
+        mvc.perform(get("/api/v1/payments/" + paymentId + "/logs")
+                        .header("Authorization", "Bearer " + admin))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].toStatus").value("PENDING"))
+                .andExpect(jsonPath("$[1].toStatus").value("PAID"));
     }
 }
