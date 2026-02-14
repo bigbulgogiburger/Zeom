@@ -29,4 +29,6 @@ public class SlotEntity {
     public LocalDateTime getStartAt() { return startAt; }
     public LocalDateTime getEndAt() { return endAt; }
     public boolean isAvailable() { return available; }
+    public void setAvailable(boolean available) { this.available = available; }
 }
+

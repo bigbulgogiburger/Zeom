@@ -53,4 +53,27 @@ class Step2ApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slots").isArray());
     }
+
+    @Test
+    void booking_create_and_my_bookings() throws Exception {
+        String token = mvc.perform(post("/api/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"booking@zeom.com\",\"password\":\"Password123!\",\"name\":\"예약자\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()
+                .replaceAll(".*\"accessToken\":\"([^\"]+)\".*", "$1");
+
+        mvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"counselorId\":1,\"slotId\":1}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("BOOKED"));
+
+        mvc.perform(get("/api/v1/bookings/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].slotId").value(1));
+    }
 }
+
