@@ -48,10 +48,24 @@ flutter run
 4. 필요 시 `/api/v1/admin/audit` 필터로 관련 auth/payment/chat 이벤트 확인
 
 ### 환경변수(가짜 provider 기본)
-- `PAYMENT_PROVIDER=fake`
-- `CHAT_PROVIDER=fake`
-- `NOTIFICATION_PROVIDER=fake`
+- `PAYMENT_PROVIDER=fake` (`http`로 전환 가능)
+- `CHAT_PROVIDER=fake` (`http`로 전환 가능)
+- `NOTIFICATION_PROVIDER=fake` (`http`로 전환 가능)
 - `ALERTS_WEBHOOK_URL=` (선택)
+
+### Step4 provider 연동 설정 (`*_PROVIDER=http`일 때)
+- 결제
+  - `PAYMENT_HTTP_BASE_URL=https://...`
+  - `PAYMENT_HTTP_API_KEY=...`
+  - `PAYMENT_WEBHOOK_SECRET=...`
+  - 웹훅 수신: `POST /api/v1/payments/webhooks/provider` (`X-Webhook-Secret` 헤더 사용)
+  - payload 예시: `{ "providerTxId": "tx_...", "eventType": "PAID|FAILED|CANCELED" }`
+- 채팅
+  - `CHAT_HTTP_BASE_URL=https://...`
+  - `CHAT_HTTP_API_KEY=...`
+- 알림
+  - `NOTIFICATION_HTTP_BASE_URL=https://...`
+  - `NOTIFICATION_HTTP_API_KEY=...`
 
 ## UI 가이드 / QA
 - UI 디자인 시스템 가이드: `docs/UI_Design_System_Guide_v1.md`

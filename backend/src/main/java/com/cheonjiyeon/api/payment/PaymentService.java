@@ -10,6 +10,8 @@ import com.cheonjiyeon.api.notification.NotificationService;
 import com.cheonjiyeon.api.payment.log.PaymentStatusLogEntity;
 import com.cheonjiyeon.api.payment.log.PaymentStatusLogRepository;
 import com.cheonjiyeon.api.payment.provider.PaymentProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,8 @@ import java.util.Map;
 
 @Service
 public class PaymentService {
+    private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
+
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
     private final PaymentProvider paymentProvider;
@@ -150,6 +154,36 @@ public class PaymentService {
                     return m;
                 })
                 .toList();
+    }
+
+    @Transactional
+    public void handleWebhook(String providerTxId, String eventType) {
+        PaymentEntity p = paymentRepository.findByProviderTxId(providerTxId)
+                .orElseThrow(() -> new ApiException(404, "결제를 찾을 수 없습니다."));
+
+        String type = eventType == null ? "" : eventType.trim().toUpperCase();
+        if ("PAID".equals(p.getStatus()) || "CANCELED".equals(p.getStatus())) {
+            log.info("payment webhook ignored (already terminal). paymentId={} status={} eventType={}", p.getId(), p.getStatus(), type);
+            return;
+        }
+
+        if ("PAID".equals(type) || "CONFIRMED".equals(type)) {
+            confirm(0L, p.getId());
+            return;
+        }
+        if ("CANCELED".equals(type) || "FAILED".equals(type)) {
+            if ("FAILED".equals(type)) {
+                String prev = p.getStatus();
+                p.setStatus("FAILED");
+                paymentRepository.save(p);
+                logTransition(p.getId(), prev, "FAILED", "webhook_failed");
+            } else {
+                cancel(0L, p.getId());
+            }
+            return;
+        }
+
+        throw new ApiException(400, "지원하지 않는 webhook eventType 입니다.");
     }
 
     private void ensureConfirmable(String from) {

@@ -18,12 +18,22 @@ alerts:
 
 payment:
   provider: ${PAYMENT_PROVIDER:fake}
+  webhook-secret: ${PAYMENT_WEBHOOK_SECRET:}
+  http:
+    base-url: ${PAYMENT_HTTP_BASE_URL:}
+    api-key: ${PAYMENT_HTTP_API_KEY:}
 
 chat:
   provider: ${CHAT_PROVIDER:fake}
+  http:
+    base-url: ${CHAT_HTTP_BASE_URL:}
+    api-key: ${CHAT_HTTP_API_KEY:}
 
 notification:
   provider: ${NOTIFICATION_PROVIDER:fake}
+  http:
+    base-url: ${NOTIFICATION_HTTP_BASE_URL:}
+    api-key: ${NOTIFICATION_HTTP_API_KEY:}
 
 server:
   port: ${SERVER_PORT:8080}

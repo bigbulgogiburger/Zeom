@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<PaymentEntity, Long> {
     Optional<PaymentEntity> findByBookingId(Long bookingId);
+    Optional<PaymentEntity> findByProviderTxId(String providerTxId);
 }
