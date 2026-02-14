@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { apiFetch } from '../../components/api-client';
 import { RequireAdmin } from '../../components/route-guard';
-import { Card, EmptyState, InlineError, PageTitle, StatCard } from '../../components/ui';
+import { ActionButton, Card, EmptyState, InlineError, InlineSuccess, PageTitle, StatCard } from '../../components/ui';
 
 type Summary = {
   users: number;
@@ -24,11 +24,15 @@ function toIso(dateTimeLocal: string) {
 export default function DashboardPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
 
   async function load() {
+    setLoading(true);
     setMessage('');
+    setSuccess('');
     const q = new URLSearchParams();
     if (from && to) {
       q.set('from', toIso(from));
@@ -37,8 +41,13 @@ export default function DashboardPage() {
 
     const r = await apiFetch(`/api/v1/ops/summary${q.toString() ? `?${q.toString()}` : ''}`, { cache: 'no-store' });
     const json = await r.json();
-    if (!r.ok) return setMessage(json.message ?? '지표 조회 실패');
+    if (!r.ok) {
+      setLoading(false);
+      return setMessage(json.message ?? '지표 조회 실패');
+    }
     setSummary(json);
+    setSuccess('지표를 업데이트했어요.');
+    setLoading(false);
   }
 
   return (
@@ -50,9 +59,10 @@ export default function DashboardPage() {
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <label>시작 <input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
             <label>종료 <input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} /></label>
-            <button onClick={load}>조회</button>
+            <ActionButton onClick={load} loading={loading}>조회</ActionButton>
           </div>
           <InlineError message={message} />
+          <InlineSuccess message={success} />
         </Card>
 
         {summary ? (

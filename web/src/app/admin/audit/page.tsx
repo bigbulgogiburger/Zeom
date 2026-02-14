@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { apiFetch } from '../../../components/api-client';
 import { RequireAdmin } from '../../../components/route-guard';
-import { Card, EmptyState, InlineError, PageTitle, StatusBadge } from '../../../components/ui';
+import { ActionButton, Card, EmptyState, InlineError, InlineSuccess, PageTitle, StatusBadge } from '../../../components/ui';
 
 type Audit = { id: number; userId: number; action: string; targetType: string; targetId: number; createdAt: string };
 
@@ -21,6 +21,8 @@ export default function AdminAuditPage() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [page, setPage] = useState(1);
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   function buildQuery() {
     const q = new URLSearchParams();
@@ -33,17 +35,30 @@ export default function AdminAuditPage() {
   }
 
   async function load() {
+    setLoading(true);
+    setMessage('');
+    setSuccess('');
     const r = await apiFetch(`/api/v1/admin/audit${buildQuery()}`, { cache: 'no-store' });
     const json = await r.json();
-    if (!r.ok) return setMessage(json.message ?? '조회 실패');
+    if (!r.ok) {
+      setLoading(false);
+      return setMessage(json.message ?? '조회 실패');
+    }
     setItems(json);
     setPage(1);
-    setMessage(`조회 완료 (${json.length}건)`);
+    setSuccess(`조회 완료 (${json.length}건)`);
+    setLoading(false);
   }
 
   async function downloadCsv() {
+    setLoading(true);
+    setMessage('');
+    setSuccess('');
     const r = await apiFetch(`/api/v1/admin/audit/csv${buildQuery()}`);
-    if (!r.ok) return setMessage('CSV 다운로드 실패');
+    if (!r.ok) {
+      setLoading(false);
+      return setMessage('CSV 다운로드 실패');
+    }
 
     const text = await r.text();
     const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
@@ -53,7 +68,8 @@ export default function AdminAuditPage() {
     a.download = 'audit_logs.csv';
     a.click();
     URL.revokeObjectURL(url);
-    setMessage('CSV 다운로드 완료');
+    setSuccess('CSV 다운로드 완료');
+    setLoading(false);
   }
 
   const paged = useMemo(() => items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [items, page]);
@@ -69,10 +85,11 @@ export default function AdminAuditPage() {
             <input placeholder="action (예: AUTH_LOGIN)" value={action} onChange={(e) => setAction(e.target.value)} />
             <label>시작 <input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
             <label>종료 <input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} /></label>
-            <button onClick={load}>불러오기</button>
-            <button onClick={downloadCsv}>CSV 다운로드</button>
+            <ActionButton onClick={load} loading={loading}>불러오기</ActionButton>
+            <ActionButton onClick={downloadCsv} loading={loading}>CSV 다운로드</ActionButton>
           </div>
           <InlineError message={message} />
+          <InlineSuccess message={success} />
         </Card>
 
         {paged.length === 0 ? (
@@ -92,9 +109,9 @@ export default function AdminAuditPage() {
         )}
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</button>
+          <ActionButton disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</ActionButton>
           <span>{page} / {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>다음</button>
+          <ActionButton disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>다음</ActionButton>
         </div>
       </main>
     </RequireAdmin>

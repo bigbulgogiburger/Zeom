@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { RequireAdmin } from '../../../components/route-guard';
 import { apiFetch } from '../../../components/api-client';
-import { Card, EmptyState, InlineError, PageTitle, StatusBadge } from '../../../components/ui';
+import { ActionButton, Card, EmptyState, InlineError, InlineSuccess, PageTitle, StatusBadge } from '../../../components/ui';
 
 type TimelineRow = {
   bookingId: number;
@@ -45,6 +45,8 @@ export default function AdminTimelinePage() {
   const [to, setTo] = useState('');
   const [sortDesc, setSortDesc] = useState(true);
   const [page, setPage] = useState(1);
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
   const [paymentLogs, setPaymentLogs] = useState<PaymentLog[]>([]);
@@ -63,20 +65,33 @@ export default function AdminTimelinePage() {
   }
 
   async function loadTimeline() {
+    setLoading(true);
+    setMessage('');
+    setSuccess('');
     const r = await apiFetch(`/api/v1/ops/timeline${buildQuery()}`, { cache: 'no-store' });
     const json = await r.json();
-    if (!r.ok) return setMessage(json.message ?? '타임라인 조회 실패');
+    if (!r.ok) {
+      setLoading(false);
+      return setMessage(json.message ?? '타임라인 조회 실패');
+    }
     setRows(json);
     setPage(1);
-    setMessage(`조회 완료 (${json.length}건)`);
+    setSuccess(`조회 완료 (${json.length}건)`);
+    setLoading(false);
   }
 
   async function loadPaymentLogs(paymentId: number) {
+    setLoading(true);
     const r = await apiFetch(`/api/v1/payments/${paymentId}/logs`, { cache: 'no-store' });
     const json = await r.json();
-    if (!r.ok) return setMessage(json.message ?? '결제 로그 조회 실패');
+    if (!r.ok) {
+      setLoading(false);
+      return setMessage(json.message ?? '결제 로그 조회 실패');
+    }
     setSelectedPaymentId(paymentId);
     setPaymentLogs(json);
+    setSuccess('결제 상태 전이 로그를 불러왔어요.');
+    setLoading(false);
   }
 
   const sortedRows = useMemo(() => {
@@ -103,10 +118,11 @@ export default function AdminTimelinePage() {
             <input placeholder="chatStatus" value={chatStatus} onChange={(e) => setChatStatus(e.target.value)} />
             <label>시작 <input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
             <label>종료 <input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} /></label>
-            <button onClick={loadTimeline}>조회</button>
-            <button onClick={() => setSortDesc((v) => !v)}>정렬: {sortDesc ? '최신순' : '오래된순'}</button>
+            <ActionButton onClick={loadTimeline} loading={loading}>조회</ActionButton>
+            <ActionButton onClick={() => setSortDesc((v) => !v)}>정렬: {sortDesc ? '최신순' : '오래된순'}</ActionButton>
           </div>
           <InlineError message={message} />
+          <InlineSuccess message={success} />
         </Card>
 
         {pagedRows.length === 0 ? (
@@ -129,16 +145,16 @@ export default function AdminTimelinePage() {
               <div style={{ marginTop: 6, color: '#94a3b8' }}>
                 결제ID: {r.paymentId ?? '-'} / 채팅방: {r.chatRoomId ?? '-'}
               </div>
-              {r.paymentId && <button style={{ marginTop: 8 }} onClick={() => loadPaymentLogs(r.paymentId)}>결제 상태 전이 보기</button>}
+              {r.paymentId && <ActionButton style={{ marginTop: 8 }} loading={loading} onClick={() => loadPaymentLogs(r.paymentId)}>결제 상태 전이 보기</ActionButton>}
             </Card>
           ))}
         </div>
         )}
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</button>
+          <ActionButton disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</ActionButton>
           <span>{page} / {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>다음</button>
+          <ActionButton disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>다음</ActionButton>
         </div>
 
         {selectedPaymentId && (

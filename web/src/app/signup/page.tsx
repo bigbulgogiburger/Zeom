@@ -5,15 +5,20 @@ import { useRouter } from 'next/navigation';
 import { API_BASE } from '../../components/api';
 import { setTokens } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
-import { Card, InlineError, PageTitle } from '../../components/ui';
+import { ActionButton, Card, InlineError, InlineSuccess, PageTitle } from '../../components/ui';
 
 export default function SignupPage() {
   const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { refreshMe } = useAuth();
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setMessage('');
+    setSuccess('');
     const form = new FormData(e.currentTarget);
     const body = {
       email: String(form.get('email')),
@@ -29,8 +34,12 @@ export default function SignupPage() {
       body: JSON.stringify(body),
     });
     const json = await res.json();
-    if (!res.ok) return setMessage(json.message ?? '실패');
+    if (!res.ok) {
+      setLoading(false);
+      return setMessage(json.message ?? '실패');
+    }
 
+    setSuccess('가입 성공! 이동 중입니다.');
     setTokens(json.accessToken, json.refreshToken);
     await refreshMe();
     router.push('/counselors');
@@ -50,9 +59,12 @@ export default function SignupPage() {
           <label htmlFor="password">비밀번호</label>
           <input id="password" name="password" type="password" required autoComplete="new-password" placeholder="8자 이상" style={{ minHeight: 40, padding: '0 10px' }} />
 
-          <button type="submit" style={{ minHeight: 42 }}>가입하기</button>
+          <ActionButton type="submit" loading={loading} style={{ minHeight: 42 }}>가입하기</ActionButton>
         </form>
-        <div style={{ marginTop: 8 }}><InlineError message={message} /></div>
+        <div style={{ marginTop: 8 }}>
+          <InlineError message={message} />
+          <InlineSuccess message={success} />
+        </div>
       </Card>
     </main>
   );

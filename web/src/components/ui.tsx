@@ -1,5 +1,16 @@
 'use client';
 
+const color = {
+  bg: '#0f172a',
+  panel: '#0b1220',
+  border: '#334155',
+  text: '#e2e8f0',
+  muted: '#94a3b8',
+  primary: '#93c5fd',
+  danger: '#fca5a5',
+  success: '#86efac',
+};
+
 export function StatusBadge({ value }: { value: string }) {
   const v = (value || '').toUpperCase();
   let bg = '#334155';
@@ -18,7 +29,7 @@ export function StatusBadge({ value }: { value: string }) {
 
 export function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ border: '1px solid #334155', background: '#0b1220', borderRadius: 12, padding: 12 }}>
+    <div style={{ border: `1px solid ${color.border}`, background: color.panel, borderRadius: 12, padding: 12 }}>
       {children}
     </div>
   );
@@ -27,9 +38,9 @@ export function Card({ children }: { children: React.ReactNode }) {
 export function StatCard({ title, value, hint }: { title: string; value: string | number; hint?: string }) {
   return (
     <Card>
-      <div style={{ color: '#93c5fd', fontSize: 13, marginBottom: 4 }}>{title}</div>
+      <div style={{ color: color.primary, fontSize: 13, marginBottom: 4 }}>{title}</div>
       <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.2 }}>{value}</div>
-      {hint && <div style={{ color: '#94a3b8', fontSize: 12, marginTop: 4 }}>{hint}</div>}
+      {hint && <div style={{ color: color.muted, fontSize: 12, marginTop: 4 }}>{hint}</div>}
     </Card>
   );
 }
@@ -49,5 +60,27 @@ export function EmptyState({ title, desc }: { title: string; desc?: string }) {
 
 export function InlineError({ message }: { message: string }) {
   if (!message) return null;
-  return <div style={{ color: '#fca5a5', fontSize: 13 }}>{message}</div>;
+  return <div role="alert" style={{ color: color.danger, fontSize: 13 }}>{message}</div>;
+}
+
+export function InlineSuccess({ message }: { message: string }) {
+  if (!message) return null;
+  return <div role="status" style={{ color: color.success, fontSize: 13 }}>{message}</div>;
+}
+
+export function ActionButton({
+  loading,
+  children,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { loading?: boolean }) {
+  return (
+    <button
+      {...props}
+      disabled={loading || props.disabled}
+      aria-busy={loading ? true : undefined}
+      style={{ minHeight: 40, padding: '0 12px', opacity: loading || props.disabled ? 0.7 : 1, ...(props.style || {}) }}
+    >
+      {loading ? '처리 중…' : children}
+    </button>
+  );
 }

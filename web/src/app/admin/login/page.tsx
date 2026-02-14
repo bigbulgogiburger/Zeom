@@ -5,15 +5,20 @@ import { useRouter } from 'next/navigation';
 import { API_BASE } from '../../../components/api';
 import { setTokens } from '../../../components/auth-client';
 import { useAuth } from '../../../components/auth-context';
-import { Card, InlineError, PageTitle } from '../../../components/ui';
+import { ActionButton, Card, InlineError, InlineSuccess, PageTitle } from '../../../components/ui';
 
 export default function AdminLoginPage() {
   const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { refreshMe } = useAuth();
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setMessage('');
+    setSuccess('');
     const form = new FormData(e.currentTarget);
     const body = {
       email: String(form.get('email')),
@@ -28,8 +33,12 @@ export default function AdminLoginPage() {
       body: JSON.stringify(body),
     });
     const json = await res.json();
-    if (!res.ok) return setMessage(json.message ?? '실패');
+    if (!res.ok) {
+      setLoading(false);
+      return setMessage(json.message ?? '실패');
+    }
 
+    setSuccess('관리자 로그인 성공! 이동 중입니다.');
     setTokens(json.accessToken, json.refreshToken);
     await refreshMe();
     router.push('/dashboard');
@@ -46,9 +55,12 @@ export default function AdminLoginPage() {
           <label htmlFor="password">비밀번호</label>
           <input id="password" name="password" type="password" required autoComplete="current-password" placeholder="비밀번호" style={{ minHeight: 40, padding: '0 10px' }} />
 
-          <button type="submit" style={{ minHeight: 42 }}>로그인</button>
+          <ActionButton type="submit" loading={loading} style={{ minHeight: 42 }}>로그인</ActionButton>
         </form>
-        <div style={{ marginTop: 8 }}><InlineError message={message} /></div>
+        <div style={{ marginTop: 8 }}>
+          <InlineError message={message} />
+          <InlineSuccess message={success} />
+        </div>
       </Card>
     </main>
   );
