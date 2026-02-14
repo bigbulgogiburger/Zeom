@@ -177,5 +177,15 @@ paths:
           schema: { type: string, format: date-time }
   /api/v1/admin/audit:
     get:
-      summary: 관리자 감사로그 최근 50건
+      summary: 관리자 감사로그 최근 50건 (action/기간 필터)
       security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: action
+          schema: { type: string, example: AUTH_LOGIN }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }

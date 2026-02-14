@@ -1,5 +1,6 @@
 package com.cheonjiyeon.api.auth;
 
+import com.cheonjiyeon.api.audit.AuditLogService;
 import com.cheonjiyeon.api.auth.refresh.RefreshTokenEntity;
 import com.cheonjiyeon.api.auth.refresh.RefreshTokenRepository;
 import com.cheonjiyeon.api.common.ApiException;
@@ -19,12 +20,17 @@ public class AuthService {
     private final UserRepository userRepository;
     private final TokenStore tokenStore;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AuditLogService auditLogService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public AuthService(UserRepository userRepository, TokenStore tokenStore, RefreshTokenRepository refreshTokenRepository) {
+    public AuthService(UserRepository userRepository,
+                       TokenStore tokenStore,
+                       RefreshTokenRepository refreshTokenRepository,
+                       AuditLogService auditLogService) {
         this.userRepository = userRepository;
         this.tokenStore = tokenStore;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -40,6 +46,7 @@ public class AuthService {
         user.setRole(req.email().startsWith("admin") ? "ADMIN" : "USER");
         UserEntity saved = userRepository.save(user);
 
+        auditLogService.log(saved.getId(), "AUTH_SIGNUP", "USER", saved.getId());
         return issueTokens(saved, req.deviceId(), req.deviceName());
     }
 
@@ -52,6 +59,7 @@ public class AuthService {
             throw new ApiException(401, "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
+        auditLogService.log(user.getId(), "AUTH_LOGIN", "USER", user.getId());
         return issueTokens(user, req.deviceId(), req.deviceName());
     }
 
@@ -67,18 +75,35 @@ public class AuthService {
             throw new ApiException(403, "관리자 계정이 아닙니다.");
         }
 
+        auditLogService.log(user.getId(), "AUTH_ADMIN_LOGIN", "USER", user.getId());
         return issueTokens(user, req.deviceId(), req.deviceName());
     }
 
     @Transactional
     public AuthDtos.AuthResponse refresh(AuthDtos.RefreshRequest req) {
         String oldHash = sha256(req.refreshToken());
-        RefreshTokenEntity old = refreshTokenRepository.findByTokenHashAndRevokedFalse(oldHash)
-                .orElseThrow(() -> new ApiException(401, "유효하지 않은 refresh token 입니다."));
+        RefreshTokenEntity old = refreshTokenRepository.findByTokenHashAndRevokedFalse(oldHash).orElse(null);
+
+        if (old == null) {
+            // reuse attempt or invalid token: try DB hash first, fallback to JWT subject parsing
+            Long suspectedUserId = refreshTokenRepository.findByTokenHash(oldHash)
+                    .map(RefreshTokenEntity::getUserId)
+                    .orElseGet(() -> tokenStore.resolveRefreshUserId(req.refreshToken()).orElse(null));
+
+            if (suspectedUserId != null) {
+                refreshTokenRepository.findByUserIdAndRevokedFalse(suspectedUserId).forEach(t -> {
+                    t.setRevoked(true);
+                    refreshTokenRepository.save(t);
+                });
+                auditLogService.log(suspectedUserId, "AUTH_REFRESH_REUSE_DETECTED", "USER", suspectedUserId);
+            }
+            throw new ApiException(401, "유효하지 않은 refresh token 입니다.");
+        }
 
         if (old.getExpiresAt().isBefore(LocalDateTime.now())) {
             old.setRevoked(true);
             refreshTokenRepository.save(old);
+            auditLogService.log(old.getUserId(), "AUTH_REFRESH_EXPIRED", "USER", old.getUserId());
             throw new ApiException(401, "만료된 refresh token 입니다.");
         }
 
@@ -91,6 +116,7 @@ public class AuthService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(401, "유효하지 않은 사용자입니다."));
 
+        auditLogService.log(user.getId(), "AUTH_REFRESH", "USER", user.getId());
         return issueTokens(user,
                 req.deviceId() != null ? req.deviceId() : old.getDeviceId(),
                 req.deviceName() != null ? req.deviceName() : old.getDeviceName());
@@ -102,6 +128,7 @@ public class AuthService {
         refreshTokenRepository.findByTokenHashAndRevokedFalse(hash).ifPresent(t -> {
             t.setRevoked(true);
             refreshTokenRepository.save(t);
+            auditLogService.log(t.getUserId(), "AUTH_LOGOUT", "USER", t.getUserId());
         });
         return new AuthDtos.MessageResponse("로그아웃되었습니다.");
     }
@@ -126,6 +153,7 @@ public class AuthService {
         }
         token.setRevoked(true);
         refreshTokenRepository.save(token);
+        auditLogService.log(user.getId(), "AUTH_SESSION_REVOKED", "REFRESH_TOKEN", token.getId());
         return new AuthDtos.MessageResponse("세션이 해제되었습니다.");
     }
 
