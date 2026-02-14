@@ -16,5 +16,8 @@ jwt:
 alerts:
   webhook-url: ${ALERTS_WEBHOOK_URL:}
 
+payment:
+  provider: ${PAYMENT_PROVIDER:fake}
+
 server:
   port: ${SERVER_PORT:8080}

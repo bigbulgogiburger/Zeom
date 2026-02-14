@@ -164,6 +164,37 @@ paths:
           name: id
           required: true
           schema: { type: integer }
+  /api/v1/payments:
+    post:
+      summary: 결제 생성 (PENDING)
+      security: [{ bearerAuth: [] }]
+  /api/v1/payments/{id}:
+    get:
+      summary: 결제 조회
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+  /api/v1/payments/{id}/confirm:
+    post:
+      summary: 결제 승인 처리
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+  /api/v1/payments/{id}/cancel:
+    post:
+      summary: 결제 취소 처리
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
   /api/v1/ops/summary:
     get:
       summary: 관리자 운영 지표 조회
