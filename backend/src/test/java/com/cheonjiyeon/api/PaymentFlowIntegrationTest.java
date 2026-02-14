@@ -1,5 +1,7 @@
 package com.cheonjiyeon.api;
 
+import com.cheonjiyeon.api.auth.UserEntity;
+import com.cheonjiyeon.api.auth.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,6 +22,9 @@ class PaymentFlowIntegrationTest {
     @Autowired
     MockMvc mvc;
 
+    @Autowired
+    UserRepository userRepository;
+
     @Test
     void create_and_confirm_payment() throws Exception {
         String email = "pay_" + System.nanoTime() + "@zeom.com";
@@ -31,7 +36,7 @@ class PaymentFlowIntegrationTest {
                 .replaceAll(".*\"accessToken\":\"([^\"]+)\".*", "$1");
 
         String bookingId = null;
-        int[][] candidates = { {2, 3}, {1, 1}, {1, 2}, {2, 4}, {3, 5} };
+        int[][] candidates = { {1, 4}, {1, 5}, {1, 6}, {1, 7}, {1, 8}, {1, 9}, {1, 10}, {1, 11}, {1, 12}, {1, 13}, {2, 14}, {2, 15}, {2, 16}, {2, 17}, {2, 18}, {2, 19}, {2, 20}, {2, 21}, {2, 22}, {2, 23}, {3, 24}, {3, 25}, {3, 26}, {3, 27}, {3, 28}, {3, 29}, {3, 30}, {3, 31}, {3, 32}, {3, 33}, {1, 1}, {1, 2}, {2, 3} };
         for (int[] c : candidates) {
             var res = mvc.perform(post("/api/v1/bookings")
                             .header("Authorization", "Bearer " + token)
@@ -72,6 +77,10 @@ class PaymentFlowIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString()
                 .replaceAll(".*\"accessToken\":\"([^\"]+)\".*", "$1");
+
+        UserEntity adminUser = userRepository.findByEmail(adminEmail).orElseThrow();
+        adminUser.setRole("ADMIN");
+        userRepository.save(adminUser);
 
         mvc.perform(post("/api/v1/payments/" + paymentId + "/retry-post-actions")
                         .header("Authorization", "Bearer " + admin))

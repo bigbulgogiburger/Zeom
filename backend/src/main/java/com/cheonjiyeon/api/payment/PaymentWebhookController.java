@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+
 @RestController
 @RequestMapping("/api/v1/payments/webhooks")
 public class PaymentWebhookController {
@@ -28,10 +31,23 @@ public class PaymentWebhookController {
             @RequestHeader(value = "X-Webhook-Secret", required = false) String secret,
             @Valid @RequestBody PaymentWebhookRequest req
     ) {
-        if (webhookSecret != null && !webhookSecret.isBlank() && !webhookSecret.equals(secret)) {
+        if (!verifyWebhookSecret(secret)) {
             return ResponseEntity.status(401).build();
         }
         paymentService.handleWebhook(req.providerTxId(), req.eventType());
         return ResponseEntity.accepted().build();
+    }
+
+    private boolean verifyWebhookSecret(String provided) {
+        if (webhookSecret == null || webhookSecret.isBlank()) {
+            return false;
+        }
+        if (provided == null || provided.isBlank()) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                webhookSecret.getBytes(StandardCharsets.UTF_8),
+                provided.getBytes(StandardCharsets.UTF_8)
+        );
     }
 }

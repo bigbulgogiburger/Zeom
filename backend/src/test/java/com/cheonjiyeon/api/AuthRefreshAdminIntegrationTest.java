@@ -1,5 +1,7 @@
 package com.cheonjiyeon.api;
 
+import com.cheonjiyeon.api.auth.UserEntity;
+import com.cheonjiyeon.api.auth.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,6 +19,9 @@ class AuthRefreshAdminIntegrationTest {
 
     @Autowired
     MockMvc mvc;
+
+    @Autowired
+    UserRepository userRepository;
 
     @Test
     void refresh_token_rotation_old_token_rejected() throws Exception {
@@ -91,11 +96,16 @@ class AuthRefreshAdminIntegrationTest {
                         .header("Authorization", "Bearer " + userAccess))
                 .andExpect(status().isForbidden());
 
+        String adminEmail = "admin_ops_" + System.nanoTime() + "@zeom.com";
         String adminRes = mvc.perform(post("/api/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"admin_ops@zeom.com\",\"password\":\"Password123!\",\"name\":\"관리자\"}"))
+                        .content("{\"email\":\"" + adminEmail + "\",\"password\":\"Password123!\",\"name\":\"관리자\"}"))
                 .andReturn().getResponse().getContentAsString();
         String adminAccess = adminRes.replaceAll(".*\"accessToken\":\"([^\"]+)\".*", "$1");
+
+        UserEntity adminUser = userRepository.findByEmail(adminEmail).orElseThrow();
+        adminUser.setRole("ADMIN");
+        userRepository.save(adminUser);
 
         mvc.perform(get("/api/v1/ops/summary")
                         .header("Authorization", "Bearer " + adminAccess))

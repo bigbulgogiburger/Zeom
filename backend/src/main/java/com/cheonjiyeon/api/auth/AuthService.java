@@ -47,7 +47,7 @@ public class AuthService {
         user.setEmail(req.email());
         user.setName(req.name());
         user.setPasswordHash(encoder.encode(req.password()));
-        user.setRole(req.email().startsWith("admin") ? "ADMIN" : "USER");
+        user.setRole("USER");
         UserEntity saved = userRepository.save(user);
 
         auditLogService.log(saved.getId(), "AUTH_SIGNUP", "USER", saved.getId());
@@ -58,13 +58,13 @@ public class AuthService {
     public AuthDtos.AuthResponse login(AuthDtos.LoginRequest req) {
         UserEntity user = userRepository.findByEmail(req.email())
                 .orElseThrow(() -> {
-                    alertWebhookService.sendFailureEvent("AUTH_LOGIN_FAIL", "email=" + req.email());
+                    alertWebhookService.sendFailureEvent("AUTH_LOGIN_FAIL", "unknown_email_attempt");
                     auditLogService.log(0L, "AUTH_LOGIN_FAIL", "EMAIL", 0L);
                     return new ApiException(401, "이메일 또는 비밀번호가 올바르지 않습니다.");
                 });
 
         if (!encoder.matches(req.password(), user.getPasswordHash())) {
-            alertWebhookService.sendFailureEvent("AUTH_LOGIN_FAIL", "email=" + req.email());
+            alertWebhookService.sendFailureEvent("AUTH_LOGIN_FAIL", "userId=" + user.getId());
             auditLogService.log(user.getId(), "AUTH_LOGIN_FAIL", "USER", user.getId());
             throw new ApiException(401, "이메일 또는 비밀번호가 올바르지 않습니다.");
         }

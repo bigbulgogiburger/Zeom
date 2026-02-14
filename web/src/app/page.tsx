@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Card, PageTitle } from '../components/ui';
+
+export const metadata: Metadata = {
+  title: '천지연꽃신당 — 온라인 점사 상담',
+  description: '온라인 점사 상담을 위한 예약·결제·상담방 통합 플랫폼',
+};
 
 export default function HomePage() {
   return (

@@ -70,7 +70,6 @@ public class OpsTimelineController {
                     row.put("bookingStatus", b.getStatus());
                     row.put("bookingCreatedAt", b.getCreatedAt().toString());
                     row.put("userId", b.getUser().getId());
-                    row.put("userEmail", b.getUser().getEmail());
                     row.put("counselorId", b.getCounselor().getId());
                     row.put("counselorName", b.getCounselor().getName());
                     Long pId = paymentOpt.map(p -> p.getId()).orElse(null);

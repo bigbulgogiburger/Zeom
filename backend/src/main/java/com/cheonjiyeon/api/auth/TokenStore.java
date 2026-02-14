@@ -3,6 +3,8 @@ package com.cheonjiyeon.api.auth;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +20,18 @@ import java.util.UUID;
 
 @Component
 public class TokenStore {
+    private static final Logger log = LoggerFactory.getLogger(TokenStore.class);
+    private static final String DEV_SECRET_PREFIX = "dev-secret";
+
     private final SecretKey key;
 
     public TokenStore(@Value("${jwt.secret}") String secret) {
+        if (secret.startsWith(DEV_SECRET_PREFIX)) {
+            log.warn("JWT_SECRET is using a development default. Set a strong, unique JWT_SECRET for production!");
+        }
+        if (secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalArgumentException("JWT secret must be at least 32 bytes (256 bits)");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 

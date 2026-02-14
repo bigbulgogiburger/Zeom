@@ -1,5 +1,6 @@
 import { API_BASE } from './api';
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from './auth-client';
+import { reportApiError, reportError } from './error-reporter';
 
 let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
@@ -37,7 +38,13 @@ export async function apiFetch(path: string, init: RequestInit = {}, retry = tru
   const headers = new Headers(init.headers || {});
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+  } catch (err) {
+    reportError(err, 'high', { path, method: init.method ?? 'GET', source: 'apiFetch' });
+    throw err;
+  }
 
   if (res.status === 401 && retry) {
     const ok = await refreshToken();
@@ -47,6 +54,10 @@ export async function apiFetch(path: string, init: RequestInit = {}, retry = tru
       return res;
     }
     return apiFetch(path, init, false);
+  }
+
+  if (!res.ok && res.status !== 401) {
+    reportApiError(path, res.status, undefined);
   }
 
   return res;
