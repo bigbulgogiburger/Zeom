@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { apiFetch } from '../../components/api-client';
+import { RequireLogin } from '../../components/route-guard';
 
 type SessionItem = {
   id: number;
@@ -32,6 +33,7 @@ export default function SessionsPage() {
   }
 
   return (
+    <RequireLogin>
     <main style={{ padding: 24 }}>
       <h2>내 세션 관리</h2>
       <button onClick={load}>세션 불러오기</button>
@@ -47,5 +49,6 @@ export default function SessionsPage() {
         ))}
       </ul>
     </main>
+    </RequireLogin>
   );
 }

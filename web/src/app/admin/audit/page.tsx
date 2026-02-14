@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { API_BASE } from '../../../components/api';
 import { apiFetch } from '../../../components/api-client';
-import { getAccessToken } from '../../../components/auth-client';
+import { RequireAdmin } from '../../../components/route-guard';
 
 type Audit = { id: number; userId: number; action: string; targetType: string; targetId: number; createdAt: string };
 
@@ -29,16 +28,7 @@ export default function AdminAuditPage() {
     return q.toString() ? `?${q.toString()}` : '';
   }
 
-  async function guardAdmin() {
-    const me = await apiFetch('/api/v1/auth/me', { cache: 'no-store' });
-    if (!me.ok) return false;
-    const meJson = await me.json();
-    return meJson.role === 'ADMIN';
-  }
-
   async function load() {
-    if (!(await guardAdmin())) return setMessage('관리자 로그인 후 이용해주세요.');
-
     const r = await apiFetch(`/api/v1/admin/audit${buildQuery()}`, { cache: 'no-store' });
     const json = await r.json();
     if (!r.ok) return setMessage(json.message ?? '조회 실패');
@@ -47,12 +37,7 @@ export default function AdminAuditPage() {
   }
 
   async function downloadCsv() {
-    if (!(await guardAdmin())) return setMessage('관리자 로그인 후 이용해주세요.');
-
-    const token = getAccessToken();
-    const r = await fetch(`${API_BASE}/api/v1/admin/audit/csv${buildQuery()}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const r = await apiFetch(`/api/v1/admin/audit/csv${buildQuery()}`);
     if (!r.ok) return setMessage('CSV 다운로드 실패');
 
     const text = await r.text();
@@ -67,6 +52,7 @@ export default function AdminAuditPage() {
   }
 
   return (
+    <RequireAdmin>
     <main style={{ padding: 24 }}>
       <h2>감사로그(최근 50건)</h2>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -87,5 +73,6 @@ export default function AdminAuditPage() {
         ))}
       </ul>
     </main>
+    </RequireAdmin>
   );
 }

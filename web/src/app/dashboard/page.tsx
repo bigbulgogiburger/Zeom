@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { apiFetch } from '../../components/api-client';
+import { RequireAdmin } from '../../components/route-guard';
 
 type Summary = {
   users: number;
@@ -27,11 +28,6 @@ export default function DashboardPage() {
 
   async function load() {
     setMessage('');
-    const me = await apiFetch('/api/v1/auth/me', { cache: 'no-store' });
-    if (!me.ok) return setMessage('로그인 후 이용해주세요.');
-    const meJson = await me.json();
-    if (meJson.role !== 'ADMIN') return setMessage('관리자 전용 화면입니다.');
-
     const q = new URLSearchParams();
     if (from && to) {
       q.set('from', toIso(from));
@@ -45,6 +41,7 @@ export default function DashboardPage() {
   }
 
   return (
+    <RequireAdmin>
     <main style={{ padding: 24 }}>
       <h2>운영 대시보드</h2>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -82,5 +79,6 @@ export default function DashboardPage() {
         </div>
       )}
     </main>
+    </RequireAdmin>
   );
 }

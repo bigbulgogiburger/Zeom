@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../../components/api-client';
+import { RequireLogin } from '../../../components/route-guard';
 
 type Booking = {
   id: number;
@@ -41,6 +42,7 @@ export default function MyBookingsPage() {
   }
 
   return (
+    <RequireLogin>
     <main style={{ padding: 24 }}>
       <h2>내 예약</h2>
       {message && <p>{message}</p>}
@@ -59,5 +61,6 @@ export default function MyBookingsPage() {
         ))}
       </ul>
     </main>
+    </RequireLogin>
   );
 }
