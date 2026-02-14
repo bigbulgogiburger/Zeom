@@ -17,8 +17,10 @@ public class AuthDtos {
     ) {}
 
     public record RefreshRequest(@NotBlank String refreshToken) {}
+    public record LogoutRequest(@NotBlank String refreshToken) {}
 
     public record UserResponse(Long id, String email, String name, String role) {}
 
     public record AuthResponse(String accessToken, String refreshToken, UserResponse user) {}
+    public record MessageResponse(String message) {}
 }

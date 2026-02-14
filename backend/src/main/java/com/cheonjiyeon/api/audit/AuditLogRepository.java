@@ -7,4 +7,5 @@ import java.time.LocalDateTime;
 public interface AuditLogRepository extends JpaRepository<AuditLogEntity, Long> {
     long countByAction(String action);
     long countByActionAndCreatedAtBetween(String action, LocalDateTime from, LocalDateTime to);
+    java.util.List<AuditLogEntity> findTop50ByOrderByIdDesc();
 }

@@ -40,4 +40,5 @@ public class AuditLogEntity {
     public void setTargetType(String targetType) { this.targetType = targetType; }
     public Long getTargetId() { return targetId; }
     public void setTargetId(Long targetId) { this.targetId = targetId; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 }

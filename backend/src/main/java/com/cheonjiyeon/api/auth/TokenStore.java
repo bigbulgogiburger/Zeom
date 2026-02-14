@@ -9,9 +9,12 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class TokenStore {
@@ -36,6 +39,7 @@ public class TokenStore {
     public String issueRefresh(Long userId) {
         Instant now = Instant.now();
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(String.valueOf(userId))
                 .claim("typ", "refresh")
                 .issuedAt(Date.from(now))
@@ -54,6 +58,12 @@ public class TokenStore {
         return parse(token)
                 .filter(c -> "refresh".equals(c.get("typ", String.class)))
                 .map(c -> Long.parseLong(c.getSubject()));
+    }
+
+    public Optional<LocalDateTime> refreshExpiry(String token) {
+        return parse(token)
+                .filter(c -> "refresh".equals(c.get("typ", String.class)))
+                .map(c -> LocalDateTime.ofInstant(c.getExpiration().toInstant(), ZoneId.systemDefault()));
     }
 
     private Optional<Claims> parse(String token) {

@@ -32,6 +32,11 @@ public class AuthController {
         return authService.refresh(req);
     }
 
+    @PostMapping("/logout")
+    public AuthDtos.MessageResponse logout(@Valid @RequestBody AuthDtos.LogoutRequest req) {
+        return authService.logout(req);
+    }
+
     @GetMapping("/me")
     public AuthDtos.UserResponse me(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         return authService.me(authHeader);
