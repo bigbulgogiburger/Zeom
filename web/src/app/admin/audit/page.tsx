@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { apiFetch } from '../../../components/api-client';
 import { RequireAdmin } from '../../../components/route-guard';
-import { Card, StatusBadge } from '../../../components/ui';
+import { Card, EmptyState, InlineError, PageTitle, StatusBadge } from '../../../components/ui';
 
 type Audit = { id: number; userId: number; action: string; targetType: string; targetId: number; createdAt: string };
 
@@ -62,7 +62,7 @@ export default function AdminAuditPage() {
   return (
     <RequireAdmin>
       <main style={{ padding: 24, display: 'grid', gap: 12 }}>
-        <h2 style={{ margin: 0 }}>감사로그</h2>
+        <PageTitle>감사로그</PageTitle>
 
         <Card>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -72,9 +72,12 @@ export default function AdminAuditPage() {
             <button onClick={load}>불러오기</button>
             <button onClick={downloadCsv}>CSV 다운로드</button>
           </div>
-          <p style={{ marginBottom: 0 }}>{message}</p>
+          <InlineError message={message} />
         </Card>
 
+        {paged.length === 0 ? (
+          <EmptyState title="조회 결과가 없어요" desc="필터를 조정하거나 조회를 다시 시도해보세요." />
+        ) : (
         <div style={{ display: 'grid', gap: 8 }}>
           {paged.map((a) => (
             <Card key={a.id}>
@@ -86,6 +89,7 @@ export default function AdminAuditPage() {
             </Card>
           ))}
         </div>
+        )}
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</button>

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { RequireAdmin } from '../../../components/route-guard';
 import { apiFetch } from '../../../components/api-client';
-import { Card, StatusBadge } from '../../../components/ui';
+import { Card, EmptyState, InlineError, PageTitle, StatusBadge } from '../../../components/ui';
 
 type TimelineRow = {
   bookingId: number;
@@ -93,7 +93,7 @@ export default function AdminTimelinePage() {
   return (
     <RequireAdmin>
       <main style={{ padding: 24, display: 'grid', gap: 14 }}>
-        <h2 style={{ margin: 0 }}>운영 타임라인</h2>
+        <PageTitle>운영 타임라인</PageTitle>
 
         <Card>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -106,9 +106,12 @@ export default function AdminTimelinePage() {
             <button onClick={loadTimeline}>조회</button>
             <button onClick={() => setSortDesc((v) => !v)}>정렬: {sortDesc ? '최신순' : '오래된순'}</button>
           </div>
-          <p style={{ marginBottom: 0 }}>{message}</p>
+          <InlineError message={message} />
         </Card>
 
+        {pagedRows.length === 0 ? (
+          <EmptyState title="조회 결과가 없어요" desc="필터를 조정하거나 조회를 다시 시도해보세요." />
+        ) : (
         <div style={{ display: 'grid', gap: 10 }}>
           {pagedRows.map((r) => (
             <Card key={r.bookingId}>
@@ -130,6 +133,7 @@ export default function AdminTimelinePage() {
             </Card>
           ))}
         </div>
+        )}
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</button>
