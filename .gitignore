@@ -1,0 +1,19 @@
+# Node
+web/node_modules/
+web/.next/
+
+# Flutter
+app_flutter/.dart_tool/
+app_flutter/build/
+
+# Java/Gradle
+backend/.gradle/
+backend/build/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
