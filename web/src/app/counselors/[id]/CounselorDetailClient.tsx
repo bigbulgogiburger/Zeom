@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { API_BASE } from '../../../components/api';
+import { apiFetch } from '../../../components/api-client';
+import { Card, EmptyState, InlineError, PageTitle } from '../../../components/ui';
 
 type Slot = { id: number; startAt: string; endAt: string };
 type CounselorDetail = { id: number; name: string; specialty: string; intro: string; slots: Slot[] };
@@ -18,15 +20,9 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   }, [id]);
 
   async function book(slotId: number) {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return setMessage('로그인 후 예약해주세요.');
-
-    const res = await fetch(`${API_BASE}/api/v1/bookings`, {
+    const res = await apiFetch('/api/v1/bookings', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ counselorId: Number(id), slotId }),
     });
     const json = await res.json();
@@ -41,23 +37,32 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   if (!counselor) return <main style={{ padding: 24 }}>불러오는 중...</main>;
 
   return (
-    <main style={{ padding: 24 }}>
-      <h2>{counselor.name}</h2>
-      <p>{counselor.specialty}</p>
-      <p>{counselor.intro}</p>
+    <main style={{ padding: 24, display: 'grid', gap: 12 }}>
+      <PageTitle>{counselor.name}</PageTitle>
+      <Card>
+        <div style={{ color: '#93c5fd', fontSize: 14 }}>{counselor.specialty}</div>
+        <p style={{ color: '#cbd5e1' }}>{counselor.intro}</p>
+      </Card>
 
-      <h3>예약 가능 슬롯</h3>
-      <ul style={{ display: 'grid', gap: 10, listStyle: 'none', padding: 0 }}>
-        {counselor.slots.map((s) => (
-          <li key={s.id} style={{ border: '1px solid #334155', borderRadius: 8, padding: 10 }}>
-            <div>
-              {new Date(s.startAt).toLocaleString('ko-KR')} ~ {new Date(s.endAt).toLocaleTimeString('ko-KR')}
-            </div>
-            <button onClick={() => book(s.id)} style={{ marginTop: 8 }}>이 슬롯 예약하기</button>
-          </li>
-        ))}
-      </ul>
-      <p>{message}</p>
+      <h3 style={{ margin: 0 }}>예약 가능 슬롯</h3>
+      <InlineError message={message} />
+
+      {counselor.slots.length === 0 ? (
+        <EmptyState title="현재 가능한 슬롯이 없어요" desc="다른 상담사 또는 시간대를 확인해주세요." />
+      ) : (
+        <div style={{ display: 'grid', gap: 10 }}>
+          {counselor.slots.map((s) => (
+            <Card key={s.id}>
+              <div>
+                {new Date(s.startAt).toLocaleString('ko-KR')} ~ {new Date(s.endAt).toLocaleTimeString('ko-KR')}
+              </div>
+              <button onClick={() => book(s.id)} style={{ marginTop: 8, minHeight: 40, padding: '0 12px' }}>
+                이 슬롯 예약하기
+              </button>
+            </Card>
+          ))}
+        </div>
+      )}
     </main>
   );
 }

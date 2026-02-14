@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../../components/api-client';
 import { RequireLogin } from '../../../components/route-guard';
+import { Card, EmptyState, InlineError, PageTitle, StatusBadge } from '../../../components/ui';
 
 type Booking = {
   id: number;
@@ -43,24 +44,33 @@ export default function MyBookingsPage() {
 
   return (
     <RequireLogin>
-    <main style={{ padding: 24 }}>
-      <h2>내 예약</h2>
-      {message && <p>{message}</p>}
-      <ul style={{ display: 'grid', gap: 10, listStyle: 'none', padding: 0 }}>
-        {bookings.map((b) => (
-          <li key={b.id} style={{ border: '1px solid #334155', borderRadius: 8, padding: 10 }}>
-            <div>{b.counselorName}</div>
-            <div>{new Date(b.startAt).toLocaleString('ko-KR')} ~ {new Date(b.endAt).toLocaleTimeString('ko-KR')}</div>
-            <div>상태: {b.status}</div>
-            {b.status === 'BOOKED' && (
-              <button onClick={() => cancelBooking(b.id)} style={{ marginTop: 8 }}>
-                예약 취소
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-    </main>
+      <main style={{ padding: 24, display: 'grid', gap: 12 }}>
+        <PageTitle>내 예약</PageTitle>
+        <InlineError message={message} />
+
+        {bookings.length === 0 ? (
+          <EmptyState title="예약 내역이 없어요" desc="상담사 상세에서 슬롯을 예약해보세요." />
+        ) : (
+          <div style={{ display: 'grid', gap: 10 }}>
+            {bookings.map((b) => (
+              <Card key={b.id}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                  <b>{b.counselorName}</b>
+                  <StatusBadge value={b.status} />
+                </div>
+                <div style={{ marginTop: 8, color: '#cbd5e1' }}>
+                  {new Date(b.startAt).toLocaleString('ko-KR')} ~ {new Date(b.endAt).toLocaleTimeString('ko-KR')}
+                </div>
+                {b.status === 'BOOKED' && (
+                  <button onClick={() => cancelBooking(b.id)} style={{ marginTop: 10, minHeight: 40, padding: '0 12px' }}>
+                    예약 취소
+                  </button>
+                )}
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
     </RequireLogin>
   );
 }
