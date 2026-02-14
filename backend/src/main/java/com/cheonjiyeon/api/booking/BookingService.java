@@ -69,6 +69,23 @@ public class BookingService {
                 .toList();
     }
 
+    @Transactional
+    public BookingDtos.BookingResponse cancel(String authHeader, Long bookingId) {
+        UserEntity user = resolveUser(authHeader);
+        BookingEntity booking = bookingRepository.findByIdAndUserId(bookingId, user.getId())
+                .orElseThrow(() -> new ApiException(404, "예약을 찾을 수 없습니다."));
+
+        if ("CANCELED".equals(booking.getStatus())) {
+            throw new ApiException(409, "이미 취소된 예약입니다.");
+        }
+
+        booking.setStatus("CANCELED");
+        booking.getSlot().setAvailable(true);
+        slotRepository.save(booking.getSlot());
+        BookingEntity saved = bookingRepository.save(booking);
+        return toResponse(saved);
+    }
+
     private UserEntity resolveUser(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new ApiException(401, "Authorization Bearer 토큰이 필요합니다.");

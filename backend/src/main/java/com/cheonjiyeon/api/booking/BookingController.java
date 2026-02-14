@@ -28,4 +28,12 @@ public class BookingController {
     ) {
         return bookingService.mine(authHeader);
     }
+
+    @PostMapping("/{id}/cancel")
+    public BookingDtos.BookingResponse cancel(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id
+    ) {
+        return bookingService.cancel(authHeader, id);
+    }
 }

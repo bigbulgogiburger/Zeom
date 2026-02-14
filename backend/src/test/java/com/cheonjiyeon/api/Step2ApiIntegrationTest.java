@@ -55,7 +55,7 @@ class Step2ApiIntegrationTest {
     }
 
     @Test
-    void booking_create_and_my_bookings() throws Exception {
+    void booking_create_cancel_and_my_bookings() throws Exception {
         String token = mvc.perform(post("/api/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"booking@zeom.com\",\"password\":\"Password123!\",\"name\":\"예약자\"}"))
@@ -63,17 +63,28 @@ class Step2ApiIntegrationTest {
                 .andReturn().getResponse().getContentAsString()
                 .replaceAll(".*\"accessToken\":\"([^\"]+)\".*", "$1");
 
-        mvc.perform(post("/api/v1/bookings")
+        String bookingRes = mvc.perform(post("/api/v1/bookings")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"counselorId\":1,\"slotId\":1}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("BOOKED"));
+                .andExpect(jsonPath("$.status").value("BOOKED"))
+                .andReturn().getResponse().getContentAsString();
+
+        String bookingId = bookingRes.replaceAll(".*\"id\":([0-9]+).*", "$1");
+
+        mvc.perform(post("/api/v1/bookings/" + bookingId + "/cancel")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELED"));
 
         mvc.perform(get("/api/v1/bookings/me")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].slotId").value(1));
+                .andExpect(jsonPath("$[0].status").value("CANCELED"));
+
+        mvc.perform(get("/api/v1/counselors/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.slots[?(@.id == 1)]").isArray());
     }
 }
-
