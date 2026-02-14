@@ -58,14 +58,31 @@ flutter run
   - `PAYMENT_HTTP_BASE_URL=https://...`
   - `PAYMENT_HTTP_API_KEY=...`
   - `PAYMENT_WEBHOOK_SECRET=...`
+  - `PAYMENT_HTTP_CONNECT_TIMEOUT_MS=2000`
+  - `PAYMENT_HTTP_READ_TIMEOUT_MS=4000`
+  - `PAYMENT_HTTP_RETRY_ATTEMPTS=3`
+  - `PAYMENT_HTTP_RETRY_BACKOFF_MS=200`
   - 웹훅 수신: `POST /api/v1/payments/webhooks/provider` (`X-Webhook-Secret` 헤더 사용)
   - payload 예시: `{ "providerTxId": "tx_...", "eventType": "PAID|FAILED|CANCELED" }`
 - 채팅
   - `CHAT_HTTP_BASE_URL=https://...`
   - `CHAT_HTTP_API_KEY=...`
+  - `CHAT_HTTP_CONNECT_TIMEOUT_MS=2000`
+  - `CHAT_HTTP_READ_TIMEOUT_MS=4000`
+  - `CHAT_HTTP_RETRY_ATTEMPTS=3`
+  - `CHAT_HTTP_RETRY_BACKOFF_MS=200`
 - 알림
   - `NOTIFICATION_HTTP_BASE_URL=https://...`
   - `NOTIFICATION_HTTP_API_KEY=...`
+  - `NOTIFICATION_HTTP_CONNECT_TIMEOUT_MS=2000`
+  - `NOTIFICATION_HTTP_READ_TIMEOUT_MS=4000`
+  - `NOTIFICATION_HTTP_RETRY_ATTEMPTS=3`
+  - `NOTIFICATION_HTTP_RETRY_BACKOFF_MS=200`
+
+### Step4-2 보상 정책
+- 결제 확정(`PAID`) 자체는 우선 저장한다.
+- 이후 채팅방 오픈/알림 발송 실패는 결제를 롤백하지 않고 `payments/{id}/logs`에 `*_retry_needed` 사유를 남긴다.
+- 실패 이벤트는 `ALERTS_WEBHOOK_URL`로 전송해 운영자가 재처리할 수 있게 한다.
 
 ## UI 가이드 / QA
 - UI 디자인 시스템 가이드: `docs/UI_Design_System_Guide_v1.md`

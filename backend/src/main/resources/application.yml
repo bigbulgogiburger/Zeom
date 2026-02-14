@@ -22,18 +22,30 @@ payment:
   http:
     base-url: ${PAYMENT_HTTP_BASE_URL:}
     api-key: ${PAYMENT_HTTP_API_KEY:}
+    connect-timeout-ms: ${PAYMENT_HTTP_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${PAYMENT_HTTP_READ_TIMEOUT_MS:4000}
+    retry-attempts: ${PAYMENT_HTTP_RETRY_ATTEMPTS:3}
+    retry-backoff-ms: ${PAYMENT_HTTP_RETRY_BACKOFF_MS:200}
 
 chat:
   provider: ${CHAT_PROVIDER:fake}
   http:
     base-url: ${CHAT_HTTP_BASE_URL:}
     api-key: ${CHAT_HTTP_API_KEY:}
+    connect-timeout-ms: ${CHAT_HTTP_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${CHAT_HTTP_READ_TIMEOUT_MS:4000}
+    retry-attempts: ${CHAT_HTTP_RETRY_ATTEMPTS:3}
+    retry-backoff-ms: ${CHAT_HTTP_RETRY_BACKOFF_MS:200}
 
 notification:
   provider: ${NOTIFICATION_PROVIDER:fake}
   http:
     base-url: ${NOTIFICATION_HTTP_BASE_URL:}
     api-key: ${NOTIFICATION_HTTP_API_KEY:}
+    connect-timeout-ms: ${NOTIFICATION_HTTP_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${NOTIFICATION_HTTP_READ_TIMEOUT_MS:4000}
+    retry-attempts: ${NOTIFICATION_HTTP_RETRY_ATTEMPTS:3}
+    retry-backoff-ms: ${NOTIFICATION_HTTP_RETRY_BACKOFF_MS:200}
 
 server:
   port: ${SERVER_PORT:8080}

@@ -1,5 +1,6 @@
 package com.cheonjiyeon.api.payment;
 
+import com.cheonjiyeon.api.alert.AlertWebhookService;
 import com.cheonjiyeon.api.audit.AuditLogService;
 import com.cheonjiyeon.api.booking.BookingEntity;
 import com.cheonjiyeon.api.booking.BookingRepository;
@@ -30,6 +31,7 @@ public class PaymentService {
     private final NotificationService notificationService;
     private final PaymentStatusLogRepository paymentStatusLogRepository;
     private final AuditLogService auditLogService;
+    private final AlertWebhookService alertWebhookService;
 
     public PaymentService(PaymentRepository paymentRepository,
                           BookingRepository bookingRepository,
@@ -38,7 +40,8 @@ public class PaymentService {
                           ChatRoomRepository chatRoomRepository,
                           NotificationService notificationService,
                           PaymentStatusLogRepository paymentStatusLogRepository,
-                          AuditLogService auditLogService) {
+                          AuditLogService auditLogService,
+                          AlertWebhookService alertWebhookService) {
         this.paymentRepository = paymentRepository;
         this.bookingRepository = bookingRepository;
         this.paymentProvider = paymentProvider;
@@ -47,6 +50,7 @@ public class PaymentService {
         this.notificationService = notificationService;
         this.paymentStatusLogRepository = paymentStatusLogRepository;
         this.auditLogService = auditLogService;
+        this.alertWebhookService = alertWebhookService;
     }
 
     @Transactional
@@ -89,8 +93,22 @@ public class PaymentService {
         if (ok) {
             booking.setStatus("PAID");
             bookingRepository.save(booking);
-            chatService.ensureRoom(actorId, booking.getId(), booking.getUser().getId(), booking.getCounselor().getId());
-            notificationService.notifyPaymentConfirmed(actorId, booking.getUser().getEmail(), booking.getId());
+
+            try {
+                chatService.ensureRoom(actorId, booking.getId(), booking.getUser().getId(), booking.getCounselor().getId());
+            } catch (Exception e) {
+                log.error("chat room open failed after payment confirm. paymentId={} bookingId={}", saved.getId(), booking.getId(), e);
+                logTransition(saved.getId(), "PAID", "PAID", "chat_open_retry_needed");
+                alertWebhookService.sendFailureEvent("CHAT_OPEN_FAIL", "paymentId=" + saved.getId() + ", bookingId=" + booking.getId());
+            }
+
+            try {
+                notificationService.notifyPaymentConfirmed(actorId, booking.getUser().getEmail(), booking.getId());
+            } catch (Exception e) {
+                log.error("notification failed after payment confirm. paymentId={} bookingId={}", saved.getId(), booking.getId(), e);
+                logTransition(saved.getId(), "PAID", "PAID", "notification_retry_needed");
+                alertWebhookService.sendFailureEvent("NOTIFICATION_FAIL", "paymentId=" + saved.getId() + ", bookingId=" + booking.getId());
+            }
         } else {
             booking.setStatus("PAYMENT_FAILED");
             bookingRepository.save(booking);
@@ -98,6 +116,7 @@ public class PaymentService {
                 room.setStatus("CLOSED");
                 chatRoomRepository.save(room);
             });
+            alertWebhookService.sendFailureEvent("PAYMENT_CONFIRM_FAIL", "paymentId=" + saved.getId() + ", bookingId=" + booking.getId());
         }
 
         auditLogService.log(actorId, ok ? "PAYMENT_CONFIRMED" : "PAYMENT_FAILED", "PAYMENT", saved.getId());
@@ -177,6 +196,16 @@ public class PaymentService {
                 p.setStatus("FAILED");
                 paymentRepository.save(p);
                 logTransition(p.getId(), prev, "FAILED", "webhook_failed");
+
+                bookingRepository.findById(p.getBookingId()).ifPresent(booking -> {
+                    booking.setStatus("PAYMENT_FAILED");
+                    bookingRepository.save(booking);
+                    chatRoomRepository.findByBookingId(booking.getId()).ifPresent(room -> {
+                        room.setStatus("CLOSED");
+                        chatRoomRepository.save(room);
+                    });
+                });
+                alertWebhookService.sendFailureEvent("PAYMENT_WEBHOOK_FAILED", "paymentId=" + p.getId() + ", providerTxId=" + providerTxId);
             } else {
                 cancel(0L, p.getId());
             }
