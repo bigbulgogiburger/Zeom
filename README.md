@@ -52,3 +52,7 @@ flutter run
 - `CHAT_PROVIDER=fake`
 - `NOTIFICATION_PROVIDER=fake`
 - `ALERTS_WEBHOOK_URL=` (선택)
+
+## UI 가이드 / QA
+- UI 디자인 시스템 가이드: `docs/UI_Design_System_Guide_v1.md`
+- UI QA 체크리스트: `docs/QA_Checklist_UI_v1.md`
