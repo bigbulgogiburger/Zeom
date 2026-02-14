@@ -13,6 +13,8 @@ export default function SignupPage() {
       email: String(form.get('email')),
       password: String(form.get('password')),
       name: String(form.get('name')),
+      deviceId: 'web-main',
+      deviceName: navigator.userAgent.slice(0, 120),
     };
 
     const res = await fetch(`${API_BASE}/api/v1/auth/signup`, {

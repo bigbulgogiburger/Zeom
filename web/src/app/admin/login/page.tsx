@@ -12,6 +12,8 @@ export default function AdminLoginPage() {
     const body = {
       email: String(form.get('email')),
       password: String(form.get('password')),
+      deviceId: 'web-admin',
+      deviceName: navigator.userAgent.slice(0, 120),
     };
 
     const res = await fetch(`${API_BASE}/api/v1/auth/admin/login`, {

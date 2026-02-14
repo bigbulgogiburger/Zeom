@@ -14,8 +14,14 @@ public class RefreshTokenEntity {
     @Column(nullable = false)
     private Long userId;
 
-    @Column(nullable = false, length = 600)
-    private String token;
+    @Column(nullable = false, length = 128)
+    private String tokenHash;
+
+    @Column(nullable = false, length = 120)
+    private String deviceId;
+
+    @Column(nullable = false, length = 160)
+    private String deviceName;
 
     @Column(nullable = false)
     private boolean revoked;
@@ -34,10 +40,15 @@ public class RefreshTokenEntity {
     public Long getId() { return id; }
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
+    public String getTokenHash() { return tokenHash; }
+    public void setTokenHash(String tokenHash) { this.tokenHash = tokenHash; }
+    public String getDeviceId() { return deviceId; }
+    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
+    public String getDeviceName() { return deviceName; }
+    public void setDeviceName(String deviceName) { this.deviceName = deviceName; }
     public boolean isRevoked() { return revoked; }
     public void setRevoked(boolean revoked) { this.revoked = revoked; }
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 }

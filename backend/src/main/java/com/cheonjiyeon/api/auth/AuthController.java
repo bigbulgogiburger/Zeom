@@ -41,4 +41,17 @@ public class AuthController {
     public AuthDtos.UserResponse me(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         return authService.me(authHeader);
     }
+
+    @GetMapping("/sessions")
+    public AuthDtos.SessionsResponse sessions(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        return authService.sessions(authHeader);
+    }
+
+    @PostMapping("/sessions/{id}/revoke")
+    public AuthDtos.MessageResponse revokeSession(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id
+    ) {
+        return authService.revokeSession(authHeader, id);
+    }
 }

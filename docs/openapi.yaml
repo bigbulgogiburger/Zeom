@@ -1,28 +1,141 @@
 openapi: 3.0.3
 info:
   title: 천지연꽃신당 API
-  version: 0.2.0
+  version: 0.2.1
 servers:
   - url: http://localhost:8080
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+        deviceId: { type: string, example: web-chrome-mac }
+        deviceName: { type: string, example: Chrome on Mac }
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+        deviceId: { type: string }
+        deviceName: { type: string }
+    AuthResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        user:
+          type: object
+          properties:
+            id: { type: integer }
+            email: { type: string }
+            name: { type: string }
+            role: { type: string, enum: [USER, ADMIN] }
+    SessionItem:
+      type: object
+      properties:
+        id: { type: integer }
+        deviceId: { type: string }
+        deviceName: { type: string }
+        expiresAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
 paths:
   /api/v1/auth/signup:
     post:
       summary: 회원가입
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/LoginRequest'
+                - type: object
+                  required: [name]
+                  properties:
+                    name: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
   /api/v1/auth/login:
     post:
       summary: 사용자 로그인
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
   /api/v1/auth/admin/login:
     post:
       summary: 관리자 로그인
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: OK }
   /api/v1/auth/refresh:
     post:
       summary: 액세스/리프레시 토큰 재발급(회전)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
   /api/v1/auth/logout:
     post:
       summary: 리프레시 토큰 무효화(로그아웃)
   /api/v1/auth/me:
     get:
       summary: 내 정보 조회
+      security: [{ bearerAuth: [] }]
+  /api/v1/auth/sessions:
+    get:
+      summary: 내 활성 세션 목록
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items: { $ref: '#/components/schemas/SessionItem' }
+  /api/v1/auth/sessions/{id}/revoke:
+    post:
+      summary: 특정 세션 해제
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
   /api/v1/counselors:
     get:
       summary: 상담사 목록
@@ -37,12 +150,15 @@ paths:
   /api/v1/bookings:
     post:
       summary: 예약 생성
+      security: [{ bearerAuth: [] }]
   /api/v1/bookings/me:
     get:
       summary: 내 예약 조회
+      security: [{ bearerAuth: [] }]
   /api/v1/bookings/{id}/cancel:
     post:
       summary: 예약 취소
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
@@ -51,6 +167,7 @@ paths:
   /api/v1/ops/summary:
     get:
       summary: 관리자 운영 지표 조회
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: query
           name: from
@@ -61,3 +178,4 @@ paths:
   /api/v1/admin/audit:
     get:
       summary: 관리자 감사로그 최근 50건
+      security: [{ bearerAuth: [] }]

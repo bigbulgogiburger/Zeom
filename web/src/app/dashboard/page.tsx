@@ -24,7 +24,7 @@ export default function DashboardPage() {
 
   async function load() {
     setMessage('');
-    const token = localStorage.getItem('accessToken');
+    let token = localStorage.getItem('accessToken');
     if (!token) return setMessage('관리자 로그인 후 이용해주세요.');
 
     const q = new URLSearchParams();
