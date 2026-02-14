@@ -8,6 +8,7 @@ import com.cheonjiyeon.api.counselor.CounselorEntity;
 import com.cheonjiyeon.api.counselor.CounselorRepository;
 import com.cheonjiyeon.api.counselor.SlotEntity;
 import com.cheonjiyeon.api.counselor.SlotRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +39,7 @@ public class BookingService {
         UserEntity user = resolveUser(authHeader);
         CounselorEntity counselor = counselorRepository.findById(req.counselorId())
                 .orElseThrow(() -> new ApiException(404, "상담사를 찾을 수 없습니다."));
-        SlotEntity slot = slotRepository.findById(req.slotId())
+        SlotEntity slot = slotRepository.findByIdForUpdate(req.slotId())
                 .orElseThrow(() -> new ApiException(404, "슬롯을 찾을 수 없습니다."));
 
         if (!slot.getCounselor().getId().equals(counselor.getId())) {
@@ -57,8 +58,12 @@ public class BookingService {
         booking.setSlot(slot);
         booking.setStatus("BOOKED");
 
-        BookingEntity saved = bookingRepository.save(booking);
-        return toResponse(saved);
+        try {
+            BookingEntity saved = bookingRepository.save(booking);
+            return toResponse(saved);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ApiException(409, "이미 예약된 슬롯입니다.");
+        }
     }
 
     @Transactional(readOnly = true)
