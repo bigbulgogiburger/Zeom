@@ -68,5 +68,15 @@ class PaymentFlowIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].toStatus").value("PENDING"))
                 .andExpect(jsonPath("$[1].toStatus").value("PAID"));
+
+        mvc.perform(get("/api/v1/ops/timeline")
+                        .header("Authorization", "Bearer " + admin)
+                        .param("bookingId", bookingId)
+                        .param("paymentStatus", "PAID")
+                        .param("chatStatus", "OPEN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].bookingId").value(Integer.parseInt(bookingId)))
+                .andExpect(jsonPath("$[0].paymentStatus").value("PAID"))
+                .andExpect(jsonPath("$[0].chatStatus").value("OPEN"));
     }
 }

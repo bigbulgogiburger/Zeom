@@ -224,6 +224,29 @@ paths:
         - in: query
           name: to
           schema: { type: string, format: date-time }
+  /api/v1/ops/timeline:
+    get:
+      summary: 관리자 통합 타임라인 조회 (예약/결제/채팅)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: bookingId
+          schema: { type: integer }
+        - in: query
+          name: bookingStatus
+          schema: { type: string }
+        - in: query
+          name: paymentStatus
+          schema: { type: string }
+        - in: query
+          name: chatStatus
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
   /api/v1/admin/audit:
     get:
       summary: 관리자 감사로그 최근 50건 (action/기간 필터)

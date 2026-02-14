@@ -46,4 +46,5 @@ public class BookingEntity {
     public void setSlot(SlotEntity slot) { this.slot = slot; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 }
