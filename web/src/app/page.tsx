@@ -10,6 +10,7 @@ export default function HomePage() {
         <Link href="/login">로그인</Link>
         <Link href="/counselors">상담사 보기</Link>
         <Link href="/bookings/me">내 예약</Link>
+        <Link href="/admin/login">관리자 로그인</Link>
         <Link href="/dashboard">대시보드</Link>
       </div>
     </main>

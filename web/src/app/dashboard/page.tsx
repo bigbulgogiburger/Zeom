@@ -24,6 +24,9 @@ export default function DashboardPage() {
 
   async function load() {
     setMessage('');
+    const token = localStorage.getItem('accessToken');
+    if (!token) return setMessage('관리자 로그인 후 이용해주세요.');
+
     const q = new URLSearchParams();
     if (from && to) {
       q.set('from', toIso(from));
@@ -32,7 +35,10 @@ export default function DashboardPage() {
     const url = `${API_BASE}/api/v1/ops/summary${q.toString() ? `?${q.toString()}` : ''}`;
 
     try {
-      const r = await fetch(url, { cache: 'no-store' });
+      const r = await fetch(url, {
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const json = await r.json();
       if (!r.ok) return setMessage(json.message ?? '지표 조회 실패');
       setSummary(json);

@@ -16,7 +16,9 @@ public class AuthDtos {
             @NotBlank String password
     ) {}
 
-    public record UserResponse(Long id, String email, String name) {}
+    public record RefreshRequest(@NotBlank String refreshToken) {}
 
-    public record AuthResponse(String accessToken, UserResponse user) {}
+    public record UserResponse(Long id, String email, String name, String role) {}
+
+    public record AuthResponse(String accessToken, String refreshToken, UserResponse user) {}
 }

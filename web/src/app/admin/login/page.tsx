@@ -1,0 +1,41 @@
+'use client';
+
+import { FormEvent, useState } from 'react';
+import { API_BASE } from '../../../components/api';
+
+export default function AdminLoginPage() {
+  const [message, setMessage] = useState('');
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const body = {
+      email: String(form.get('email')),
+      password: String(form.get('password')),
+    };
+
+    const res = await fetch(`${API_BASE}/api/v1/auth/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const json = await res.json();
+    if (!res.ok) return setMessage(json.message ?? '실패');
+
+    localStorage.setItem('accessToken', json.accessToken);
+    localStorage.setItem('refreshToken', json.refreshToken);
+    setMessage('관리자 로그인 완료');
+  }
+
+  return (
+    <main style={{ padding: 24 }}>
+      <h2>관리자 로그인</h2>
+      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8, maxWidth: 320 }}>
+        <input name="email" placeholder="관리자 이메일" />
+        <input name="password" type="password" placeholder="비밀번호" />
+        <button type="submit">로그인</button>
+      </form>
+      <p>{message}</p>
+    </main>
+  );
+}

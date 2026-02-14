@@ -22,6 +22,16 @@ public class AuthController {
         return authService.login(req);
     }
 
+    @PostMapping("/admin/login")
+    public AuthDtos.AuthResponse loginAdmin(@Valid @RequestBody AuthDtos.LoginRequest req) {
+        return authService.loginAdmin(req);
+    }
+
+    @PostMapping("/refresh")
+    public AuthDtos.AuthResponse refresh(@Valid @RequestBody AuthDtos.RefreshRequest req) {
+        return authService.refresh(req);
+    }
+
     @GetMapping("/me")
     public AuthDtos.UserResponse me(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         return authService.me(authHeader);

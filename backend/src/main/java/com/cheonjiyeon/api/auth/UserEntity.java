@@ -20,12 +20,16 @@ public class UserEntity {
     @Column(nullable = false, length = 60)
     private String name;
 
+    @Column(nullable = false, length = 20)
+    private String role;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
+        if (role == null) role = "USER";
     }
 
     public Long getId() { return id; }
@@ -35,4 +39,6 @@ public class UserEntity {
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }

@@ -102,7 +102,7 @@ public class BookingService {
             throw new ApiException(401, "Authorization Bearer 토큰이 필요합니다.");
         }
         String token = authHeader.substring(7);
-        Long userId = tokenStore.resolve(token)
+        Long userId = tokenStore.resolveAccessUserId(token)
                 .orElseThrow(() -> new ApiException(401, "로그인이 필요합니다."));
 
         return userRepository.findById(userId)
