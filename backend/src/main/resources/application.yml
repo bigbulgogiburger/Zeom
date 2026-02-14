@@ -19,5 +19,11 @@ alerts:
 payment:
   provider: ${PAYMENT_PROVIDER:fake}
 
+chat:
+  provider: ${CHAT_PROVIDER:fake}
+
+notification:
+  provider: ${NOTIFICATION_PROVIDER:fake}
+
 server:
   port: ${SERVER_PORT:8080}

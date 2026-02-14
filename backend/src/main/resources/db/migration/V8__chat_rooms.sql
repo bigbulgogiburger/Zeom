@@ -1,0 +1,8 @@
+CREATE TABLE chat_rooms (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  booking_id BIGINT NOT NULL UNIQUE,
+  provider_room_id VARCHAR(120) NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_chat_booking FOREIGN KEY (booking_id) REFERENCES bookings(id)
+);

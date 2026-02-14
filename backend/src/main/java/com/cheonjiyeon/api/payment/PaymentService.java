@@ -1,8 +1,11 @@
 package com.cheonjiyeon.api.payment;
 
 import com.cheonjiyeon.api.audit.AuditLogService;
+import com.cheonjiyeon.api.booking.BookingEntity;
 import com.cheonjiyeon.api.booking.BookingRepository;
+import com.cheonjiyeon.api.chat.ChatService;
 import com.cheonjiyeon.api.common.ApiException;
+import com.cheonjiyeon.api.notification.NotificationService;
 import com.cheonjiyeon.api.payment.provider.PaymentProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,15 +15,21 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
     private final PaymentProvider paymentProvider;
+    private final ChatService chatService;
+    private final NotificationService notificationService;
     private final AuditLogService auditLogService;
 
     public PaymentService(PaymentRepository paymentRepository,
                           BookingRepository bookingRepository,
                           PaymentProvider paymentProvider,
+                          ChatService chatService,
+                          NotificationService notificationService,
                           AuditLogService auditLogService) {
         this.paymentRepository = paymentRepository;
         this.bookingRepository = bookingRepository;
         this.paymentProvider = paymentProvider;
+        this.chatService = chatService;
+        this.notificationService = notificationService;
         this.auditLogService = auditLogService;
     }
 
@@ -53,6 +62,14 @@ public class PaymentService {
         boolean ok = paymentProvider.confirm(p.getProviderTxId());
         p.setStatus(ok ? "PAID" : "FAILED");
         PaymentEntity saved = paymentRepository.save(p);
+
+        if (ok) {
+            BookingEntity booking = bookingRepository.findById(saved.getBookingId())
+                    .orElseThrow(() -> new ApiException(404, "예약을 찾을 수 없습니다."));
+            chatService.ensureRoom(actorId, booking.getId(), booking.getUser().getId(), booking.getCounselor().getId());
+            notificationService.notifyPaymentConfirmed(actorId, booking.getUser().getEmail(), booking.getId());
+        }
+
         auditLogService.log(actorId, ok ? "PAYMENT_CONFIRMED" : "PAYMENT_FAILED", "PAYMENT", saved.getId());
         return toResponse(saved);
     }

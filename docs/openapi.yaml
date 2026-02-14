@@ -195,6 +195,15 @@ paths:
           name: id
           required: true
           schema: { type: integer }
+  /api/v1/chats/by-booking/{bookingId}:
+    get:
+      summary: 결제 완료 후 생성된 상담방 조회
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema: { type: integer }
   /api/v1/ops/summary:
     get:
       summary: 관리자 운영 지표 조회
