@@ -36,6 +36,7 @@ flutter run
 - 요약 지표: `GET /api/v1/ops/summary`
 - 통합 타임라인: `GET /api/v1/ops/timeline`
   - 필터: `bookingId`, `bookingStatus`, `paymentStatus`, `chatStatus`, `from`, `to`
+  - 웹 운영화면: `/admin/timeline` (결제 상태 전이 드릴다운 포함)
 - 결제 상태 전이 로그: `GET /api/v1/payments/{id}/logs` (관리자)
 - 감사로그: `GET /api/v1/admin/audit`
 - 감사로그 CSV: `GET /api/v1/admin/audit/csv`

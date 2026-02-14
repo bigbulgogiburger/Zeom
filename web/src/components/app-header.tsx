@@ -31,6 +31,7 @@ export default function AppHeader() {
       {me && <Link href="/bookings/me">내예약</Link>}
       {me && <Link href="/sessions">세션관리</Link>}
       {me?.role === 'ADMIN' && <Link href="/dashboard">대시보드</Link>}
+      {me?.role === 'ADMIN' && <Link href="/admin/timeline">타임라인</Link>}
       {me?.role === 'ADMIN' && <Link href="/admin/audit">감사로그</Link>}
       <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
         {me ? (
