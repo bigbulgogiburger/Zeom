@@ -157,6 +157,36 @@ public class PaymentService {
         return toResponse(p);
     }
 
+    @Transactional
+    public PaymentDtos.PaymentResponse retryPostActions(Long actorId, Long paymentId) {
+        PaymentEntity p = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ApiException(404, "결제를 찾을 수 없습니다."));
+        if (!"PAID".equals(p.getStatus())) {
+            throw new ApiException(409, "PAID 상태에서만 후속 처리 재시도가 가능합니다.");
+        }
+
+        BookingEntity booking = bookingRepository.findById(p.getBookingId())
+                .orElseThrow(() -> new ApiException(404, "예약을 찾을 수 없습니다."));
+
+        try {
+            chatService.ensureRoom(actorId, booking.getId(), booking.getUser().getId(), booking.getCounselor().getId());
+            logTransition(p.getId(), "PAID", "PAID", "chat_open_retried_ok");
+        } catch (Exception e) {
+            logTransition(p.getId(), "PAID", "PAID", "chat_open_retry_needed");
+            throw new ApiException(502, "채팅방 재시도에 실패했습니다.");
+        }
+
+        try {
+            notificationService.notifyPaymentConfirmed(actorId, booking.getUser().getEmail(), booking.getId());
+            logTransition(p.getId(), "PAID", "PAID", "notification_retried_ok");
+        } catch (Exception e) {
+            logTransition(p.getId(), "PAID", "PAID", "notification_retry_needed");
+            throw new ApiException(502, "알림 재시도에 실패했습니다.");
+        }
+
+        return toResponse(p);
+    }
+
     @Transactional(readOnly = true)
     public List<Map<String, Object>> logs(Long paymentId) {
         paymentRepository.findById(paymentId)

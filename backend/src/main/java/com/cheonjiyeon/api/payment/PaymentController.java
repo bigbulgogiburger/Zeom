@@ -62,4 +62,13 @@ public class PaymentController {
         authService.requireAdmin(authHeader);
         return paymentService.logs(id);
     }
+
+    @PostMapping("/{id}/retry-post-actions")
+    public PaymentDtos.PaymentResponse retryPostActions(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id
+    ) {
+        Long actor = authService.requireAdmin(authHeader).getId();
+        return paymentService.retryPostActions(actor, id);
+    }
 }

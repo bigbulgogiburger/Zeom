@@ -17,6 +17,7 @@ type TimelineRow = {
   paymentId: number | null;
   chatStatus: string;
   chatRoomId: string | null;
+  postActionRetryNeeded?: boolean;
 };
 
 type PaymentLog = {
@@ -94,6 +95,24 @@ export default function AdminTimelinePage() {
     setLoading(false);
   }
 
+  async function retryPostActions(paymentId: number) {
+    setLoading(true);
+    setMessage('');
+    setSuccess('');
+    const r = await apiFetch(`/api/v1/payments/${paymentId}/retry-post-actions`, {
+      method: 'POST'
+    });
+    const json = await r.json();
+    if (!r.ok) {
+      setLoading(false);
+      return setMessage(json.message ?? '후속 처리 재시도 실패');
+    }
+    setSuccess(`결제 #${paymentId} 후속 처리 재시도 완료`);
+    await loadTimeline();
+    await loadPaymentLogs(paymentId);
+    setLoading(false);
+  }
+
   const sortedRows = useMemo(() => {
     return [...rows].sort((a, b) => {
       const t1 = new Date(a.bookingCreatedAt).getTime();
@@ -144,8 +163,16 @@ export default function AdminTimelinePage() {
               </div>
               <div style={{ marginTop: 6, color: '#94a3b8' }}>
                 결제ID: {r.paymentId ?? '-'} / 채팅방: {r.chatRoomId ?? '-'}
+                {r.postActionRetryNeeded && (
+                  <span style={{ marginLeft: 8, color: '#f59e0b', fontWeight: 700 }}>재처리 필요</span>
+                )}
               </div>
-              {r.paymentId && <ActionButton style={{ marginTop: 8 }} loading={loading} onClick={() => loadPaymentLogs(r.paymentId)}>결제 상태 전이 보기</ActionButton>}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {r.paymentId && <ActionButton style={{ marginTop: 8 }} loading={loading} onClick={() => loadPaymentLogs(r.paymentId)}>결제 상태 전이 보기</ActionButton>}
+                {r.paymentId && r.postActionRetryNeeded && (
+                  <ActionButton style={{ marginTop: 8 }} loading={loading} onClick={() => retryPostActions(r.paymentId!)}>후속 처리 재시도</ActionButton>
+                )}
+              </div>
             </Card>
           ))}
         </div>

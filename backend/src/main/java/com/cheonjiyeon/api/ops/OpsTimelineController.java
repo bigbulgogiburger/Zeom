@@ -5,6 +5,7 @@ import com.cheonjiyeon.api.booking.BookingEntity;
 import com.cheonjiyeon.api.booking.BookingRepository;
 import com.cheonjiyeon.api.chat.ChatRoomRepository;
 import com.cheonjiyeon.api.payment.PaymentRepository;
+import com.cheonjiyeon.api.payment.log.PaymentStatusLogRepository;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -23,15 +24,18 @@ public class OpsTimelineController {
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final PaymentStatusLogRepository paymentStatusLogRepository;
 
     public OpsTimelineController(AuthService authService,
                                  BookingRepository bookingRepository,
                                  PaymentRepository paymentRepository,
-                                 ChatRoomRepository chatRoomRepository) {
+                                 ChatRoomRepository chatRoomRepository,
+                                 PaymentStatusLogRepository paymentStatusLogRepository) {
         this.authService = authService;
         this.bookingRepository = bookingRepository;
         this.paymentRepository = paymentRepository;
         this.chatRoomRepository = chatRoomRepository;
+        this.paymentStatusLogRepository = paymentStatusLogRepository;
     }
 
     @GetMapping("/timeline")
@@ -69,10 +73,17 @@ public class OpsTimelineController {
                     row.put("userEmail", b.getUser().getEmail());
                     row.put("counselorId", b.getCounselor().getId());
                     row.put("counselorName", b.getCounselor().getName());
+                    Long pId = paymentOpt.map(p -> p.getId()).orElse(null);
+                    boolean postActionRetryNeeded = pId != null && paymentStatusLogRepository.existsByPaymentIdAndReasonIn(
+                            pId,
+                            java.util.List.of("chat_open_retry_needed", "notification_retry_needed")
+                    );
+
                     row.put("paymentStatus", pStatus);
-                    row.put("paymentId", paymentOpt.map(p -> p.getId()).orElse(null));
+                    row.put("paymentId", pId);
                     row.put("chatStatus", cStatus);
                     row.put("chatRoomId", chatOpt.map(c -> c.getProviderRoomId()).orElse(null));
+                    row.put("postActionRetryNeeded", postActionRetryNeeded);
                     return row;
                 })
                 .filter(row -> paymentStatus == null || paymentStatus.isBlank() || paymentStatus.equals(row.get("paymentStatus")))

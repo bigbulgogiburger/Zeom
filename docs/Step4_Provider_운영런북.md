@@ -39,5 +39,7 @@ NOTIFICATION_PROVIDER=http
 ## 6) 운영 점검
 1. `GET /api/v1/payments/{id}` 상태 확인
 2. `GET /api/v1/payments/{id}/logs` 전이 사유 확인
-3. 알림 웹훅 채널에서 실패 이벤트 확인
-4. 필요 시 외부 provider에서 재시도 후 웹훅 재전송
+3. 운영 타임라인(`/admin/timeline`)에서 `재처리 필요` 표시 확인
+4. 필요 시 `POST /api/v1/payments/{id}/retry-post-actions` 실행 (관리자)
+5. 알림 웹훅 채널에서 실패 이벤트 확인
+6. 외부 provider에서 재시도 후 웹훅 재전송

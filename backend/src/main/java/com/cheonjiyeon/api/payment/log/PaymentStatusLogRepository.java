@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface PaymentStatusLogRepository extends JpaRepository<PaymentStatusLogEntity, Long> {
     List<PaymentStatusLogEntity> findByPaymentIdOrderByIdAsc(Long paymentId);
+    boolean existsByPaymentIdAndReasonIn(Long paymentId, List<String> reasons);
 }

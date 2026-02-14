@@ -73,6 +73,11 @@ class PaymentFlowIntegrationTest {
                 .andReturn().getResponse().getContentAsString()
                 .replaceAll(".*\"accessToken\":\"([^\"]+)\".*", "$1");
 
+        mvc.perform(post("/api/v1/payments/" + paymentId + "/retry-post-actions")
+                        .header("Authorization", "Bearer " + admin))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PAID"));
+
         mvc.perform(get("/api/v1/payments/" + paymentId + "/logs")
                         .header("Authorization", "Bearer " + admin))
                 .andExpect(status().isOk())
