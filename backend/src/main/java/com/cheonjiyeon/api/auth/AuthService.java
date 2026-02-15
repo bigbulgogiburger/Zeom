@@ -5,6 +5,7 @@ import com.cheonjiyeon.api.alert.AlertWebhookService;
 import com.cheonjiyeon.api.auth.refresh.RefreshTokenEntity;
 import com.cheonjiyeon.api.auth.refresh.RefreshTokenRepository;
 import com.cheonjiyeon.api.common.ApiException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,18 +24,21 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuditLogService auditLogService;
     private final AlertWebhookService alertWebhookService;
+    private final boolean allowE2eAdminBootstrap;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public AuthService(UserRepository userRepository,
                        TokenStore tokenStore,
                        RefreshTokenRepository refreshTokenRepository,
                        AuditLogService auditLogService,
-                       AlertWebhookService alertWebhookService) {
+                       AlertWebhookService alertWebhookService,
+                       @Value("${auth.allow-e2e-admin-bootstrap:false}") boolean allowE2eAdminBootstrap) {
         this.userRepository = userRepository;
         this.tokenStore = tokenStore;
         this.refreshTokenRepository = refreshTokenRepository;
         this.auditLogService = auditLogService;
         this.alertWebhookService = alertWebhookService;
+        this.allowE2eAdminBootstrap = allowE2eAdminBootstrap;
     }
 
     @Transactional
@@ -47,7 +51,8 @@ public class AuthService {
         user.setEmail(req.email());
         user.setName(req.name());
         user.setPasswordHash(encoder.encode(req.password()));
-        user.setRole("USER");
+        boolean e2eAdmin = allowE2eAdminBootstrap && req.email() != null && req.email().startsWith("e2e_admin_");
+        user.setRole(e2eAdmin ? "ADMIN" : "USER");
         UserEntity saved = userRepository.save(user);
 
         auditLogService.log(saved.getId(), "AUTH_SIGNUP", "USER", saved.getId());

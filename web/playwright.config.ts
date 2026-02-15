@@ -20,7 +20,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'cd ../backend && ./gradlew bootRun',
+      command: 'cd ../backend && AUTH_ALLOW_E2E_ADMIN_BOOTSTRAP=true ./gradlew bootRun',
       url: 'http://localhost:8080/actuator/health',
       reuseExistingServer: !process.env.CI,
       timeout: 60000,

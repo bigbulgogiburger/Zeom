@@ -13,6 +13,9 @@ spring:
 jwt:
   secret: ${JWT_SECRET:dev-secret-dev-secret-dev-secret-32chars}
 
+auth:
+  allow-e2e-admin-bootstrap: ${AUTH_ALLOW_E2E_ADMIN_BOOTSTRAP:false}
+
 alerts:
   webhook-url: ${ALERTS_WEBHOOK_URL:}
 
