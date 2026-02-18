@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiFetch } from '../../components/api-client';
 import { RequireLogin } from '../../components/route-guard';
-import { Card, EmptyState, InlineError, PageTitle } from '../../components/ui';
+import { Card, EmptyState } from '../../components/ui';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type SessionItem = {
   id: number;
@@ -13,17 +15,36 @@ type SessionItem = {
   createdAt: string;
 };
 
+function deviceEmoji(name: string): string {
+  const lower = (name || '').toLowerCase();
+  if (lower.includes('mobile') || lower.includes('iphone') || lower.includes('android')) return '\uD83D\uDCF1';
+  return '\uD83D\uDDA5\uFE0F';
+}
+
 export default function SessionsPage() {
   const [items, setItems] = useState<SessionItem[]>([]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
 
   async function load() {
+    setLoading(true);
     const r = await apiFetch('/api/v1/auth/sessions', { cache: 'no-store' });
     const json = await r.json();
-    if (!r.ok) return setMessage(json.message ?? '조회 실패');
+    if (!r.ok) {
+      setMessage(json.message ?? '조회 실패');
+      setLoading(false);
+      return;
+    }
     setItems(json.sessions ?? []);
-    setMessage('조회 완료');
+    setLoading(false);
   }
+
+  useEffect(() => {
+    load().catch(() => {
+      setMessage('조회 실패');
+      setLoading(false);
+    });
+  }, []);
 
   async function revoke(id: number) {
     const r = await apiFetch(`/api/v1/auth/sessions/${id}/revoke`, { method: 'POST' });
@@ -35,26 +56,46 @@ export default function SessionsPage() {
 
   return (
     <RequireLogin>
-      <main style={{ padding: 24, display: 'grid', gap: 12 }}>
-        <PageTitle>내 세션 관리</PageTitle>
-        <div>
-          <button onClick={load} style={{ minHeight: 40, padding: '0 12px' }}>세션 불러오기</button>
-        </div>
-        <InlineError message={message} />
+      <main className="page-container">
+        <h1 className="text-2xl font-bold font-heading text-foreground">내 세션 관리</h1>
 
-        {items.length === 0 ? (
-          <EmptyState title="세션 정보가 없어요" desc="세션 불러오기 버튼을 눌러 최신 상태를 확인하세요." />
+        {message && (
+          <Alert variant="destructive" className="mt-3">
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
+        )}
+
+        {loading ? (
+          <div className="grid gap-3 mt-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="skeleton h-[100px]" />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <EmptyState title="세션 정보가 없어요" desc="활성 세션이 없습니다." />
         ) : (
-          <div style={{ display: 'grid', gap: 8 }}>
+          <div className="grid gap-3 mt-4">
             {items.map((s) => (
               <Card key={s.id}>
-                <div style={{ fontWeight: 700 }}>{s.deviceName}</div>
-                <div style={{ color: '#94a3b8' }}>{s.deviceId}</div>
-                <div style={{ marginTop: 8 }}>생성: {new Date(s.createdAt).toLocaleString('ko-KR')}</div>
-                <div>만료: {new Date(s.expiresAt).toLocaleString('ko-KR')}</div>
-                <button onClick={() => revoke(s.id)} style={{ marginTop: 8, minHeight: 40, padding: '0 12px' }}>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{deviceEmoji(s.deviceName)}</span>
+                  <span className="font-bold font-heading">{s.deviceName}</span>
+                </div>
+                <div className="text-muted-foreground text-sm mt-1">
+                  {s.deviceId}
+                </div>
+                <div className="mt-2 text-sm flex gap-4 flex-wrap">
+                  <span>생성: {new Date(s.createdAt).toLocaleString('ko-KR')}</span>
+                  <span>만료: {new Date(s.expiresAt).toLocaleString('ko-KR')}</span>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => revoke(s.id)}
+                  className="mt-3"
+                >
                   이 세션 해제
-                </button>
+                </Button>
               </Card>
             ))}
           </div>

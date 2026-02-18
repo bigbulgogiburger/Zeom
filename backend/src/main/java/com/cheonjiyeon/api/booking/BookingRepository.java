@@ -10,4 +10,6 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
     Optional<BookingEntity> findByIdAndUserId(Long id, Long userId);
     long countByStatus(String status);
     List<BookingEntity> findTop200ByOrderByIdDesc();
+    List<BookingEntity> findByCounselorIdOrderByIdDesc(Long counselorId);
+    long countByCounselorId(Long counselorId);
 }

@@ -1,0 +1,837 @@
+@import "tailwindcss";
+
+/**
+ * 천지연꽃신당 — Korean Traditional Design System
+ * 한국 전통 디자인 시스템
+ */
+
+/* ===== shadcn/ui CSS Variables (Korean Traditional Theme) ===== */
+:root {
+  --background: 30 26% 13%;
+  --foreground: 40 30% 85%;
+  --card: 40 50% 95%;
+  --card-foreground: 30 30% 20%;
+  --popover: 40 50% 95%;
+  --popover-foreground: 30 30% 20%;
+  --primary: 43 70% 46%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 25 60% 25%;
+  --secondary-foreground: 40 30% 85%;
+  --muted: 30 15% 25%;
+  --muted-foreground: 30 20% 60%;
+  --accent: 43 70% 46%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 100% 27%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 30 30% 30%;
+  --input: 30 30% 30%;
+  --ring: 43 70% 46%;
+  --radius: 0.5rem;
+  --chart-1: 43 70% 46%;
+  --chart-2: 25 60% 25%;
+  --chart-3: 0 100% 27%;
+  --chart-4: 120 30% 25%;
+  --chart-5: 40 80% 40%;
+  --sidebar-background: 30 26% 13%;
+  --sidebar-foreground: 40 30% 85%;
+  --sidebar-primary: 43 70% 46%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 30 30% 20%;
+  --sidebar-accent-foreground: 40 30% 85%;
+  --sidebar-border: 30 30% 30%;
+  --sidebar-ring: 43 70% 46%;
+}
+
+.dark {
+  --background: 30 26% 13%;
+  --foreground: 40 30% 85%;
+  --card: 30 25% 16%;
+  --card-foreground: 40 30% 85%;
+  --popover: 30 25% 16%;
+  --popover-foreground: 40 30% 85%;
+  --primary: 43 70% 46%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 25 60% 25%;
+  --secondary-foreground: 40 30% 85%;
+  --muted: 30 15% 25%;
+  --muted-foreground: 30 20% 60%;
+  --accent: 43 70% 46%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 100% 27%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 30 30% 30%;
+  --input: 30 30% 30%;
+  --ring: 43 70% 46%;
+  --chart-1: 43 70% 46%;
+  --chart-2: 25 60% 25%;
+  --chart-3: 0 100% 27%;
+  --chart-4: 120 30% 25%;
+  --chart-5: 40 80% 40%;
+}
+
+/* ===== Tailwind v4 Theme (maps CSS vars to utility classes) ===== */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-sidebar-background: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}
+
+/* ===== Legacy CSS Custom Properties (kept for gradual migration) ===== */
+:root {
+  /* 색상 (Colors) */
+  --color-bg-primary: #2b2219;        /* 짙은 갈색 (dark Korean brown) — main background */
+  --color-bg-secondary: #362c22;      /* 따뜻한 갈색 (warm brown) */
+  --color-bg-card: #f9f5ed;           /* 한지 (Korean handmade paper) — warm cream */
+  --color-bg-card-hover: #f4efe2;     /* card hover state */
+
+  --color-accent-primary: #8B0000;    /* 암적색 (dark red) — primary accent */
+  --color-accent-secondary: #C36B85;  /* 연꽃 핑크 (lotus pink) */
+  --color-gold: #C9A227;              /* 금색 (gold) — CTA, highlights */
+  --color-gold-hover: #b08d1f;        /* gold hover */
+
+  --color-text-on-dark: #f9f5ed;      /* text on dark background */
+  --color-text-on-card: #2d2520;      /* text on card (한지) */
+  --color-text-muted-dark: #a49484;   /* muted text on dark */
+  --color-text-muted-card: #6b6157;   /* muted text on card */
+
+  --color-border-dark: #4d4137;       /* border on dark background */
+  --color-border-card: #d4c9b8;       /* border on card */
+  --color-border-accent: #8B0000;     /* 단청 accent border */
+
+  /* 상태 색상 (Status Colors) */
+  --color-success: #2d6930;           /* 녹색 (traditional green) */
+  --color-success-light: #e8f5e9;
+  --color-warning: #b8860b;           /* 황토색 (ochre yellow) */
+  --color-warning-light: #fff9e6;
+  --color-danger: #8B0000;            /* 암적색 */
+  --color-danger-light: #ffe6e6;
+
+  /* 타이포그래피 (Typography) */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --font-weight-black: 900;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* 간격 (Spacing) */
+  --spacing-xs: 0.25rem;     /* 4px */
+  --spacing-sm: 0.5rem;      /* 8px */
+  --spacing-md: 0.75rem;     /* 12px */
+  --spacing-lg: 1rem;        /* 16px */
+  --spacing-xl: 1.5rem;      /* 24px */
+  --spacing-2xl: 2rem;       /* 32px */
+  --spacing-3xl: 3rem;       /* 48px */
+
+  /* 둥글기 (Border Radius) */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  /* 그림자 (Shadows) */
+  --shadow-sm: 0 1px 2px rgba(45, 37, 32, 0.08);
+  --shadow-md: 0 4px 6px rgba(45, 37, 32, 0.1);
+  --shadow-lg: 0 10px 15px rgba(45, 37, 32, 0.12);
+  --shadow-xl: 0 20px 25px rgba(45, 37, 32, 0.15);
+
+  /* 애니메이션 (Transitions) */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+}
+
+/* ===== Base Styles ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-on-dark);
+  background: var(--color-bg-primary);
+}
+
+/* ===== Typography ===== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: inherit;
+}
+
+h1 { font-size: var(--font-size-3xl); }
+h2 { font-size: var(--font-size-2xl); }
+h3 { font-size: var(--font-size-xl); }
+h4 { font-size: var(--font-size-lg); }
+h5 { font-size: var(--font-size-base); }
+h6 { font-size: var(--font-size-sm); }
+
+p {
+  margin: 0;
+}
+
+/* ===== Links ===== */
+a {
+  color: var(--color-gold);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  font-weight: var(--font-weight-medium);
+}
+
+a:hover {
+  color: var(--color-gold-hover);
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ===== Forms ===== */
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 2px solid var(--color-border-dark);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-on-dark);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  min-height: 44px; /* Mobile touch target */
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.15);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted-dark);
+}
+
+label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-on-dark);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: var(--color-gold);
+  color: var(--color-bg-primary);
+  font-weight: var(--font-weight-bold);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  min-height: 44px; /* Mobile touch target */
+  font-family: var(--font-heading);
+}
+
+button:hover:not(:disabled) {
+  background: var(--color-gold-hover);
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* ===== 단청 패턴 (Dancheong Pattern) ===== */
+.dancheong-border {
+  position: relative;
+  padding: var(--spacing-lg);
+}
+
+.dancheong-border::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-primary) 0%,
+    var(--color-accent-primary) 20%,
+    var(--color-gold) 20%,
+    var(--color-gold) 40%,
+    var(--color-accent-secondary) 40%,
+    var(--color-accent-secondary) 60%,
+    var(--color-gold) 60%,
+    var(--color-gold) 80%,
+    var(--color-accent-primary) 80%,
+    var(--color-accent-primary) 100%
+  );
+  background-size: 40px 4px;
+}
+
+/* ===== Utility Classes ===== */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 var(--spacing-xl);
+  }
+}
+
+.page-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.page-container-wide {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===== AppHeader ===== */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--color-bg-secondary);
+  border-bottom: 2px solid var(--color-border-dark);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--spacing-xl);
+}
+
+.app-header-brand {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  color: var(--color-gold);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.app-header-brand:hover {
+  color: var(--color-gold-hover);
+  text-decoration: none;
+}
+
+.app-header-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-left: var(--spacing-2xl);
+}
+
+.app-header-nav a {
+  position: relative;
+  color: var(--color-text-on-dark);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.app-header-nav a:hover {
+  color: var(--color-gold);
+  border-bottom-color: var(--color-gold);
+  text-decoration: none;
+}
+
+.app-header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.app-header-user {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted-dark);
+  font-family: var(--font-heading);
+}
+
+.app-header-logout {
+  background: transparent;
+  border: 1px solid var(--color-border-dark);
+  color: var(--color-text-on-dark);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  min-height: 36px;
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-medium);
+}
+
+.app-header-logout:hover:not(:disabled) {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  background: transparent;
+}
+
+.app-header-hamburger {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--color-border-dark);
+  color: var(--color-text-on-dark);
+  font-size: var(--font-size-xl);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  min-height: 40px;
+  min-width: 40px;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.app-header-hamburger:hover:not(:disabled) {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  background: transparent;
+}
+
+/* Mobile drawer */
+.app-drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-base), visibility var(--transition-base);
+}
+
+.app-drawer-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.app-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 280px;
+  max-width: 80vw;
+  background: var(--color-bg-secondary);
+  z-index: 201;
+  transform: translateX(100%);
+  transition: transform var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-xl);
+  gap: var(--spacing-lg);
+  overflow-y: auto;
+}
+
+.app-drawer.open {
+  transform: translateX(0);
+}
+
+.app-drawer-close {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted-dark);
+  font-size: var(--font-size-xl);
+  padding: var(--spacing-xs);
+  min-height: 36px;
+  min-width: 36px;
+}
+
+.app-drawer-close:hover:not(:disabled) {
+  color: var(--color-gold);
+  background: transparent;
+}
+
+.app-drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.app-drawer-nav a {
+  color: var(--color-text-on-dark);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.app-drawer-nav a:hover {
+  background: rgba(201, 162, 39, 0.1);
+  color: var(--color-gold);
+  text-decoration: none;
+}
+
+.app-drawer-divider {
+  height: 1px;
+  background: var(--color-border-dark);
+  margin: var(--spacing-xs) 0;
+}
+
+.app-drawer-user {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted-dark);
+  font-family: var(--font-heading);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+/* Mobile responsive */
+@media (max-width: 767px) {
+  .app-header-nav,
+  .app-header-right .app-header-user,
+  .app-header-right .app-header-logout,
+  .app-header-right .app-header-auth-links {
+    display: none;
+  }
+
+  .app-header-hamburger {
+    display: flex;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-drawer-backdrop,
+  .app-drawer {
+    display: none;
+  }
+}
+
+/* ===== Danger Button Variant ===== */
+.btn-danger-ghost {
+  background: transparent;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  min-height: 36px;
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-bold);
+}
+
+.btn-danger-ghost:hover:not(:disabled) {
+  background: var(--color-danger);
+  color: var(--color-danger-light);
+  transform: none;
+}
+
+/* ===== Skeleton Loading ===== */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-border-dark) 25%, var(--color-bg-secondary) 50%, var(--color-border-dark) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ===== Responsive Typography ===== */
+@media (max-width: 767px) {
+  :root {
+    --font-size-3xl: 1.5rem;    /* 24px on mobile */
+    --font-size-2xl: 1.25rem;   /* 20px on mobile */
+  }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none;
+  }
+}
+
+/* ===== Landing Page Animations ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.fade-up.visible {
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.scroll-hint {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ===== Landing Page Cards ===== */
+.landing-card {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.landing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ===== Landing Page Buttons ===== */
+.btn-primary-lg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg) var(--spacing-3xl);
+  background: var(--color-gold);
+  color: var(--color-bg-primary);
+  border-radius: var(--radius-md);
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+  text-decoration: none;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  min-height: 44px;
+}
+
+.btn-primary-lg:hover {
+  background: var(--color-gold-hover);
+  color: var(--color-bg-primary);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md) var(--spacing-2xl);
+  border: 2px solid var(--color-gold);
+  color: var(--color-gold);
+  border-radius: var(--radius-md);
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  background: transparent;
+  min-height: 44px;
+}
+
+.btn-ghost:hover {
+  background: rgba(201, 162, 39, 0.1);
+  color: var(--color-gold);
+  text-decoration: none;
+}
+
+/* ===== Landing Page Grids ===== */
+.landing-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-xl);
+}
+
+.landing-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-xl);
+}
+
+.landing-grid-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-2xl);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-2xl);
+}
+
+/* ===== Landing Page Steps Connector ===== */
+.steps-line {
+  position: absolute;
+  top: 28px;
+  left: 12.5%;
+  right: 12.5%;
+  height: 1px;
+  background: var(--color-border-dark);
+  z-index: 0;
+}
+
+/* ===== Landing Page Footer Links ===== */
+.footer-link {
+  color: var(--color-text-muted-dark);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: color var(--transition-fast);
+  font-weight: var(--font-weight-normal);
+  display: block;
+  padding: var(--spacing-xs) 0;
+}
+
+.footer-link:hover {
+  color: var(--color-gold);
+  text-decoration: none;
+}
+
+/* ===== Landing Page Responsive ===== */
+@media (max-width: 1023px) {
+  .landing-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .landing-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .steps-line {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .landing-grid-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xl);
+  }
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+  }
+}
+
+@media (max-width: 479px) {
+  .landing-grid-3,
+  .landing-grid-4 {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+}

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { apiFetch } from './api-client';
 
-type Me = { id: number; email: string; name: string; role: 'USER' | 'ADMIN' } | null;
+type Me = { id: number; email: string; name: string; role: 'USER' | 'ADMIN' | 'COUNSELOR' } | null;
 
 type AuthContextValue = {
   me: Me;

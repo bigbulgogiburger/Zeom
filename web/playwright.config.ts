@@ -15,12 +15,28 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: [
+            '--use-fake-device-for-media-stream',
+            '--use-fake-ui-for-media-stream',
+            '--allow-file-access',
+          ],
+        },
+        permissions: ['camera', 'microphone'],
+      },
     },
   ],
   webServer: [
     {
-      command: 'cd ../backend && AUTH_ALLOW_E2E_ADMIN_BOOTSTRAP=true ./gradlew bootRun',
+      command: [
+        'cd ../backend &&',
+        'AUTH_ALLOW_E2E_ADMIN_BOOTSTRAP=true',
+        `SENDBIRD_APP_ID=${process.env.SENDBIRD_APP_ID || ''}`,
+        `SENDBIRD_API_TOKEN=${process.env.SENDBIRD_API_TOKEN || ''}`,
+        './gradlew bootRun',
+      ].join(' '),
       url: 'http://localhost:8080/actuator/health',
       reuseExistingServer: !process.env.CI,
       timeout: 60000,

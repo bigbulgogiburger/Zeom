@@ -126,11 +126,11 @@ export default function AdminTimelinePage() {
 
   return (
     <RequireAdmin>
-      <main style={{ padding: 24, display: 'grid', gap: 14 }}>
+      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-lg)' }}>
         <PageTitle>운영 타임라인</PageTitle>
 
         <Card>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap', alignItems: 'center' }}>
             <input placeholder="bookingId" value={bookingId} onChange={(e) => setBookingId(e.target.value)} />
             <input placeholder="bookingStatus" value={bookingStatus} onChange={(e) => setBookingStatus(e.target.value)} />
             <input placeholder="paymentStatus" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} />
@@ -140,37 +140,39 @@ export default function AdminTimelinePage() {
             <ActionButton onClick={loadTimeline} loading={loading}>조회</ActionButton>
             <ActionButton onClick={() => setSortDesc((v) => !v)}>정렬: {sortDesc ? '최신순' : '오래된순'}</ActionButton>
           </div>
-          <InlineError message={message} />
-          <InlineSuccess message={success} />
+          <div style={{ marginTop: 'var(--spacing-sm)' }}>
+            <InlineError message={message} />
+            <InlineSuccess message={success} />
+          </div>
         </Card>
 
         {pagedRows.length === 0 ? (
           <EmptyState title="조회 결과가 없어요" desc="필터를 조정하거나 조회를 다시 시도해보세요." />
         ) : (
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div style={{ display: 'grid', gap: 'var(--spacing-md)' }}>
           {pagedRows.map((r) => (
             <Card key={r.bookingId}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-                <div><b>Booking #{r.bookingId}</b> · {new Date(r.bookingCreatedAt).toLocaleString('ko-KR')}</div>
-                <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
+                <div><b style={{ fontFamily: 'var(--font-heading)' }}>Booking #{r.bookingId}</b> · {new Date(r.bookingCreatedAt).toLocaleString('ko-KR')}</div>
+                <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
                   <StatusBadge value={r.bookingStatus} />
                   <StatusBadge value={r.paymentStatus} />
                   <StatusBadge value={r.chatStatus} />
                 </div>
               </div>
-              <div style={{ marginTop: 8, color: '#cbd5e1' }}>
+              <div style={{ marginTop: 'var(--spacing-sm)', color: 'var(--color-text-muted-card)' }}>
                 유저: {r.userEmail} / 상담사: {r.counselorName}
               </div>
-              <div style={{ marginTop: 6, color: '#94a3b8' }}>
+              <div style={{ marginTop: 'var(--spacing-xs)', color: 'var(--color-text-muted-card)', fontSize: 'var(--font-size-sm)' }}>
                 결제ID: {r.paymentId ?? '-'} / 채팅방: {r.chatRoomId ?? '-'}
                 {r.postActionRetryNeeded && (
-                  <span style={{ marginLeft: 8, color: '#f59e0b', fontWeight: 700 }}>재처리 필요</span>
+                  <span style={{ marginLeft: 'var(--spacing-sm)', color: 'var(--color-warning)', fontWeight: 'var(--font-weight-bold)' }}>재처리 필요</span>
                 )}
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {r.paymentId && <ActionButton style={{ marginTop: 8 }} loading={loading} onClick={() => loadPaymentLogs(r.paymentId)}>결제 상태 전이 보기</ActionButton>}
+              <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
+                {r.paymentId && <ActionButton style={{ marginTop: 'var(--spacing-sm)' }} loading={loading} onClick={() => loadPaymentLogs(r.paymentId)}>결제 상태 전이 보기</ActionButton>}
                 {r.paymentId && r.postActionRetryNeeded && (
-                  <ActionButton style={{ marginTop: 8 }} loading={loading} onClick={() => retryPostActions(r.paymentId!)}>후속 처리 재시도</ActionButton>
+                  <ActionButton style={{ marginTop: 'var(--spacing-sm)' }} loading={loading} onClick={() => retryPostActions(r.paymentId!)}>후속 처리 재시도</ActionButton>
                 )}
               </div>
             </Card>
@@ -178,21 +180,26 @@ export default function AdminTimelinePage() {
         </div>
         )}
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
           <ActionButton disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</ActionButton>
-          <span>{page} / {totalPages}</span>
+          <span style={{ fontFamily: 'var(--font-heading)' }}>{page} / {totalPages}</span>
           <ActionButton disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>다음</ActionButton>
         </div>
 
         {selectedPaymentId && (
           <Card>
-            <h3 style={{ marginTop: 0 }}>결제 #{selectedPaymentId} 상태 전이</h3>
-            <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 8 }}>
+            <h3 style={{ marginTop: 0, fontFamily: 'var(--font-heading)' }}>결제 #{selectedPaymentId} 상태 전이</h3>
+            <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 'var(--spacing-sm)' }}>
               {paymentLogs.map((l) => (
-                <li key={l.id} style={{ border: '1px solid #334155', borderRadius: 8, padding: 10 }}>
-                  <div>{l.fromStatus || '(none)'} → <b>{l.toStatus}</b></div>
-                  <div>reason: {l.reason}</div>
-                  <div>{new Date(l.createdAt).toLocaleString('ko-KR')}</div>
+                <li key={l.id} style={{
+                  border: '1px solid var(--color-border-card)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-md)',
+                  fontSize: 'var(--font-size-sm)',
+                }}>
+                  <div>{l.fromStatus || '(none)'} → <b style={{ fontFamily: 'var(--font-heading)' }}>{l.toStatus}</b></div>
+                  <div style={{ marginTop: 'var(--spacing-xs)', color: 'var(--color-text-muted-card)' }}>reason: {l.reason}</div>
+                  <div style={{ marginTop: 'var(--spacing-xs)', color: 'var(--color-text-muted-card)' }}>{new Date(l.createdAt).toLocaleString('ko-KR')}</div>
                 </li>
               ))}
             </ul>

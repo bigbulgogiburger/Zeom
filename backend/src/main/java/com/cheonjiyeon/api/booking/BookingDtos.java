@@ -3,9 +3,20 @@ package com.cheonjiyeon.api.booking;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class BookingDtos {
-    public record CreateBookingRequest(@NotNull Long counselorId, @NotNull Long slotId) {}
+    public record CreateBookingRequest(
+            @NotNull Long counselorId,
+            Long slotId,
+            List<Long> slotIds
+    ) {}
+
+    public record SlotInfo(
+            Long slotId,
+            LocalDateTime startAt,
+            LocalDateTime endAt
+    ) {}
 
     public record BookingResponse(
             Long id,
@@ -14,6 +25,8 @@ public class BookingDtos {
             Long slotId,
             LocalDateTime startAt,
             LocalDateTime endAt,
-            String status
+            String status,
+            List<SlotInfo> slots,
+            int creditsUsed
     ) {}
 }

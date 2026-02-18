@@ -5,6 +5,9 @@ import com.cheonjiyeon.api.alert.AlertWebhookService;
 import com.cheonjiyeon.api.auth.refresh.RefreshTokenEntity;
 import com.cheonjiyeon.api.auth.refresh.RefreshTokenRepository;
 import com.cheonjiyeon.api.common.ApiException;
+import com.cheonjiyeon.api.counselor.CounselorEntity;
+import com.cheonjiyeon.api.counselor.CounselorRepository;
+import com.cheonjiyeon.api.wallet.WalletService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.List;
@@ -24,6 +28,8 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuditLogService auditLogService;
     private final AlertWebhookService alertWebhookService;
+    private final WalletService walletService;
+    private final CounselorRepository counselorRepository;
     private final boolean allowE2eAdminBootstrap;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -32,17 +38,29 @@ public class AuthService {
                        RefreshTokenRepository refreshTokenRepository,
                        AuditLogService auditLogService,
                        AlertWebhookService alertWebhookService,
+                       WalletService walletService,
+                       CounselorRepository counselorRepository,
                        @Value("${auth.allow-e2e-admin-bootstrap:false}") boolean allowE2eAdminBootstrap) {
         this.userRepository = userRepository;
         this.tokenStore = tokenStore;
         this.refreshTokenRepository = refreshTokenRepository;
         this.auditLogService = auditLogService;
         this.alertWebhookService = alertWebhookService;
+        this.walletService = walletService;
+        this.counselorRepository = counselorRepository;
         this.allowE2eAdminBootstrap = allowE2eAdminBootstrap;
     }
 
     @Transactional
     public AuthDtos.AuthResponse signup(AuthDtos.SignupRequest req) {
+        if (Boolean.TRUE.equals(req.termsAgreed())) {
+            // termsAgreed is explicitly true — OK
+        } else if (req.termsAgreed() != null) {
+            // termsAgreed is explicitly false
+            throw new ApiException(400, "이용약관에 동의해야 합니다.");
+        }
+        // if termsAgreed is null, allow for backward compatibility (existing clients/tests)
+
         userRepository.findByEmail(req.email()).ifPresent(u -> {
             throw new ApiException(409, "이미 가입된 이메일입니다.");
         });
@@ -52,9 +70,32 @@ public class AuthService {
         user.setName(req.name());
         user.setPasswordHash(encoder.encode(req.password()));
         boolean e2eAdmin = allowE2eAdminBootstrap && req.email() != null && req.email().startsWith("e2e_admin_");
-        user.setRole(e2eAdmin ? "ADMIN" : "USER");
+        boolean e2eCounselor = allowE2eAdminBootstrap && req.email() != null && req.email().startsWith("e2e_counselor_");
+        user.setRole(e2eAdmin ? "ADMIN" : e2eCounselor ? "COUNSELOR" : "USER");
+
+        if (req.phone() != null) user.setPhone(req.phone());
+        if (req.gender() != null) user.setGender(req.gender());
+        if (req.birthDate() != null && !req.birthDate().isBlank()) {
+            user.setBirthDate(LocalDate.parse(req.birthDate()));
+        }
+        if (Boolean.TRUE.equals(req.termsAgreed())) {
+            user.setTermsAgreed(true);
+            user.setTermsAgreedAt(LocalDateTime.now());
+        }
+
         UserEntity saved = userRepository.save(user);
 
+        // Auto-create CounselorEntity for e2e_counselor_ accounts
+        if (e2eCounselor) {
+            CounselorEntity counselor = new CounselorEntity();
+            counselor.setName(saved.getName());
+            counselor.setSpecialty("종합운세");
+            counselor.setIntro("E2E 테스트 상담사");
+            counselor.setUserId(saved.getId());
+            counselorRepository.save(counselor);
+        }
+
+        walletService.createWalletForUser(saved.getId());
         auditLogService.log(saved.getId(), "AUTH_SIGNUP", "USER", saved.getId());
         return issueTokens(saved, req.deviceId(), req.deviceName());
     }
@@ -234,6 +275,10 @@ public class AuthService {
     }
 
     private AuthDtos.UserResponse toResponse(UserEntity user) {
-        return new AuthDtos.UserResponse(user.getId(), user.getEmail(), user.getName(), user.getRole());
+        return new AuthDtos.UserResponse(
+                user.getId(), user.getEmail(), user.getName(), user.getRole(),
+                user.getPhone(),
+                user.getBirthDate() != null ? user.getBirthDate().toString() : null,
+                user.getGender());
     }
 }

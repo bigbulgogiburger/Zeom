@@ -77,40 +77,42 @@ export default function AdminAuditPage() {
 
   return (
     <RequireAdmin>
-      <main style={{ padding: 24, display: 'grid', gap: 12 }}>
+      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-md)' }}>
         <PageTitle>감사로그</PageTitle>
 
         <Card>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center', flexWrap: 'wrap' }}>
             <input placeholder="action (예: AUTH_LOGIN)" value={action} onChange={(e) => setAction(e.target.value)} />
             <label>시작 <input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
             <label>종료 <input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} /></label>
             <ActionButton onClick={load} loading={loading}>불러오기</ActionButton>
             <ActionButton onClick={downloadCsv} loading={loading}>CSV 다운로드</ActionButton>
           </div>
-          <InlineError message={message} />
-          <InlineSuccess message={success} />
+          <div style={{ marginTop: 'var(--spacing-sm)' }}>
+            <InlineError message={message} />
+            <InlineSuccess message={success} />
+          </div>
         </Card>
 
         {paged.length === 0 ? (
           <EmptyState title="조회 결과가 없어요" desc="필터를 조정하거나 조회를 다시 시도해보세요." />
         ) : (
-        <div style={{ display: 'grid', gap: 8 }}>
+        <div style={{ display: 'grid', gap: 'var(--spacing-md)' }}>
           {paged.map((a) => (
             <Card key={a.id}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-                <div><b>#{a.id}</b> · {new Date(a.createdAt).toLocaleString('ko-KR')}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
+                <div><b style={{ fontFamily: 'var(--font-heading)' }}>#{a.id}</b> · {new Date(a.createdAt).toLocaleString('ko-KR')}</div>
                 <StatusBadge value={a.action} />
               </div>
-              <div style={{ marginTop: 8, color: '#cbd5e1' }}>user={a.userId}, target={a.targetType}:{a.targetId}</div>
+              <div style={{ marginTop: 'var(--spacing-sm)', color: 'var(--color-text-muted-card)', fontSize: 'var(--font-size-sm)' }}>user={a.userId}, target={a.targetType}:{a.targetId}</div>
             </Card>
           ))}
         </div>
         )}
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
           <ActionButton disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</ActionButton>
-          <span>{page} / {totalPages}</span>
+          <span style={{ fontFamily: 'var(--font-heading)' }}>{page} / {totalPages}</span>
           <ActionButton disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>다음</ActionButton>
         </div>
       </main>

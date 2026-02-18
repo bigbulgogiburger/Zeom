@@ -1,16 +1,27 @@
 import type { Metadata, Viewport } from 'next';
-import { Noto_Sans_KR } from 'next/font/google';
+import { Noto_Serif_KR, Noto_Sans_KR } from 'next/font/google';
+import './globals.css';
 import SessionExpiryGuard from '../components/session-expiry-guard';
 import { AuthProvider } from '../components/auth-context';
 import { ErrorBoundary } from '../components/error-boundary';
 import { GlobalErrorHandler } from '../components/global-error-handler';
 import AppHeader from '../components/app-header';
+import { ToastProvider } from '../components/toast';
+
+const notoSerifKr = Noto_Serif_KR({
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  display: 'swap',
+  preload: true,
+  variable: '--font-heading',
+});
 
 const notoSansKr = Noto_Sans_KR({
   subsets: ['latin'],
-  weight: ['400', '700', '800'],
+  weight: ['400', '500', '700'],
   display: 'swap',
   preload: true,
+  variable: '--font-body',
 });
 
 export const metadata: Metadata = {
@@ -25,19 +36,21 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0f172a',
+  themeColor: '#2b2219',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className={notoSansKr.className}>
-      <body style={{ margin: 0, background: '#0f172a', color: '#f8fafc' }}>
+    <html lang="ko" className={`${notoSerifKr.variable} ${notoSansKr.variable}`}>
+      <body>
         <ErrorBoundary>
           <GlobalErrorHandler />
           <AuthProvider>
-            <SessionExpiryGuard />
-            <AppHeader />
-            {children}
+            <ToastProvider>
+              <SessionExpiryGuard />
+              <AppHeader />
+              {children}
+            </ToastProvider>
           </AuthProvider>
         </ErrorBoundary>
       </body>

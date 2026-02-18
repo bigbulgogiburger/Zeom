@@ -1,36 +1,27 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Card, PageTitle } from '../components/ui';
+import { API_BASE } from '../components/api';
+import HomeContent from './HomeContent';
 
 export const metadata: Metadata = {
   title: '천지연꽃신당 — 온라인 점사 상담',
-  description: '온라인 점사 상담을 위한 예약·결제·상담방 통합 플랫폼',
+  description: '한국 전통 점사 상담 플랫폼. 검증된 상담사와 1:1 비밀 상담을 시작하세요.',
 };
 
-export default function HomePage() {
-  return (
-    <main style={{ padding: 24, display: 'grid', gap: 12 }}>
-      <PageTitle>천지연꽃신당</PageTitle>
-      <Card>
-        <p style={{ marginTop: 0, color: '#cbd5e1' }}>온라인 점사 상담을 위한 예약·결제·상담방 통합 플랫폼</p>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/signup">회원가입</Link>
-          <Link href="/login">로그인</Link>
-          <Link href="/counselors">상담사 보기</Link>
-          <Link href="/bookings/me">내 예약</Link>
-          <Link href="/sessions">세션관리</Link>
-        </div>
-      </Card>
+type Counselor = { id: number; name: string; specialty: string; intro: string };
 
-      <Card>
-        <h3 style={{ marginTop: 0 }}>관리자</h3>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/admin/login">관리자 로그인</Link>
-          <Link href="/dashboard">대시보드</Link>
-          <Link href="/admin/timeline">타임라인</Link>
-          <Link href="/admin/audit">감사로그</Link>
-        </div>
-      </Card>
-    </main>
-  );
+async function getCounselors(): Promise<Counselor[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/counselors`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const counselors = await getCounselors();
+  return <HomeContent counselors={counselors} />;
 }

@@ -17,3 +17,17 @@ backend/build/
 
 # OS
 .DS_Store
+
+# Build artifacts
+web/tsconfig.tsbuildinfo
+
+# Playwright MCP logs
+.playwright-mcp/
+
+# Flutter generated
+app_flutter/.flutter-plugins
+app_flutter/.flutter-plugins-dependencies
+app_flutter/flutter_*.log
+
+# Dev screenshots (root level only)
+/*.png

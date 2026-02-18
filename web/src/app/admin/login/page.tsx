@@ -45,19 +45,19 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main style={{ padding: 24, display: 'grid', gap: 12 }}>
+    <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-md)' }}>
       <PageTitle>관리자 로그인</PageTitle>
       <Card>
-        <form onSubmit={onSubmit} style={{ display: 'grid', gap: 10, maxWidth: 360 }}>
+        <form onSubmit={onSubmit} style={{ display: 'grid', gap: 'var(--spacing-md)', maxWidth: '360px' }}>
           <label htmlFor="email">관리자 이메일</label>
-          <input id="email" name="email" type="email" required autoComplete="email" placeholder="admin@example.com" style={{ minHeight: 40, padding: '0 10px' }} />
+          <input id="email" name="email" type="email" required autoComplete="email" placeholder="admin@example.com" />
 
           <label htmlFor="password">비밀번호</label>
-          <input id="password" name="password" type="password" required autoComplete="current-password" placeholder="비밀번호" style={{ minHeight: 40, padding: '0 10px' }} />
+          <input id="password" name="password" type="password" required autoComplete="current-password" placeholder="비밀번호" />
 
-          <ActionButton type="submit" loading={loading} style={{ minHeight: 42 }}>로그인</ActionButton>
+          <ActionButton type="submit" loading={loading}>로그인</ActionButton>
         </form>
-        <div style={{ marginTop: 8 }}>
+        <div style={{ marginTop: 'var(--spacing-sm)' }}>
           <InlineError message={message} />
           <InlineSuccess message={success} />
         </div>

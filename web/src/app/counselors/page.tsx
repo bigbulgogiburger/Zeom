@@ -1,64 +1,177 @@
-import type { Metadata } from 'next';
+'use client';
+
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { API_BASE } from '../../components/api';
-import { Card, EmptyState, PageTitle } from '../../components/ui';
-
-export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: '상담사 목록',
-  description: '천지연꽃신당 상담사 목록 및 예약 가능 슬롯 확인',
-};
+import { Card } from '../../components/ui';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 type Counselor = { id: number; name: string; specialty: string; intro: string };
 
-async function getCounselors(): Promise<Counselor[]> {
-  const res = await fetch(`${API_BASE}/api/v1/counselors`, {
-    next: { revalidate: 30 },
-  });
-  if (!res.ok) return [];
-  return res.json();
-}
+const SPECIALTY_FILTERS = ['전체', '사주', '타로', '신점', '꿈해몽', '궁합'] as const;
 
-async function CounselorList() {
-  const counselors = await getCounselors();
-
-  if (counselors.length === 0) {
-    return <EmptyState title="상담사가 아직 없어요" desc="잠시 후 다시 시도해주세요." />;
-  }
-
-  return (
-    <div style={{ display: 'grid', gap: 12 }}>
-      {counselors.map((c) => (
-        <Card key={c.id}>
-          <h3 style={{ margin: '0 0 6px 0' }}>{c.name}</h3>
-          <div style={{ color: '#93c5fd', fontSize: 14 }}>{c.specialty}</div>
-          <p style={{ color: '#cbd5e1' }}>{c.intro}</p>
-          <Link href={`/counselors/${c.id}`}>상세/가능 슬롯 보기</Link>
-        </Card>
-      ))}
-    </div>
-  );
+function specialtyEmoji(specialty: string): string {
+  if (specialty.includes('사주')) return '🔮';
+  if (specialty.includes('타로')) return '🃏';
+  if (specialty.includes('신점')) return '🪷';
+  if (specialty.includes('꿈')) return '🌙';
+  if (specialty.includes('궁합')) return '💕';
+  return '✨';
 }
 
 export default function CounselorsPage() {
+  const [counselors, setCounselors] = useState<Counselor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [search, setSearch] = useState('');
+  const [activeFilter, setActiveFilter] = useState<string>('전체');
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/v1/counselors`, { cache: 'no-store' })
+      .then((r) => {
+        if (!r.ok) throw new Error('fetch failed');
+        return r.json();
+      })
+      .then((data: Counselor[]) => {
+        setCounselors(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, []);
+
+  const filtered = counselors.filter((c) => {
+    const q = search.trim().toLowerCase();
+    const matchesSearch =
+      !q || c.name.toLowerCase().includes(q) || c.specialty.toLowerCase().includes(q);
+    const matchesFilter =
+      activeFilter === '전체' || c.specialty.includes(activeFilter);
+    return matchesSearch && matchesFilter;
+  });
+
+  const sorted = [...filtered].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+
   return (
-    <main style={{ padding: 24, display: 'grid', gap: 12 }}>
-      <PageTitle>상담사 목록</PageTitle>
-      <Suspense fallback={
-        <div style={{ display: 'grid', gap: 12 }}>
+    <main className="p-6 max-w-[1200px] mx-auto">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold font-heading text-foreground">상담사 목록</h1>
+        <p className="text-muted-foreground text-sm mt-2">
+          원하시는 분야의 상담사를 찾아보세요
+        </p>
+      </div>
+
+      {/* Search bar */}
+      <div className="mb-4">
+        <Input
+          type="text"
+          placeholder="상담사 이름 또는 분야 검색..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full min-h-[44px]"
+        />
+      </div>
+
+      {/* Filter chips */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {SPECIALTY_FILTERS.map((f) => (
+          <Button
+            key={f}
+            variant={activeFilter === f ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setActiveFilter(f)}
+            className={cn(
+              'rounded-full font-medium font-heading min-h-[36px] transition-all',
+              activeFilter === f && 'border-primary'
+            )}
+          >
+            {f}
+          </Button>
+        ))}
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} style={{ border: '1px solid #334155', background: '#0b1220', borderRadius: 12, padding: 12 }}>
-              <div style={{ height: 20, width: 120, background: '#1e293b', borderRadius: 4, marginBottom: 8 }} />
-              <div style={{ height: 14, width: 80, background: '#1e293b', borderRadius: 4, marginBottom: 8 }} />
-              <div style={{ height: 14, width: '70%', background: '#1e293b', borderRadius: 4 }} />
-            </div>
+            <Card key={i}>
+              <div className="text-center mb-3">
+                <div className="h-12 w-12 rounded-full bg-muted mx-auto" />
+              </div>
+              <div className="h-5 w-3/5 bg-muted rounded mx-auto mb-2" />
+              <div className="h-3.5 w-2/5 bg-muted rounded mx-auto mb-2" />
+              <div className="h-3.5 w-4/5 bg-muted rounded mx-auto" />
+            </Card>
           ))}
         </div>
-      }>
-        <CounselorList />
-      </Suspense>
+      ) : error ? (
+        <Alert variant="destructive">
+          <AlertDescription>
+            <p className="font-bold font-heading">상담사 목록을 불러오지 못했습니다</p>
+            <p className="text-sm mt-1">잠시 후 다시 시도해주세요.</p>
+          </AlertDescription>
+        </Alert>
+      ) : sorted.length === 0 ? (
+        <Card>
+          <div className="text-center py-6">
+            <p className="font-bold font-heading text-lg">
+              검색 결과가 없습니다
+            </p>
+            <p className="text-muted-foreground text-sm mt-2">
+              다른 검색어 또는 필터를 사용해보세요.
+            </p>
+            <Button
+              onClick={() => { setSearch(''); setActiveFilter('전체'); }}
+              className="mt-4"
+            >
+              전체 보기
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sorted.map((c) => (
+            <Card key={c.id} className="flex flex-col">
+              {/* Emoji icon */}
+              <div className="text-center text-[2rem] mb-3">
+                {specialtyEmoji(c.specialty)}
+              </div>
+
+              {/* Name */}
+              <h3 className="m-0 text-center font-heading font-bold text-lg text-card-foreground">
+                {c.name}
+              </h3>
+
+              {/* Specialty badge */}
+              <div className="text-center mt-2">
+                <Badge variant="secondary" className="font-heading font-bold text-xs rounded-full">
+                  {c.specialty}
+                </Badge>
+              </div>
+
+              {/* Intro with 2-line clamp */}
+              <p className="text-muted-foreground text-sm leading-normal mt-3 flex-1 line-clamp-2">
+                {c.intro}
+              </p>
+
+              {/* Profile link */}
+              <div className="text-center mt-4">
+                <Button variant="outline" size="sm" asChild className="font-bold font-heading">
+                  <Link href={`/counselors/${c.id}`}>
+                    프로필 보기
+                  </Link>
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </main>
   );
 }

@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiFetch } from '../../components/api-client';
 import { RequireAdmin } from '../../components/route-guard';
-import { ActionButton, Card, EmptyState, InlineError, InlineSuccess, PageTitle, StatCard } from '../../components/ui';
+import { ActionButton, Card, EmptyState, StatCard } from '../../components/ui';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type Summary = {
   users: number;
@@ -21,13 +24,23 @@ function toIso(dateTimeLocal: string) {
   return new Date(dateTimeLocal).toISOString();
 }
 
+function defaultFrom() {
+  const d = new Date();
+  d.setDate(d.getDate() - 30);
+  return d.toISOString().slice(0, 16);
+}
+
+function defaultTo() {
+  return new Date().toISOString().slice(0, 16);
+}
+
 export default function DashboardPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [message, setMessage] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
+  const [from, setFrom] = useState(defaultFrom);
+  const [to, setTo] = useState(defaultTo);
 
   async function load() {
     setLoading(true);
@@ -50,23 +63,52 @@ export default function DashboardPage() {
     setLoading(false);
   }
 
+  useEffect(() => {
+    load().catch(() => {
+      setMessage('지표 조회 실패');
+      setLoading(false);
+    });
+  }, []);
+
   return (
     <RequireAdmin>
-      <main style={{ padding: 24, display: 'grid', gap: 12 }}>
-        <PageTitle>운영 대시보드</PageTitle>
+      <main className="page-container-wide">
+        <h1 className="text-2xl font-bold font-heading text-foreground">운영 대시보드</h1>
 
-        <Card>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            <label>시작 <input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
-            <label>종료 <input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} /></label>
+        <Card className="mt-4">
+          <div className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
+            <div className="grid gap-1">
+              <Label className="text-sm font-medium">시작</Label>
+              <Input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} />
+            </div>
+            <div className="grid gap-1">
+              <Label className="text-sm font-medium">종료</Label>
+              <Input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} />
+            </div>
             <ActionButton onClick={load} loading={loading}>조회</ActionButton>
           </div>
-          <InlineError message={message} />
-          <InlineSuccess message={success} />
+          <div className="mt-2">
+            {message && (
+              <Alert variant="destructive" className="mb-2">
+                <AlertDescription>{message}</AlertDescription>
+              </Alert>
+            )}
+            {success && (
+              <Alert className="mb-2">
+                <AlertDescription className="text-green-600">{success}</AlertDescription>
+              </Alert>
+            )}
+          </div>
         </Card>
 
-        {summary ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 }}>
+        {loading && !summary ? (
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3 mt-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="skeleton h-[100px]" />
+            ))}
+          </div>
+        ) : summary ? (
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3 mt-4">
             <StatCard title="예약 가능 슬롯" value={summary.availableSlots} hint="Booking" />
             <StatCard title="예약 생성" value={summary.booked} hint="기간 기준" />
             <StatCard title="예약 취소" value={summary.canceled} hint="기간 기준" />

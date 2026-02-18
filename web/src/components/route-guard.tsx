@@ -41,3 +41,16 @@ export function RequireAdmin({ children }: { children: React.ReactNode }) {
   if (loading || !me || me.role !== 'ADMIN') return <AuthSkeleton />;
   return <>{children}</>;
 }
+
+export function RequireCounselor({ children }: { children: React.ReactNode }) {
+  const { me, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !me) router.replace('/login');
+    if (!loading && me && me.role !== 'COUNSELOR') router.replace('/');
+  }, [loading, me, router]);
+
+  if (loading || !me || me.role !== 'COUNSELOR') return <AuthSkeleton />;
+  return <>{children}</>;
+}

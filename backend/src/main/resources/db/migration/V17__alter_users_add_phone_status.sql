@@ -1,0 +1,4 @@
+ALTER TABLE users ADD COLUMN phone VARCHAR(20);
+ALTER TABLE users ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE';
+
+CREATE INDEX idx_user_status ON users(status);

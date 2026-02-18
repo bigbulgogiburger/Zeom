@@ -1,0 +1,124 @@
+============================================
+TC07: Backend API 정산 엔드포인트 검증
+Date: 2026년  2월 17일 화요일 22시 33분 40초 KST
+============================================
+
+--- Step 1: Register test user ---
+[PASS] Endpoint: POST /api/v1/auth/signup (regular user)
+  Status: 200
+  Response: {"accessToken":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJ0eXAiOiJhY2Nlc3MiLCJpYXQiOjE3NzEzMzUyMjAsImV4cCI6MTc3MTM1NjgyMH0.g5GH7d5LaDBRfqE9wd_MPC5g1IFxZLkP3ErMYkZDjrg","refreshToken":"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwZWUyMThkZC1mOThhLTQxNWMtYmNiYS1mOWNiYzA3ODI1ZjYiLCJzdWIiOiIxIiwidHlwI
+
+--- Step 2: Login to get JWT token ---
+[PASS] Endpoint: POST /api/v1/auth/login (regular user)
+  Status: 200
+  Response: {"accessToken":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJ0eXAiOiJhY2Nlc3MiLCJpYXQiOjE3NzEzMzUyMjEsImV4cCI6MTc3MTM1NjgyMX0.TsKA672zvQs8JiZTDbhqczyB-zF61n9Vsodb--tpey8","refreshToken":"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJhZWQ0ZDUyZi0yYTFhLTQ2N2ItOTdhOS05ZWNjMDIzMmUxYjEiLCJzdWIiOiIxIiwidHlwI
+  Note: Token extracted: YES
+
+--- Step 3: Test settlement/credit endpoints WITH token ---
+
+[PASS] Endpoint: GET /api/v1/settlements/my (with auth)
+  Status: 200
+  Response: {"settlements":[]}
+
+[PASS] Endpoint: GET /api/v1/credits/my (with auth)
+  Status: 200
+  Response: {"totalUnits":0,"usedUnits":0,"remainingUnits":0}
+
+[PASS] Endpoint: GET /api/v1/credits/history (with auth)
+  Status: 200
+  Response: {"items":[]}
+
+--- Step 4: Test endpoints WITHOUT token (should get 401/403) ---
+
+[PASS] Endpoint: GET /api/v1/settlements/my (no auth)
+  Status: 401
+  Response: {"message":"Authorization Bearer 토큰이 필요합니다.","error":true,"status":401}
+  Note: Correctly rejected
+
+[FAIL] Endpoint: GET /api/v1/admin/sessions/active (no auth)
+  Status: 200
+  Response: []
+  Note: SECURITY ISSUE: No auth check on admin endpoint
+
+[FAIL] Endpoint: GET /api/v1/admin/settlements (no auth)
+  Status: 200
+  Response: {"settlements":[]}
+  Note: SECURITY ISSUE: No auth check on admin endpoint
+
+--- Step 5: Test counselor endpoints (regular user, expect 403) ---
+
+[PASS] Endpoint: GET /api/v1/counselor/settlement (regular user)
+  Status: 403
+  Response: {"message":"상담사 계정이 아닙니다.","error":true,"status":403}
+  Note: Correctly rejected non-counselor
+
+[PASS] Endpoint: GET /api/v1/counselor/settlements (regular user)
+  Status: 403
+  Response: {"message":"상담사 계정이 아닙니다.","error":true,"status":403}
+  Note: Correctly rejected non-counselor
+
+[PASS] Endpoint: GET /api/v1/counselor/memos (regular user)
+  Status: 403
+  Response: {"message":"상담사 계정이 아닙니다.","error":true,"status":403}
+  Note: Correctly rejected non-counselor
+
+[PASS] Endpoint: GET /api/v1/counselor/customers (regular user)
+  Status: 403
+  Response: {"message":"상담사 계정이 아닙니다.","error":true,"status":403}
+  Note: Correctly rejected non-counselor
+
+--- Step 6: Create admin via e2e signup bootstrap ---
+
+[PASS] Endpoint: POST /api/v1/auth/signup (admin bootstrap via e2e_admin_ prefix)
+  Status: 200
+  Response: {"accessToken":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwicm9sZSI6IkFETUlOIiwidHlwIjoiYWNjZXNzIiwiaWF0IjoxNzcxMzM1MjI0LCJleHAiOjE3NzEzNTY4MjR9.DxHJdp7pXvJ6G2-7MuOqM2lxgneMdp14w6JnY7PMRdE","refreshToken":"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1MTgxMDMyOS00ZWM5LTQzY2UtYmViMC0wNzk3NjgyYmEzZjYiLCJzdWIiOiIyIiwidHlw
+  Note: Admin token extracted: YES
+
+--- Step 7: Test admin endpoints with admin token ---
+
+[PASS] Endpoint: GET /api/v1/admin/sessions/active (admin token)
+  Status: 200
+  Response: []
+
+[PASS] Endpoint: GET /api/v1/admin/sessions/stats (admin token)
+  Status: 200
+  Response: {"todayCompleted":0,"weekCompleted":0,"monthCompleted":0,"avgDurationSec":0,"activeSessions":0}
+
+[PASS] Endpoint: GET /api/v1/admin/settlements (admin token)
+  Status: 200
+  Response: {"settlements":[]}
+
+--- Bonus: Register counselor via e2e bootstrap ---
+
+[PASS] Endpoint: POST /api/v1/auth/signup (counselor bootstrap)
+  Status: 200
+  Response: {"accessToken":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwicm9sZSI6IkNPVU5TRUxPUiIsInR5cCI6ImFjY2VzcyIsImlhdCI6MTc3MTMzNTIyNiwiZXhwIjoxNzcxMzU2ODI2fQ.WfRL4nM4NR7zdENQWr8oQUqTFucxU8xM3ftMwXhHLmU","refreshToken":"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1MjBkYmExZi00NzFhLTRlMzUtOWFmZS02NzRlMDUxYTFmYWIiLCJzdWIiOiIzIi
+
+[PASS] Endpoint: GET /api/v1/counselor/settlement (counselor token)
+  Status: 200
+  Response: {"settlements":[],"totalPages":0,"totalElements":0}
+
+[PASS] Endpoint: GET /api/v1/counselor/memos (counselor token)
+  Status: 200
+  Response: {"memos":[],"totalPages":0,"totalElements":0}
+
+[PASS] Endpoint: GET /api/v1/counselor/customers (counselor token)
+  Status: 200
+  Response: {"customers":[]}
+
+============================================
+Test Summary
+============================================
+Total: 20 tests
+Passed: 18
+Failed: 2
+============================================
+
+Known Issues:
+- /api/v1/auth/admin-bootstrap endpoint does NOT exist; admin users are created via
+  regular signup with e2e_admin_ email prefix when AUTH_ALLOW_E2E_ADMIN_BOOTSTRAP=true
+- Settlement endpoints may return 500 if the user is not authenticated (should return 401)
+- Admin session endpoints (/api/v1/admin/sessions/*) have NO auth check — any request
+  can access them. This is a SECURITY ISSUE.
+- Admin settlements endpoint (/api/v1/admin/settlements) also has NO auth check.
+============================================
