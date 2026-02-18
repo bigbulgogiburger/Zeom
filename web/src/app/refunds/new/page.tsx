@@ -118,60 +118,33 @@ export default function NewRefundPage() {
 
   return (
     <RequireLogin>
-      <main style={{
-        padding: 'var(--spacing-xl)',
-        display: 'grid',
-        gap: 'var(--spacing-lg)',
-        maxWidth: '800px',
-        margin: '0 auto',
-      }}>
+      <main className="max-w-[1000px] mx-auto px-6 sm:px-8 py-10 grid gap-8">
         <PageTitle>환불 신청</PageTitle>
         <InlineError message={message} />
 
         {/* Refund Policy */}
         <Card>
-          <h3 style={{
-            margin: '0 0 var(--spacing-md) 0',
-            fontSize: 'var(--font-size-lg)',
-            fontWeight: 'var(--font-weight-bold)',
-            fontFamily: 'var(--font-heading)',
-          }}>
+          <h3 className="m-0 mb-4 text-lg font-bold font-heading">
             환불 정책
           </h3>
-          <div style={{
-            display: 'grid',
-            gap: 'var(--spacing-sm)',
-            fontSize: 'var(--font-size-sm)',
-          }}>
-            <div style={{
-              padding: 'var(--spacing-md)',
-              background: 'var(--color-success-light)',
-              borderRadius: 'var(--radius-md)',
-            }}>
-              <span style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--color-success)' }}>
+          <div className="grid gap-2 text-sm">
+            <div className="p-4 bg-[var(--color-success-light)] rounded-xl">
+              <span className="font-bold text-[var(--color-success)]">
                 24시간 이상 전:
               </span>
-              <span style={{ marginLeft: 'var(--spacing-sm)' }}>100% 환불</span>
+              <span className="ml-2">100% 환불</span>
             </div>
-            <div style={{
-              padding: 'var(--spacing-md)',
-              background: 'var(--color-warning-light)',
-              borderRadius: 'var(--radius-md)',
-            }}>
-              <span style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--color-warning)' }}>
+            <div className="p-4 bg-[var(--color-warning-light)] rounded-xl">
+              <span className="font-bold text-[var(--color-warning)]">
                 1시간 ~ 24시간 전:
               </span>
-              <span style={{ marginLeft: 'var(--spacing-sm)' }}>50% 환불</span>
+              <span className="ml-2">50% 환불</span>
             </div>
-            <div style={{
-              padding: 'var(--spacing-md)',
-              background: 'var(--color-danger-light)',
-              borderRadius: 'var(--radius-md)',
-            }}>
-              <span style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--color-danger)' }}>
+            <div className="p-4 bg-[var(--color-danger-light)] rounded-xl">
+              <span className="font-bold text-[var(--color-danger)]">
                 1시간 미만:
               </span>
-              <span style={{ marginLeft: 'var(--spacing-sm)' }}>환불 불가</span>
+              <span className="ml-2">환불 불가</span>
             </div>
           </div>
         </Card>
@@ -182,35 +155,21 @@ export default function NewRefundPage() {
             desc="완료되지 않은 예약만 환불 신청이 가능합니다."
           />
         ) : (
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 'var(--spacing-lg)' }}>
+          <form onSubmit={handleSubmit} className="grid gap-8">
             {/* Select Reservation */}
             <Card>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-md)',
-                fontSize: 'var(--font-size-base)',
-                fontWeight: 'var(--font-weight-medium)',
-              }}>
+              <label className="block mb-4 text-base font-medium">
                 환불할 예약 선택
               </label>
-              <div style={{ display: 'grid', gap: 'var(--spacing-sm)' }}>
+              <div className="grid gap-2">
                 {reservations.map((r) => (
                   <label
                     key={r.id}
-                    style={{
-                      display: 'flex',
-                      gap: 'var(--spacing-md)',
-                      padding: 'var(--spacing-md)',
-                      background: selectedReservationId === r.id
-                        ? 'var(--color-gold)'
-                        : 'var(--color-bg-secondary)',
-                      border: `2px solid ${selectedReservationId === r.id
-                        ? 'var(--color-gold)'
-                        : 'var(--color-border-dark)'}`,
-                      borderRadius: 'var(--radius-md)',
-                      cursor: 'pointer',
-                      transition: 'all var(--transition-fast)',
-                    }}
+                    className={`flex gap-4 p-4 rounded-xl cursor-pointer transition-all ${
+                      selectedReservationId === r.id
+                        ? 'bg-[#C9A227] border-2 border-[#C9A227]'
+                        : 'bg-[#1a1612] border-2 border-[rgba(201,162,39,0.15)] hover:border-[#C9A227]/40'
+                    }`}
                   >
                     <input
                       type="radio"
@@ -218,26 +177,23 @@ export default function NewRefundPage() {
                       value={r.id}
                       checked={selectedReservationId === r.id}
                       onChange={() => setSelectedReservationId(r.id)}
-                      style={{ cursor: 'pointer' }}
+                      className="cursor-pointer"
                     />
-                    <div style={{ flex: 1 }}>
-                      <div style={{
-                        fontWeight: 'var(--font-weight-bold)',
-                        marginBottom: 'var(--spacing-xs)',
-                        color: selectedReservationId === r.id
-                          ? 'var(--color-bg-primary)'
-                          : 'var(--color-text-on-dark)',
-                      }}>
+                    <div className="flex-1">
+                      <div className={`font-bold mb-1 ${
+                        selectedReservationId === r.id
+                          ? 'text-[#0f0d0a]'
+                          : 'text-[var(--color-text-on-dark)]'
+                      }`}>
                         {r.counselorName} 상담
                       </div>
-                      <div style={{
-                        fontSize: 'var(--font-size-sm)',
-                        color: selectedReservationId === r.id
-                          ? 'var(--color-bg-primary)'
-                          : 'var(--color-text-muted-dark)',
-                      }}>
+                      <div className={`text-sm ${
+                        selectedReservationId === r.id
+                          ? 'text-[#0f0d0a]/70'
+                          : 'text-[var(--color-text-muted-dark)]'
+                      }`}>
                         {new Date(r.startAt).toLocaleString('ko-KR')}
-                        <span style={{ margin: '0 var(--spacing-xs)' }}>·</span>
+                        <span className="mx-1">&middot;</span>
                         {r.amount.toLocaleString()}원
                       </div>
                     </div>
@@ -248,31 +204,19 @@ export default function NewRefundPage() {
 
             {/* Estimated Refund */}
             {selectedReservation && (
-              <Card>
-                <div style={{
-                  textAlign: 'center',
-                  padding: 'var(--spacing-md)',
-                }}>
-                  <div style={{
-                    fontSize: 'var(--font-size-sm)',
-                    color: 'var(--color-text-muted-card)',
-                    marginBottom: 'var(--spacing-sm)',
-                  }}>
+              <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-6">
+                <div className="text-center py-2">
+                  <div className="text-sm text-[var(--color-text-muted-dark)] mb-2">
                     예상 환불 금액
                   </div>
-                  <div style={{
-                    fontSize: 'var(--font-size-2xl)',
-                    fontWeight: 'var(--font-weight-black)',
-                    color: estimatedRefund > 0 ? 'var(--color-gold)' : 'var(--color-danger)',
-                    fontFamily: 'var(--font-heading)',
-                    marginBottom: 'var(--spacing-sm)',
-                  }}>
+                  <div className={`text-3xl font-black font-heading mb-2 ${
+                    estimatedRefund > 0
+                      ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent'
+                      : 'text-[var(--color-danger)]'
+                  }`}>
                     {estimatedRefund.toLocaleString()}원
                   </div>
-                  <div style={{
-                    fontSize: 'var(--font-size-xs)',
-                    color: 'var(--color-text-muted-card)',
-                  }}>
+                  <div className="text-xs text-[var(--color-text-muted-dark)]">
                     {hoursUntilStart >= 24
                       ? '(24시간 이상 전 - 100% 환불)'
                       : hoursUntilStart >= 1
@@ -280,17 +224,12 @@ export default function NewRefundPage() {
                         : '(1시간 미만 - 환불 불가)'}
                   </div>
                 </div>
-              </Card>
+              </div>
             )}
 
             {/* Reason */}
             <Card>
-              <label htmlFor="refund-reason" style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-sm)',
-                fontSize: 'var(--font-size-base)',
-                fontWeight: 'var(--font-weight-medium)',
-              }}>
+              <label htmlFor="refund-reason" className="block mb-2 text-base font-medium">
                 환불 사유
               </label>
               <textarea
@@ -300,18 +239,7 @@ export default function NewRefundPage() {
                 placeholder="환불 사유를 입력해주세요."
                 rows={4}
                 disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: 'var(--spacing-md)',
-                  border: `2px solid var(--color-border-dark)`,
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--color-bg-secondary)',
-                  color: 'var(--color-text-on-dark)',
-                  fontSize: 'var(--font-size-base)',
-                  fontFamily: 'inherit',
-                  lineHeight: 'var(--line-height-normal)',
-                  resize: 'vertical',
-                }}
+                className="w-full p-4 border-2 border-[rgba(201,162,39,0.15)] rounded-xl bg-[#1a1612] text-[var(--color-text-on-dark)] text-base font-[inherit] leading-relaxed resize-y focus:border-[#C9A227]/50 focus:outline-none"
               />
             </Card>
 
@@ -326,17 +254,9 @@ export default function NewRefundPage() {
             <button
               type="button"
               onClick={() => router.push('/refunds')}
-              style={{
-                background: 'transparent',
-                color: 'var(--color-gold)',
-                border: `1px solid var(--color-border-dark)`,
-                borderRadius: 'var(--radius-md)',
-                padding: 'var(--spacing-sm) var(--spacing-lg)',
-                fontSize: 'var(--font-size-sm)',
-                cursor: 'pointer',
-              }}
+              className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 text-sm hover:bg-[#C9A227]/10 bg-transparent cursor-pointer"
             >
-              ← 취소
+              취소
             </button>
           </form>
         )}

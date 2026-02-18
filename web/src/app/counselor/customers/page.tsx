@@ -68,7 +68,7 @@ export default function CounselorCustomersPage() {
     return (
       <div className="flex flex-col gap-6">
         <PageTitle>고객 관리</PageTitle>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <SkeletonCard lines={2} />
           <SkeletonCard lines={2} />
         </div>
@@ -83,7 +83,7 @@ export default function CounselorCustomersPage() {
 
       {error && <InlineError message={error} />}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-6">
         <StatCard title="전체 고객" value={customers.length} />
         <StatCard
           title="완료 상담"
@@ -97,20 +97,20 @@ export default function CounselorCustomersPage() {
         <Card>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">고객명</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">이메일</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)] text-right">상담 횟수</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">마지막 상담일</TableHead>
+              <TableRow className="border-[rgba(201,162,39,0.15)]">
+                <TableHead className="font-heading font-bold text-[#C9A227]">고객명</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227]">이메일</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227] text-right">상담 횟수</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227]">마지막 상담일</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {customers.map((c) => (
-                <TableRow key={c.userId}>
+                <TableRow key={c.userId} className="border-[rgba(201,162,39,0.1)]">
                   <TableCell className="font-medium">{c.name}</TableCell>
-                  <TableCell className="text-[var(--color-text-muted-card)]">{c.email}</TableCell>
+                  <TableCell className="text-[#a49484]">{c.email}</TableCell>
                   <TableCell className="text-right font-bold">{c.totalSessions}회</TableCell>
-                  <TableCell className="text-[var(--color-text-muted-card)]">{formatDate(c.lastSessionAt)}</TableCell>
+                  <TableCell className="text-[#a49484]">{formatDate(c.lastSessionAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

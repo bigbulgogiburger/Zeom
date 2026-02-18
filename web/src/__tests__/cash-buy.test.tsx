@@ -296,7 +296,7 @@ describe('CashBuyPage', () => {
     });
 
     // The back button should be disabled during preparing/processing
-    const backButton = screen.getByText('← 지갑으로 돌아가기');
+    const backButton = screen.getByText('지갑으로 돌아가기');
     expect(backButton).toBeDisabled();
   });
 });

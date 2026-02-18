@@ -35,34 +35,34 @@ function formatPhone(value: string): string {
 
 function ProgressIndicator({ current }: { current: number }) {
   return (
-    <div className="flex items-center justify-center gap-0 mb-8">
+    <div className="flex items-center justify-center gap-0 mb-10">
       {STEPS.map((label, i) => {
         const isCompleted = i < current;
         const isActive = i === current;
         const isPending = i > current;
         return (
           <div key={label} className="flex items-center">
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-2">
               <div className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold font-heading transition-all',
-                isActive && 'bg-primary text-primary-foreground',
-                isCompleted && 'bg-transparent border-2 border-primary text-primary',
-                isPending && 'bg-transparent border-2 border-muted-foreground text-muted-foreground',
+                'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-heading transition-all',
+                isActive && 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a]',
+                isCompleted && 'bg-transparent border-2 border-[#C9A227] text-[#C9A227]',
+                isPending && 'bg-transparent border-2 border-[#a49484]/40 text-[#a49484]',
               )}>
                 {isCompleted ? '\u2713' : i + 1}
               </div>
               <span className={cn(
-                'text-xs whitespace-nowrap',
-                isPending ? 'text-muted-foreground' : 'text-card-foreground',
-                isActive && 'font-bold',
+                'text-xs whitespace-nowrap tracking-wide',
+                isPending ? 'text-[#a49484]/70' : 'text-foreground',
+                isActive && 'font-bold text-[#C9A227]',
               )}>
                 {label}
               </span>
             </div>
             {i < STEPS.length - 1 && (
               <div className={cn(
-                'w-12 h-0.5 mx-2 mb-6 transition-colors',
-                i < current ? 'bg-primary' : 'bg-muted-foreground/30',
+                'w-12 h-0.5 mx-3 mb-7 transition-colors',
+                i < current ? 'bg-[#C9A227]' : 'bg-[#C9A227]/20',
               )} />
             )}
           </div>
@@ -171,14 +171,17 @@ export default function SignupPage() {
     }
   }
 
-  const selectClass = "w-full min-h-[44px] rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-card-foreground appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2712%27%20height=%2712%27%20viewBox=%270%200%2012%2012%27%3E%3Cpath%20fill=%27%236b6157%27%20d=%27M6%208L1%203h10z%27/%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] pr-8";
+  const selectClass = "w-full min-h-[44px] rounded-xl border border-[rgba(201,162,39,0.15)] bg-[#1a1612] px-3 py-2 text-sm text-foreground appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2712%27%20height=%2712%27%20viewBox=%270%200%2012%2012%27%3E%3Cpath%20fill=%27%23a49484%27%20d=%27M6%208L1%203h10z%27/%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] pr-8 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40";
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6">
+    <main
+      className="min-h-screen flex flex-col items-center justify-center py-24 px-6 bg-[#0f0d0a]"
+      style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.05) 0%, transparent 70%)' }}
+    >
       <div className="w-full max-w-[480px]">
-        <Card>
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-primary font-heading m-0">
+        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 sm:p-10">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent font-heading m-0">
               천지연꽃신당
             </h1>
           </div>
@@ -195,7 +198,7 @@ export default function SignupPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   autoComplete="email"
-                  className="min-h-[44px]"
+                  className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
                 />
               </FormField>
 
@@ -207,7 +210,7 @@ export default function SignupPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="비밀번호"
                     autoComplete="new-password"
-                    className="min-h-[44px] pr-16"
+                    className="min-h-[44px] pr-16 bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
                   />
                   <Button
                     type="button"
@@ -215,7 +218,7 @@ export default function SignupPage() {
                     size="sm"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-[#a49484] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[#C9A227]"
                   >
                     {showPassword ? '숨기기' : '보기'}
                   </Button>
@@ -230,7 +233,7 @@ export default function SignupPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="비밀번호 확인"
                     autoComplete="new-password"
-                    className="min-h-[44px] pr-16"
+                    className="min-h-[44px] pr-16 bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
                   />
                   <Button
                     type="button"
@@ -238,7 +241,7 @@ export default function SignupPage() {
                     size="sm"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     tabIndex={-1}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-[#a49484] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[#C9A227]"
                   >
                     {showConfirmPassword ? '숨기기' : '보기'}
                   </Button>
@@ -252,14 +255,14 @@ export default function SignupPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="이름"
                   autoComplete="name"
-                  className="min-h-[44px]"
+                  className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
                 />
               </FormField>
 
               <ActionButton
                 onClick={() => setStep(1)}
                 disabled={!step1Valid}
-                className="w-full mt-2"
+                className="w-full mt-6"
               >
                 다음
               </ActionButton>
@@ -276,7 +279,7 @@ export default function SignupPage() {
                   onChange={(e) => handlePhoneChange(e.target.value)}
                   placeholder="010-0000-0000"
                   autoComplete="tel"
-                  className="min-h-[44px]"
+                  className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
                 />
               </FormField>
 
@@ -318,14 +321,14 @@ export default function SignupPage() {
               <FormField label="성별" hint="선택 사항입니다">
                 <div className="flex gap-6 pt-1">
                   {([['male', '남성'], ['female', '여성'], ['none', '선택안함']] as const).map(([val, label]) => (
-                    <label key={val} className="flex items-center gap-1 cursor-pointer text-sm text-card-foreground">
+                    <label key={val} className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
                       <input
                         type="radio"
                         name="gender"
                         value={val}
                         checked={gender === val}
                         onChange={(e) => setGender(e.target.value)}
-                        className="w-[18px] h-[18px] cursor-pointer accent-primary"
+                        className="w-[18px] h-[18px] cursor-pointer accent-[#C9A227]"
                       />
                       {label}
                     </label>
@@ -333,12 +336,12 @@ export default function SignupPage() {
                 </div>
               </FormField>
 
-              <div className="flex gap-3 mt-2">
+              <div className="flex gap-3 mt-6">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setStep(0)}
-                  className="flex-1 min-h-[44px] font-bold font-heading"
+                  className="flex-1 min-h-[44px] font-bold font-heading rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10"
                 >
                   이전
                 </Button>
@@ -356,8 +359,8 @@ export default function SignupPage() {
           {step === 2 && (
             <div>
               {/* 전체 동의 */}
-              <div className="border-b-2 border-input pb-3 mb-3">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-base text-card-foreground py-2">
+              <div className="border-b border-[rgba(201,162,39,0.15)] pb-4 mb-4">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-base text-foreground py-2">
                   <Checkbox
                     checked={allAgreed}
                     onCheckedChange={(checked) => handleAllTerms(checked === true)}
@@ -368,9 +371,9 @@ export default function SignupPage() {
               </div>
 
               {/* 이용약관 */}
-              <div className="mb-2">
+              <div className="mb-3">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-card-foreground py-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground py-2">
                     <Checkbox
                       checked={termsAgreed}
                       onCheckedChange={(checked) => setTermsAgreed(checked === true)}
@@ -383,22 +386,22 @@ export default function SignupPage() {
                     variant="link"
                     size="sm"
                     onClick={() => setExpandedTerm(expandedTerm === 'terms' ? null : 'terms')}
-                    className="text-muted-foreground text-xs underline min-h-0 h-auto px-1"
+                    className="text-[#a49484] text-xs underline min-h-0 h-auto px-1 hover:text-[#C9A227]"
                   >
                     보기
                   </Button>
                 </div>
                 {expandedTerm === 'terms' && (
-                  <div className="bg-muted rounded-md p-3 text-xs text-muted-foreground leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
+                  <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.1)] rounded-xl p-3 text-xs text-[#a49484] leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
                     {TERMS_DETAIL.terms}
                   </div>
                 )}
               </div>
 
               {/* 개인정보 수집 */}
-              <div className="mb-2">
+              <div className="mb-3">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-card-foreground py-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground py-2">
                     <Checkbox
                       checked={privacyAgreed}
                       onCheckedChange={(checked) => setPrivacyAgreed(checked === true)}
@@ -411,13 +414,13 @@ export default function SignupPage() {
                     variant="link"
                     size="sm"
                     onClick={() => setExpandedTerm(expandedTerm === 'privacy' ? null : 'privacy')}
-                    className="text-muted-foreground text-xs underline min-h-0 h-auto px-1"
+                    className="text-[#a49484] text-xs underline min-h-0 h-auto px-1 hover:text-[#C9A227]"
                   >
                     보기
                   </Button>
                 </div>
                 {expandedTerm === 'privacy' && (
-                  <div className="bg-muted rounded-md p-3 text-xs text-muted-foreground leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
+                  <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.1)] rounded-xl p-3 text-xs text-[#a49484] leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
                     {TERMS_DETAIL.privacy}
                   </div>
                 )}
@@ -426,26 +429,26 @@ export default function SignupPage() {
               {/* 마케팅 수신 */}
               <div className="mb-6">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-card-foreground py-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground py-2">
                     <Checkbox
                       checked={marketingAgreed}
                       onCheckedChange={(checked) => setMarketingAgreed(checked === true)}
                       className="w-5 h-5"
                     />
-                    <span><span className="text-muted-foreground font-bold">[선택]</span> 마케팅 정보 수신 동의</span>
+                    <span><span className="text-[#a49484] font-bold">[선택]</span> 마케팅 정보 수신 동의</span>
                   </label>
                   <Button
                     type="button"
                     variant="link"
                     size="sm"
                     onClick={() => setExpandedTerm(expandedTerm === 'marketing' ? null : 'marketing')}
-                    className="text-muted-foreground text-xs underline min-h-0 h-auto px-1"
+                    className="text-[#a49484] text-xs underline min-h-0 h-auto px-1 hover:text-[#C9A227]"
                   >
                     보기
                   </Button>
                 </div>
                 {expandedTerm === 'marketing' && (
-                  <div className="bg-muted rounded-md p-3 text-xs text-muted-foreground leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
+                  <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.1)] rounded-xl p-3 text-xs text-[#a49484] leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
                     {TERMS_DETAIL.marketing}
                   </div>
                 )}
@@ -459,12 +462,12 @@ export default function SignupPage() {
                 </div>
               )}
 
-              <div className="flex gap-3 mt-2">
+              <div className="flex gap-3 mt-6">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setStep(1)}
-                  className="flex-1 min-h-[44px] font-bold font-heading"
+                  className="flex-1 min-h-[44px] font-bold font-heading rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10"
                 >
                   이전
                 </Button>
@@ -479,11 +482,11 @@ export default function SignupPage() {
               </div>
             </div>
           )}
-        </Card>
+        </div>
 
-        <div className="text-center mt-4 text-sm text-muted-foreground">
+        <div className="text-center mt-8 text-sm text-[#a49484]">
           이미 계정이 있으신가요?{' '}
-          <Link href="/login" className="text-primary font-bold">
+          <Link href="/login" className="text-[#C9A227] font-bold hover:underline hover:text-[#D4A843] transition-colors">
             로그인
           </Link>
         </div>

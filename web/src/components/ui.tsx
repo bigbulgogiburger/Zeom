@@ -39,10 +39,10 @@ export function StatusBadge({ value }: { value: string }) {
 export function Card({ children, className: extraClass }: { children: React.ReactNode; className?: string }) {
   return (
     <ShadcnCard className={cn(
-      'dancheong-border border-2 border-[var(--color-border-card)] bg-[var(--color-bg-card)] shadow-md text-[var(--color-text-on-card)]',
+      'rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[var(--color-bg-card)] shadow-md text-[var(--color-text-on-card)] hover:shadow-[0_8px_32px_rgba(201,162,39,0.12)] hover:-translate-y-0.5 transition-all duration-300',
       extraClass
     )}>
-      <CardContent className="p-4">
+      <CardContent className="p-6 sm:p-8">
         {children}
       </CardContent>
     </ShadcnCard>
@@ -51,11 +51,11 @@ export function Card({ children, className: extraClass }: { children: React.Reac
 
 export function StatCard({ title, value, hint }: { title: string; value: string | number; hint?: string }) {
   return (
-    <Card>
-      <div className="text-[var(--color-accent-primary)] text-sm font-medium mb-1 font-heading">
+    <Card className="shadow-[0_4px_20px_rgba(201,162,39,0.08)]">
+      <div className="text-[var(--color-gold)] text-sm font-medium mb-2 font-heading">
         {title}
       </div>
-      <div className="text-2xl font-black leading-tight font-heading">
+      <div className="text-3xl font-black leading-tight font-heading">
         {value}
       </div>
       {hint && (
@@ -69,7 +69,7 @@ export function StatCard({ title, value, hint }: { title: string; value: string 
 
 export function PageTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="m-0 text-2xl leading-tight font-bold font-heading text-[var(--color-text-on-dark)]">
+    <h2 className="m-0 text-3xl leading-tight font-bold font-heading tracking-tight text-[var(--color-text-on-dark)]">
       {children}
     </h2>
   );
@@ -78,14 +78,16 @@ export function PageTitle({ children }: { children: React.ReactNode }) {
 export function EmptyState({ title, desc }: { title: string; desc?: string }) {
   return (
     <Card>
-      <div className="font-bold font-heading">
-        {title}
-      </div>
-      {desc && (
-        <div className="text-[var(--color-text-muted-card)] mt-1 text-sm">
-          {desc}
+      <div className="text-center py-6">
+        <div className="text-lg font-bold font-heading">
+          {title}
         </div>
-      )}
+        {desc && (
+          <div className="text-[var(--color-text-muted-card)] mt-2 text-sm leading-relaxed">
+            {desc}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }
@@ -120,7 +122,7 @@ export function ActionButton({
       disabled={loading || props.disabled}
       aria-busy={loading ? true : undefined}
       className={cn(
-        'min-h-[44px] px-6 py-3 bg-[var(--color-gold)] text-[var(--color-bg-primary)] font-bold font-heading hover:bg-[var(--color-gold-hover)]',
+        'min-h-[48px] px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading rounded-full hover:from-[#b08d1f] hover:to-[#C9A227]',
         extraClass
       )}
       style={props.style}
@@ -146,8 +148,8 @@ export function FormField({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-4">
-      <label className="block mb-1 font-medium text-sm">
+    <div className="mb-6">
+      <label className="block mb-2 font-medium text-sm">
         {label}
         {required && (
           <span className="text-[var(--color-danger)] ml-1" aria-hidden="true">*</span>
@@ -160,7 +162,7 @@ export function FormField({
         </div>
       )}
       {hint && !error && (
-        <div className="text-[var(--color-text-muted-card)] text-xs mt-1">
+        <div className="text-[#a49484] text-xs mt-1">
           {hint}
         </div>
       )}
@@ -191,7 +193,7 @@ export function ConfirmDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onCancel(); }}>
-      <DialogContent className="bg-[var(--color-bg-card)] text-[var(--color-text-on-card)] border-[var(--color-border-card)] max-w-[420px]">
+      <DialogContent className="bg-[var(--color-bg-card)] text-[var(--color-text-on-card)] border-[rgba(201,162,39,0.15)] rounded-2xl max-w-[420px]">
         <DialogHeader>
           <DialogTitle className="font-heading font-bold text-lg">
             {title}
@@ -229,8 +231,8 @@ export function ConfirmDialog({
 
 export function SkeletonCard({ lines = 3 }: { lines?: number }) {
   return (
-    <ShadcnCard className="dancheong-border border-2 border-[var(--color-border-card)] bg-[var(--color-bg-card)] shadow-md">
-      <CardContent className="p-4">
+    <ShadcnCard className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[var(--color-bg-card)] shadow-md">
+      <CardContent className="p-6 sm:p-8">
         {Array.from({ length: lines }, (_, i) => (
           <div
             key={i}
@@ -266,13 +268,13 @@ export function Pagination({
   for (let i = start; i <= end; i++) pages.push(i);
 
   return (
-    <nav aria-label="페이지 네비게이션" className="flex gap-1 justify-center items-center mt-6">
+    <nav aria-label="페이지 네비게이션" className="flex gap-2 justify-center items-center mt-8">
       <Button
         variant="ghost"
         size="sm"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        className="font-heading font-bold text-sm"
+        className="font-heading font-bold text-sm rounded-full"
         aria-label="이전 페이지"
       >
         이전
@@ -285,7 +287,7 @@ export function Pagination({
           onClick={() => onPageChange(p)}
           aria-current={p === page ? 'page' : undefined}
           className={cn(
-            'min-w-9 font-heading font-bold text-sm',
+            'min-w-9 font-heading font-bold text-sm rounded-full',
             p === page
               ? 'bg-[var(--color-gold)] text-[var(--color-bg-primary)] hover:bg-[var(--color-gold-hover)]'
               : ''
@@ -299,7 +301,7 @@ export function Pagination({
         size="sm"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        className="font-heading font-bold text-sm"
+        className="font-heading font-bold text-sm rounded-full"
         aria-label="다음 페이지"
       >
         다음

@@ -41,6 +41,8 @@ description: 프론트엔드 UI/디자인 시스템 품질 검증. UI 컴포넌�
 | `web/src/app/login/page.tsx` | 로그인 페이지 |
 | `web/src/app/counselors/page.tsx` | 상담사 목록 |
 | `web/src/app/counselor/layout.tsx` | 상담사 포털 레이아웃 |
+| `web/src/components/app-header.tsx` | 앱 헤더/네비게이션 |
+| `web/src/app/counselors/[id]/CounselorDetailClient.tsx` | 상담사 상세 페이지 |
 
 ## Workflow
 
@@ -119,6 +121,50 @@ cd web && npm run build 2>&1 | tail -5
 **FAIL:** 빌드 에러 발생
 **수정:** 에러 메시지에 따라 수정
 
+### Step 7: CSS @layer base 배치 확인
+
+**도구:** Grep
+
+globals.css에서 element-level styles (*, html, body, h1-h6, a, input, button 등)가 반드시 `@layer base` 안에 위치해야 합니다. 그래야 Tailwind 유틸리티(mx-auto, bg-*, px-* 등)가 올바르게 오버라이드합니다.
+
+```bash
+grep -n '^[a-z*]\|^html\|^body\|^h[1-6]\|^input\|^button\|^label\|^textarea\|^select' web/src/app/globals.css
+```
+
+**PASS:** element selector가 `@layer base { }` 블록 안에만 존재 (또는 `.class-name` 형태로 스코핑된 경우)
+**FAIL:** element selector가 `@layer base` 밖에 있음 → Tailwind 유틸리티가 정상 동작하지 않음
+**수정:** element-level 스타일을 `@layer base { }` 블록으로 이동
+
+### Step 8: button base style 스코핑 확인
+
+**도구:** Grep
+
+shadcn/ui Button은 `data-slot="button"` 속성을 가집니다. base button gradient 스타일은 shadcn 버튼에 적용되면 안 됩니다.
+
+```bash
+grep -n 'button:not(\[data-slot\])' web/src/app/globals.css
+grep -n 'button {' web/src/app/globals.css
+```
+
+**PASS:** gradient/padding/min-height가 `button:not([data-slot])` 안에만 존재. `button {` 블록은 cursor/border/background-color:transparent/transition만 포함
+**FAIL:** `button {` 블록에 `background: linear-gradient` 또는 `padding`이 포함됨 → shadcn Button variant 시스템이 깨짐
+**수정:** gradient/padding/color 등을 `button:not([data-slot])` 선택자로 이동
+
+### Step 9: SSR-safe 애니메이션 패턴 확인
+
+**도구:** Grep
+
+fade-up 애니메이션은 SSR/no-JS 환경에서 콘텐츠가 보이도록 설계되어야 합니다. JS가 `html.js-anim` 클래스를 추가해야만 애니메이션이 활성화됩니다.
+
+```bash
+grep -n 'fade-up' web/src/app/globals.css
+grep -n 'js-anim' web/src/app/globals.css web/src/app/HomeContent.tsx
+```
+
+**PASS:** `.fade-up { opacity: 1; }` (기본 가시) + `html.js-anim .fade-up { opacity: 0; }` (JS가 활성화할 때만 숨김) 패턴 존재
+**FAIL:** `.fade-up { opacity: 0; }` (기본 숨김) → SSR에서 콘텐츠가 보이지 않음
+**수정:** SSR-safe 패턴으로 변경: 기본 visible, `html.js-anim` 게이트 적용
+
 ## Output Format
 
 | 검사 | 결과 | 상세 |
@@ -129,9 +175,14 @@ cd web && npm run build 2>&1 | tail -5
 | Import 경로 | PASS/FAIL | 혼용: ... |
 | 한국어 텍스트 | PASS/FAIL | 누락: ... |
 | 빌드 | PASS/FAIL | 에러: ... |
+| @layer base 배치 | PASS/FAIL | 누출 element selector: ... |
+| button 스코핑 | PASS/FAIL | data-slot 스코핑: ... |
+| SSR-safe 애니메이션 | PASS/FAIL | fade-up 패턴: ... |
 
 ## Exceptions
 
 1. **tailwind-merge + clsx**: `cn()` 유틸리티 내부에서의 클래스 병합은 정상 패턴
 2. **shadcn/ui 기본 스타일**: shadcn/ui 컴포넌트 내부의 HSL 기반 기본 색상은 globals.css에서 오버라이드하는 것이 정상
 3. **외부 라이브러리 스타일**: sendbird-calls 등 외부 라이브러리의 CSS는 프로젝트 디자인 토큰 미적용이 허용됨
+4. **Tailwind 인라인 색상값**: `bg-[#C9A227]`, `text-[#0f0d0a]` 등 Tailwind arbitrary value로 디자인 토큰 색상을 인라인 사용하는 것은 허용됨 (CSS 변수 미사용 시에도 위반 아님)
+5. **글로벌 CSS 내 클래스 기반 스타일**: `.app-header`, `.landing-card` 등 클래스 셀렉터는 `@layer base` 바깥에 위치해도 정상 (element selector만 `@layer base` 필수)

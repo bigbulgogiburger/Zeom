@@ -118,48 +118,48 @@ export default function CounselorSchedulePage() {
     <div className="flex flex-col gap-6">
       <PageTitle>스케줄 관리</PageTitle>
 
-      <Alert className="border-[var(--color-gold)] bg-[var(--color-gold)]/10">
-        <AlertDescription className="text-sm text-[var(--color-text-on-card)]">
+      <Alert className="border-[#C9A227] bg-[#C9A227]/10 rounded-xl">
+        <AlertDescription className="text-sm text-[#f9f5ed]">
           스케줄을 저장하면 기존의 미래 슬롯이 모두 새 슬롯으로 교체됩니다. 신중하게 설정해 주세요.
         </AlertDescription>
       </Alert>
 
       {/* Add slot form */}
       <Card>
-        <h3 className="font-heading font-bold text-lg text-[var(--color-accent-primary)] mb-4">
+        <h3 className="font-heading font-bold text-lg text-[#C9A227] mb-4">
           슬롯 추가
         </h3>
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label className="font-heading font-medium text-sm">날짜</Label>
+            <Label className="font-heading font-medium text-sm text-[#a49484]">날짜</Label>
             <Input
               type="date"
               value={date}
               onChange={e => setDate(e.target.value)}
-              className="w-[160px] bg-white border-[var(--color-border-card)]"
+              className="w-[160px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="font-heading font-medium text-sm">시작 시간</Label>
+            <Label className="font-heading font-medium text-sm text-[#a49484]">시작 시간</Label>
             <Input
               type="time"
               value={startTime}
               onChange={e => setStartTime(e.target.value)}
-              className="w-[130px] bg-white border-[var(--color-border-card)]"
+              className="w-[130px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="font-heading font-medium text-sm">종료 시간</Label>
+            <Label className="font-heading font-medium text-sm text-[#a49484]">종료 시간</Label>
             <Input
               type="time"
               value={endTime}
               onChange={e => setEndTime(e.target.value)}
-              className="w-[130px] bg-white border-[var(--color-border-card)]"
+              className="w-[130px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
             />
           </div>
           <Button
             onClick={handleAddSlot}
-            className="bg-[var(--color-accent-primary)] text-[var(--color-text-on-dark)] font-heading font-bold hover:bg-[var(--color-accent-primary)]/90"
+            className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-8 py-3 font-heading font-bold"
           >
             슬롯 추가
           </Button>
@@ -168,7 +168,7 @@ export default function CounselorSchedulePage() {
 
       <InlineError message={error} />
       {success && (
-        <div role="status" className="text-[var(--color-success)] text-sm font-medium">
+        <div role="status" className="text-green-500 text-sm font-medium">
           {success}
         </div>
       )}
@@ -176,7 +176,7 @@ export default function CounselorSchedulePage() {
       {/* Pending slots to save */}
       {pendingSlots.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h3 className="font-heading font-bold text-lg text-[var(--color-text-on-dark)]">
+          <h3 className="font-heading font-bold text-lg text-[#f9f5ed]">
             저장 대기 슬롯 ({pendingSlots.length}개)
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -187,7 +187,7 @@ export default function CounselorSchedulePage() {
                     <div className="font-heading font-bold text-sm">
                       {formatSlotTime(slot.startAt)}
                     </div>
-                    <div className="text-[var(--color-text-muted-card)] text-xs">
+                    <div className="text-[#a49484] text-xs">
                       ~ {formatSlotTime(slot.endAt)}
                     </div>
                   </div>
@@ -195,7 +195,7 @@ export default function CounselorSchedulePage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleRemovePending(idx)}
-                    className="text-[var(--color-danger)] hover:text-[var(--color-danger)] font-heading font-bold text-xs"
+                    className="text-[#8B0000] hover:text-[#8B0000] font-heading font-bold text-xs hover:bg-[#8B0000]/10"
                   >
                     삭제
                   </Button>
@@ -213,7 +213,7 @@ export default function CounselorSchedulePage() {
 
       {/* Current saved schedule */}
       <div className="flex flex-col gap-3">
-        <h3 className="font-heading font-bold text-lg text-[var(--color-text-on-dark)]">
+        <h3 className="font-heading font-bold text-lg text-[#f9f5ed]">
           현재 등록된 스케줄
         </h3>
         {loading ? (
@@ -221,8 +221,8 @@ export default function CounselorSchedulePage() {
             <div className="space-y-2">
               {[1, 2, 3].map(i => (
                 <div key={i} className="animate-pulse flex items-center gap-4">
-                  <div className="h-4 w-1/3 bg-[var(--color-bg-secondary)] rounded" />
-                  <div className="h-4 w-1/4 bg-[var(--color-bg-secondary)] rounded" />
+                  <div className="h-4 w-1/3 bg-[#1a1612] rounded" />
+                  <div className="h-4 w-1/4 bg-[#1a1612] rounded" />
                 </div>
               ))}
             </div>
@@ -239,7 +239,7 @@ export default function CounselorSchedulePage() {
                 <div className="font-heading font-bold text-sm">
                   {formatSlotTime(slot.startAt)}
                 </div>
-                <div className="text-[var(--color-text-muted-card)] text-xs">
+                <div className="text-[#a49484] text-xs">
                   ~ {formatSlotTime(slot.endAt)}
                 </div>
               </Card>

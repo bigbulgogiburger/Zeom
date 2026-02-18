@@ -21,6 +21,7 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-data-redis'
   implementation 'org.springframework.boot:spring-boot-starter-cache'
   implementation 'org.flywaydb:flyway-core'
+  implementation 'org.flywaydb:flyway-mysql'
   implementation 'org.springframework.security:spring-security-crypto'
   implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
   implementation 'org.redisson:redisson:3.27.2'

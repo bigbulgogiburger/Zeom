@@ -56,17 +56,17 @@ export default function SessionsPage() {
 
   return (
     <RequireLogin>
-      <main className="page-container">
-        <h1 className="text-2xl font-bold font-heading text-foreground">내 세션 관리</h1>
+      <main className="max-w-[1000px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+        <h1 className="text-3xl font-black tracking-tight font-heading text-foreground">내 세션 관리</h1>
 
         {message && (
-          <Alert variant="destructive" className="mt-3">
+          <Alert variant="destructive">
             <AlertDescription>{message}</AlertDescription>
           </Alert>
         )}
 
         {loading ? (
-          <div className="grid gap-3 mt-4">
+          <div className="grid gap-6">
             {[1, 2].map((i) => (
               <div key={i} className="skeleton h-[100px]" />
             ))}
@@ -74,7 +74,7 @@ export default function SessionsPage() {
         ) : items.length === 0 ? (
           <EmptyState title="세션 정보가 없어요" desc="활성 세션이 없습니다." />
         ) : (
-          <div className="grid gap-3 mt-4">
+          <div className="grid gap-6">
             {items.map((s) => (
               <Card key={s.id}>
                 <div className="flex items-center gap-2">
@@ -92,7 +92,7 @@ export default function SessionsPage() {
                   variant="destructive"
                   size="sm"
                   onClick={() => revoke(s.id)}
-                  className="mt-3"
+                  className="mt-3 rounded-full"
                 >
                   이 세션 해제
                 </Button>

@@ -49,105 +49,64 @@ export default function CreditHistoryPage() {
 
   return (
     <RequireLogin>
-      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-lg)', maxWidth: 900, margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--spacing-md)' }}>
+      <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+        <div className="flex justify-between items-center flex-wrap gap-4">
           <PageTitle>상담권 이용 내역</PageTitle>
           <Link
             href="/credits"
-            style={{
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-gold)',
-              fontWeight: 'var(--font-weight-medium)',
-            }}
+            className="text-sm text-[#C9A227] font-medium hover:underline"
           >
             ← 상담권 구매
           </Link>
         </div>
 
         {error && (
-          <div role="alert" style={{
-            color: 'var(--color-danger)',
-            fontSize: 'var(--font-size-sm)',
-            fontWeight: 'var(--font-weight-medium)',
-          }}>
+          <div role="alert" className="text-[#8B0000] text-sm font-medium">
             {error}
           </div>
         )}
 
         {loading ? (
           <Card>
-            <div style={{
-              textAlign: 'center',
-              padding: 'var(--spacing-xl)',
-              color: 'var(--color-text-muted-card)',
-            }}>
+            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
               불러오는 중...
             </div>
           </Card>
         ) : items.length === 0 ? (
           <EmptyState title="이용 내역이 없습니다" desc="상담권을 구매하면 내역이 표시됩니다." />
         ) : (
-          <div style={{ display: 'grid', gap: 'var(--spacing-sm)' }}>
+          <div className="grid gap-6">
             {items.map((item) => (
               <Card key={item.id}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: 'var(--spacing-md)',
-                  flexWrap: 'wrap',
-                }}>
-                  <div style={{ flex: 1, minWidth: '200px' }}>
-                    <div style={{
-                      display: 'flex',
-                      gap: 'var(--spacing-sm)',
-                      alignItems: 'center',
-                      marginBottom: 'var(--spacing-xs)',
-                    }}>
+                <div className="flex justify-between items-start gap-4 flex-wrap">
+                  <div className="flex-1 min-w-[200px]">
+                    <div className="flex gap-2 items-center mb-1">
                       <StatusBadge value={item.remainingUnits > 0 ? 'ACTIVE' : 'USED'} />
-                      <span style={{
-                        fontWeight: 'var(--font-weight-bold)',
-                        fontFamily: 'var(--font-heading)',
-                      }}>
+                      <span className="font-bold font-heading">
                         상담권 #{item.id}
                       </span>
                     </div>
                     {item.usages.length > 0 && (
-                      <div style={{
-                        fontSize: 'var(--font-size-sm)',
-                        color: 'var(--color-text-muted-card)',
-                        marginTop: 'var(--spacing-xs)',
-                      }}>
+                      <div className="text-sm text-[var(--color-text-muted-card)] mt-1">
                         {item.usages.length}건 사용
                         {item.usages.some(u => u.bookingId) && (
                           <> (예약 #{item.usages.find(u => u.bookingId)?.bookingId})</>
                         )}
                       </div>
                     )}
-                    <div style={{
-                      fontSize: 'var(--font-size-xs)',
-                      color: 'var(--color-text-muted-card)',
-                      marginTop: 'var(--spacing-sm)',
-                    }}>
+                    <div className="text-xs text-[var(--color-text-muted-card)] mt-2">
                       구매일: {new Date(item.purchasedAt).toLocaleString('ko-KR')}
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{
-                      fontSize: 'var(--font-size-lg)',
-                      fontWeight: 'var(--font-weight-bold)',
-                      fontFamily: 'var(--font-heading)',
-                      color: item.remainingUnits > 0
-                        ? 'var(--color-success)'
-                        : 'var(--color-text-muted-card)',
-                    }}>
+                  <div className="text-right">
+                    <div className={`text-lg font-bold font-heading ${
+                      item.remainingUnits > 0
+                        ? 'text-green-500'
+                        : 'text-[var(--color-text-muted-card)]'
+                    }`}>
                       {item.remainingUnits} / {item.totalUnits}회
                     </div>
-                    <div style={{
-                      fontSize: 'var(--font-size-xs)',
-                      color: 'var(--color-text-muted-card)',
-                      marginTop: 'var(--spacing-xs)',
-                    }}>
+                    <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
                       잔여 / 전체
                     </div>
                   </div>

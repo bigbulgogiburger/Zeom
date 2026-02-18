@@ -180,9 +180,9 @@ export default function AdminSettlementsPage() {
   if (loading) {
     return (
       <RequireAdmin>
-        <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-md)' }}>
+        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
           <PageTitle>정산 관리</PageTitle>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <SkeletonCard lines={2} />
             <SkeletonCard lines={2} />
             <SkeletonCard lines={2} />
@@ -196,14 +196,14 @@ export default function AdminSettlementsPage() {
 
   return (
     <RequireAdmin>
-      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-lg)' }}>
+      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
         <PageTitle>정산 관리</PageTitle>
 
         <InlineError message={error} />
         <InlineSuccess message={success} />
 
         {/* Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
           <StatCard title="전체" value={`${summary.total}건`} />
           <StatCard title="대기" value={`${summary.pending}건`} hint="확정 필요" />
           <StatCard title="확정" value={`${summary.confirmed}건`} hint="지급 필요" />
@@ -213,19 +213,11 @@ export default function AdminSettlementsPage() {
 
         {/* Filters */}
         <Card>
-          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="flex gap-3 flex-wrap items-end">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{
-                padding: '6px 10px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border-card)',
-                background: 'var(--color-bg-card)',
-                color: 'var(--color-text-on-card)',
-                fontFamily: 'var(--font-heading)',
-                fontSize: 'var(--font-size-sm)',
-              }}
+              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm font-heading min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
             >
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>{STATUS_LABELS[opt]}</option>
@@ -236,50 +228,26 @@ export default function AdminSettlementsPage() {
               placeholder="상담사 이름"
               value={counselorFilter}
               onChange={(e) => { setCounselorFilter(e.target.value); setPage(1); }}
-              style={{
-                padding: '6px 10px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border-card)',
-                background: 'var(--color-bg-card)',
-                color: 'var(--color-text-on-card)',
-                fontFamily: 'var(--font-heading)',
-                fontSize: 'var(--font-size-sm)',
-              }}
+              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm font-heading min-h-[44px] placeholder:text-[#a49484] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
             />
 
-            <label style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted-card)' }}>
+            <label className="text-sm text-[#a49484] flex items-center gap-1.5">
               시작
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                style={{
-                  marginLeft: '4px',
-                  padding: '6px 10px',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--color-border-card)',
-                  background: 'var(--color-bg-card)',
-                  color: 'var(--color-text-on-card)',
-                  fontSize: 'var(--font-size-sm)',
-                }}
+                className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
               />
             </label>
 
-            <label style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted-card)' }}>
+            <label className="text-sm text-[#a49484] flex items-center gap-1.5">
               종료
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                style={{
-                  marginLeft: '4px',
-                  padding: '6px 10px',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--color-border-card)',
-                  background: 'var(--color-bg-card)',
-                  color: 'var(--color-text-on-card)',
-                  fontSize: 'var(--font-size-sm)',
-                }}
+                className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
               />
             </label>
 
@@ -295,70 +263,53 @@ export default function AdminSettlementsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">ID</TableHead>
-                  <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">상담사</TableHead>
-                  <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">고객</TableHead>
-                  <TableHead className="font-heading font-bold text-[var(--color-accent-primary)] text-right">정산액</TableHead>
-                  <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">상태</TableHead>
-                  <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">생성일</TableHead>
-                  <TableHead className="font-heading font-bold text-[var(--color-accent-primary)] text-right">관리</TableHead>
+                  <TableHead className="font-heading font-bold text-[#C9A227]">ID</TableHead>
+                  <TableHead className="font-heading font-bold text-[#C9A227]">상담사</TableHead>
+                  <TableHead className="font-heading font-bold text-[#C9A227]">고객</TableHead>
+                  <TableHead className="font-heading font-bold text-[#C9A227] text-right">정산액</TableHead>
+                  <TableHead className="font-heading font-bold text-[#C9A227]">상태</TableHead>
+                  <TableHead className="font-heading font-bold text-[#C9A227]">생성일</TableHead>
+                  <TableHead className="font-heading font-bold text-[#C9A227] text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paged.map((s) => (
-                  <TableRow key={s.id}>
+                  <TableRow key={s.id} className="hover:bg-[rgba(201,162,39,0.03)] transition-colors">
                     <TableCell
-                      className="font-mono text-sm cursor-pointer hover:underline"
-                      style={{ color: 'var(--color-gold)' }}
+                      className="font-mono text-sm cursor-pointer hover:underline text-[#C9A227]"
                       onClick={() => setSelectedSettlement(s)}
                     >
                       #{s.id}
                     </TableCell>
                     <TableCell className="font-medium">{s.counselorName}</TableCell>
-                    <TableCell className="text-[var(--color-text-muted-card)]">{s.customerName}</TableCell>
+                    <TableCell className="text-[#a49484]">{s.customerName}</TableCell>
                     <TableCell className="text-right font-bold">{formatCurrency(s.counselorAmount)}</TableCell>
                     <TableCell><StatusBadge value={s.status} /></TableCell>
-                    <TableCell className="text-[var(--color-text-muted-card)]">{formatDate(s.createdAt)}</TableCell>
+                    <TableCell className="text-[#a49484]">{formatDate(s.createdAt)}</TableCell>
                     <TableCell className="text-right">
-                      <div style={{ display: 'flex', gap: 'var(--spacing-xs)', justifyContent: 'flex-end' }}>
+                      <div className="flex gap-2 justify-end">
                         {s.status === 'PENDING' && (
-                          <ActionButton
+                          <button
                             onClick={() => setConfirmAction({ type: 'confirm', settlement: s })}
-                            style={{
-                              background: 'var(--color-gold)',
-                              color: 'var(--color-bg-primary)',
-                              fontSize: 'var(--font-size-sm)',
-                              padding: '4px 12px',
-                              minHeight: '28px',
-                            }}
+                            className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:from-[#b08d1f] hover:to-[#C9A227] transition-all"
                           >
                             확정
-                          </ActionButton>
+                          </button>
                         )}
                         {s.status === 'CONFIRMED' && (
-                          <ActionButton
+                          <button
                             onClick={() => setConfirmAction({ type: 'pay', settlement: s })}
-                            style={{
-                              background: 'var(--color-success)',
-                              color: 'white',
-                              fontSize: 'var(--font-size-sm)',
-                              padding: '4px 12px',
-                              minHeight: '28px',
-                            }}
+                            className="rounded-full bg-green-600 text-white text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:opacity-90 transition-opacity"
                           >
                             지급
-                          </ActionButton>
+                          </button>
                         )}
-                        <ActionButton
+                        <button
                           onClick={() => setSelectedSettlement(s)}
-                          style={{
-                            fontSize: 'var(--font-size-sm)',
-                            padding: '4px 12px',
-                            minHeight: '28px',
-                          }}
+                          className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] bg-transparent hover:bg-[#C9A227]/10 transition-colors"
                         >
                           상세
-                        </ActionButton>
+                        </button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -370,18 +321,30 @@ export default function AdminSettlementsPage() {
 
         {/* Pagination */}
         {filtered.length > PAGE_SIZE && (
-          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center', justifyContent: 'center' }}>
-            <ActionButton disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>이전</ActionButton>
-            <span style={{ fontFamily: 'var(--font-heading)' }}>{page} / {totalPages}</span>
-            <ActionButton disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>다음</ActionButton>
+          <div className="flex gap-4 items-center justify-center pt-2">
+            <ActionButton
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+              className="!bg-transparent border-2 border-[#C9A227] !text-[#C9A227] hover:!bg-[#C9A227]/10 !min-h-[36px] !px-5 !py-1.5"
+            >
+              이전
+            </ActionButton>
+            <span className="font-heading font-bold text-[#f9f5ed]">{page} / {totalPages}</span>
+            <ActionButton
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              className="!bg-transparent border-2 border-[#C9A227] !text-[#C9A227] hover:!bg-[#C9A227]/10 !min-h-[36px] !px-5 !py-1.5"
+            >
+              다음
+            </ActionButton>
           </div>
         )}
 
         {/* Detail modal */}
         <Dialog open={!!selectedSettlement} onOpenChange={(open) => { if (!open) setSelectedSettlement(null); }}>
-          <DialogContent className="bg-[var(--color-bg-card)] text-[var(--color-text-on-card)] border-[var(--color-border-card)] max-w-[520px]">
+          <DialogContent className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl text-[#f9f5ed] max-w-[520px]">
             <DialogHeader>
-              <DialogTitle className="font-heading font-bold text-lg">
+              <DialogTitle className="font-heading font-bold text-lg text-[#f9f5ed]">
                 정산 상세 #{selectedSettlement?.id}
               </DialogTitle>
             </DialogHeader>
@@ -389,120 +352,99 @@ export default function AdminSettlementsPage() {
               <div className="grid gap-3 text-sm">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[var(--color-text-muted-card)]">상담사: </span>
-                    <span className="font-bold">{selectedSettlement.counselorName}</span>
+                    <span className="text-[#a49484]">상담사: </span>
+                    <span className="font-bold text-[#f9f5ed]">{selectedSettlement.counselorName}</span>
                   </div>
                   <div>
-                    <span className="text-[var(--color-text-muted-card)]">고객: </span>
-                    <span className="font-bold">{selectedSettlement.customerName}</span>
+                    <span className="text-[#a49484]">고객: </span>
+                    <span className="font-bold text-[#f9f5ed]">{selectedSettlement.customerName}</span>
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    borderTop: '1px solid var(--color-border-card)',
-                    paddingTop: 'var(--spacing-sm)',
-                  }}
-                >
+                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <span className="text-[var(--color-text-muted-card)]">총액: </span>
-                      <span className="font-bold">{formatCurrency(selectedSettlement.totalAmount)}</span>
+                      <span className="text-[#a49484]">총액: </span>
+                      <span className="font-bold text-[#f9f5ed]">{formatCurrency(selectedSettlement.totalAmount)}</span>
                     </div>
                     <div>
-                      <span className="text-[var(--color-text-muted-card)]">플랫폼 수수료: </span>
-                      <span>{formatCurrency(selectedSettlement.platformFee)}</span>
+                      <span className="text-[#a49484]">플랫폼 수수료: </span>
+                      <span className="text-[#f9f5ed]">{formatCurrency(selectedSettlement.platformFee)}</span>
                     </div>
                     <div>
-                      <span className="text-[var(--color-text-muted-card)]">상담사 정산액: </span>
-                      <span className="font-bold" style={{ color: 'var(--color-gold)' }}>
+                      <span className="text-[#a49484]">상담사 정산액: </span>
+                      <span className="font-bold text-[#C9A227]">
                         {formatCurrency(selectedSettlement.counselorAmount)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[var(--color-text-muted-card)]">상태: </span>
+                      <span className="text-[#a49484]">상태: </span>
                       <StatusBadge value={selectedSettlement.status} />
                     </div>
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    borderTop: '1px solid var(--color-border-card)',
-                    paddingTop: 'var(--spacing-sm)',
-                  }}
-                >
+                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <span className="text-[var(--color-text-muted-card)]">세션 ID: </span>
-                      <span className="font-mono">#{selectedSettlement.sessionId}</span>
+                      <span className="text-[#a49484]">세션 ID: </span>
+                      <span className="font-mono text-[#f9f5ed]">#{selectedSettlement.sessionId}</span>
                     </div>
                     {selectedSettlement.creditsUsed != null && (
                       <div>
-                        <span className="text-[var(--color-text-muted-card)]">사용 크레딧: </span>
-                        <span>{selectedSettlement.creditsUsed}개</span>
+                        <span className="text-[#a49484]">사용 크레딧: </span>
+                        <span className="text-[#f9f5ed]">{selectedSettlement.creditsUsed}개</span>
                       </div>
                     )}
                     {selectedSettlement.durationMinutes != null && (
                       <div>
-                        <span className="text-[var(--color-text-muted-card)]">상담 시간: </span>
-                        <span>{selectedSettlement.durationMinutes}분</span>
+                        <span className="text-[#a49484]">상담 시간: </span>
+                        <span className="text-[#f9f5ed]">{selectedSettlement.durationMinutes}분</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    borderTop: '1px solid var(--color-border-card)',
-                    paddingTop: 'var(--spacing-sm)',
-                  }}
-                >
+                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3">
                   <div className="grid grid-cols-1 gap-1">
                     <div>
-                      <span className="text-[var(--color-text-muted-card)]">생성일: </span>
-                      <span>{formatDateTime(selectedSettlement.createdAt)}</span>
+                      <span className="text-[#a49484]">생성일: </span>
+                      <span className="text-[#f9f5ed]">{formatDateTime(selectedSettlement.createdAt)}</span>
                     </div>
                     <div>
-                      <span className="text-[var(--color-text-muted-card)]">확정일: </span>
-                      <span>{formatDateTime(selectedSettlement.confirmedAt)}</span>
+                      <span className="text-[#a49484]">확정일: </span>
+                      <span className="text-[#f9f5ed]">{formatDateTime(selectedSettlement.confirmedAt)}</span>
                     </div>
                     <div>
-                      <span className="text-[var(--color-text-muted-card)]">지급일: </span>
-                      <span>{formatDateTime(selectedSettlement.paidAt)}</span>
+                      <span className="text-[#a49484]">지급일: </span>
+                      <span className="text-[#f9f5ed]">{formatDateTime(selectedSettlement.paidAt)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Action buttons in modal */}
-                <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'flex-end', marginTop: 'var(--spacing-sm)' }}>
+                <div className="flex gap-3 justify-end mt-2">
                   {selectedSettlement.status === 'PENDING' && (
-                    <ActionButton
+                    <button
                       onClick={() => {
                         setConfirmAction({ type: 'confirm', settlement: selectedSettlement });
                         setSelectedSettlement(null);
                       }}
-                      style={{
-                        background: 'var(--color-gold)',
-                        color: 'var(--color-bg-primary)',
-                      }}
+                      className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading px-6 py-2.5 hover:from-[#b08d1f] hover:to-[#C9A227] transition-all"
                     >
                       확정
-                    </ActionButton>
+                    </button>
                   )}
                   {selectedSettlement.status === 'CONFIRMED' && (
-                    <ActionButton
+                    <button
                       onClick={() => {
                         setConfirmAction({ type: 'pay', settlement: selectedSettlement });
                         setSelectedSettlement(null);
                       }}
-                      style={{
-                        background: 'var(--color-success)',
-                        color: 'white',
-                      }}
+                      className="rounded-full bg-green-600 text-white font-bold font-heading px-6 py-2.5 hover:opacity-90 transition-opacity"
                     >
                       지급
-                    </ActionButton>
+                    </button>
                   )}
                 </div>
               </div>

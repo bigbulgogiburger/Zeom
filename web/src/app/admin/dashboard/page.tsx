@@ -167,9 +167,9 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <RequireAdmin>
-        <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-md)' }}>
+        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
           <PageTitle>운영 대시보드</PageTitle>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <SkeletonCard lines={2} />
             <SkeletonCard lines={2} />
             <SkeletonCard lines={2} />
@@ -183,16 +183,16 @@ export default function AdminDashboardPage() {
 
   return (
     <RequireAdmin>
-      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-lg)' }}>
-        <div className="flex items-center justify-between flex-wrap gap-2">
+      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <PageTitle>운영 대시보드</PageTitle>
           <div className="flex items-center gap-3">
             {lastRefresh && (
-              <span style={{ color: 'var(--color-text-muted-card)', fontSize: 'var(--font-size-sm)' }}>
+              <span className="text-[#a49484] text-sm">
                 마지막 갱신: {lastRefresh}
               </span>
             )}
-            <Badge className="bg-[var(--color-success)] text-white">
+            <Badge className="bg-green-600 text-white rounded-full px-3 py-1 text-xs font-bold">
               30초 자동 갱신
             </Badge>
             <ActionButton onClick={loadData}>새로고침</ActionButton>
@@ -203,7 +203,7 @@ export default function AdminDashboardPage() {
         <InlineSuccess message={success} />
 
         {/* Stats cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <StatCard
             title="활성 세션"
             value={stats?.activeSessions ?? sessions.length}
@@ -228,7 +228,7 @@ export default function AdminDashboardPage() {
 
         {/* Active sessions table */}
         <div>
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 'var(--font-weight-bold)', marginBottom: 'var(--spacing-sm)' }}>
+          <h3 className="font-heading font-bold text-[#f9f5ed] mb-5 text-lg">
             활성 세션 ({sessions.length}건)
           </h3>
           {sessions.length === 0 ? (
@@ -238,37 +238,31 @@ export default function AdminDashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">ID</TableHead>
-                    <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">상담사</TableHead>
-                    <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">고객</TableHead>
-                    <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">시작 시간</TableHead>
-                    <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">경과</TableHead>
-                    <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">상태</TableHead>
-                    <TableHead className="font-heading font-bold text-[var(--color-accent-primary)] text-right">관리</TableHead>
+                    <TableHead className="font-heading font-bold text-[#C9A227]">ID</TableHead>
+                    <TableHead className="font-heading font-bold text-[#C9A227]">상담사</TableHead>
+                    <TableHead className="font-heading font-bold text-[#C9A227]">고객</TableHead>
+                    <TableHead className="font-heading font-bold text-[#C9A227]">시작 시간</TableHead>
+                    <TableHead className="font-heading font-bold text-[#C9A227]">경과</TableHead>
+                    <TableHead className="font-heading font-bold text-[#C9A227]">상태</TableHead>
+                    <TableHead className="font-heading font-bold text-[#C9A227] text-right">관리</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sessions.map((s) => (
-                    <TableRow key={s.sessionId}>
+                    <TableRow key={s.sessionId} className="hover:bg-[rgba(201,162,39,0.03)] transition-colors">
                       <TableCell className="font-mono text-sm">#{s.sessionId}</TableCell>
                       <TableCell className="font-medium">{s.counselorName}</TableCell>
                       <TableCell>{s.customerName}</TableCell>
-                      <TableCell className="text-[var(--color-text-muted-card)]">{formatTime(s.startedAt)}</TableCell>
+                      <TableCell className="text-[#a49484]">{formatTime(s.startedAt)}</TableCell>
                       <TableCell className="font-mono text-sm">{formatElapsed(s.startedAt)}</TableCell>
                       <TableCell><StatusBadge value={s.status} /></TableCell>
                       <TableCell className="text-right">
-                        <ActionButton
+                        <button
                           onClick={() => setForceEndTarget(s)}
-                          style={{
-                            background: 'var(--color-danger)',
-                            color: 'white',
-                            fontSize: 'var(--font-size-sm)',
-                            padding: '4px 12px',
-                            minHeight: '28px',
-                          }}
+                          className="rounded-full bg-[#8B0000] text-white text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:bg-[#6d0000] transition-colors"
                         >
                           강제 종료
-                        </ActionButton>
+                        </button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -281,16 +275,16 @@ export default function AdminDashboardPage() {
         {/* Settlement summary */}
         {settlementSummary && (
           <div>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 'var(--font-weight-bold)', marginBottom: 'var(--spacing-sm)' }}>
+            <h3 className="font-heading font-bold text-[#f9f5ed] mb-5 text-lg">
               정산 요약
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <StatCard title="대기" value={`${settlementSummary.pending}건`} hint="확정 대기" />
               <StatCard title="확정" value={`${settlementSummary.confirmed}건`} hint="지급 대기" />
               <StatCard title="지급 완료" value={`${settlementSummary.paid}건`} />
               <StatCard title="총 정산액" value={formatCurrency(settlementSummary.totalAmount)} />
             </div>
-            <div style={{ marginTop: 'var(--spacing-sm)' }}>
+            <div className="mt-5">
               <ActionButton onClick={() => window.location.href = '/admin/settlements'}>
                 정산 관리 바로가기
               </ActionButton>

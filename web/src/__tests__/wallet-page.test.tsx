@@ -136,7 +136,7 @@ describe('WalletPage', () => {
       expect(screen.getByText('10,000원')).toBeInTheDocument();
     });
 
-    const chargeButton = screen.getByText('💳 충전하기');
+    const chargeButton = screen.getByText('충전하기');
     fireEvent.click(chargeButton);
 
     expect(mockPush).toHaveBeenCalledWith('/cash/buy');
@@ -189,7 +189,7 @@ describe('WalletPage', () => {
       number: 1,
     });
 
-    const nextButton = screen.getByText('다음 →');
+    const nextButton = screen.getByText('다음');
     fireEvent.click(nextButton);
 
     await waitFor(() => {

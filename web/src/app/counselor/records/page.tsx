@@ -141,7 +141,7 @@ export default function CounselorRecordsPage() {
                   <span className="font-heading font-bold text-base">
                     {r.customerName}
                   </span>
-                  <span className="text-[var(--color-text-muted-card)] text-sm">
+                  <span className="text-[#a49484] text-sm">
                     {formatDateTime(r.startedAt)}
                   </span>
                 </div>
@@ -149,20 +149,20 @@ export default function CounselorRecordsPage() {
                 {/* Duration + End reason */}
                 <div className="flex items-center gap-3 flex-wrap">
                   <span className="text-sm">
-                    <span className="text-[var(--color-text-muted-card)]">소요 시간: </span>
+                    <span className="text-[#a49484]">소요 시간: </span>
                     <span className="font-bold">{formatDuration(r.durationSec)}</span>
                   </span>
                   {r.endReason && <StatusBadge value={r.endReason} />}
                 </div>
 
                 {/* Memo section */}
-                <div className="border-t border-[var(--color-border-card)] pt-3">
+                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-sm font-heading font-bold text-[var(--color-accent-primary)]">메모</span>
+                    <span className="text-sm font-heading font-bold text-[#C9A227]">메모</span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs font-heading font-bold text-[var(--color-gold)]"
+                      className="text-xs font-heading font-bold text-[#C9A227] hover:bg-[#C9A227]/10"
                       onClick={() => handleEditMemo(r)}
                     >
                       {editingId === r.sessionId ? '닫기' : r.memo ? '메모 수정' : '메모 작성'}
@@ -175,7 +175,7 @@ export default function CounselorRecordsPage() {
                         value={memoText}
                         onChange={(e) => setMemoText(e.target.value)}
                         placeholder="메모를 입력하세요..."
-                        className="bg-[var(--color-bg-card)] border-[var(--color-border-card)] text-sm"
+                        className="bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-sm text-[#f9f5ed]"
                         rows={3}
                       />
                       <div className="flex justify-end">
@@ -183,7 +183,7 @@ export default function CounselorRecordsPage() {
                           size="sm"
                           disabled={savingMemo}
                           onClick={() => handleSaveMemo(r.sessionId)}
-                          className="bg-[var(--color-gold)] text-[var(--color-bg-primary)] font-heading font-bold hover:bg-[var(--color-gold-hover)]"
+                          className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-6 font-heading font-bold"
                         >
                           {savingMemo ? '저장 중...' : '저장'}
                         </Button>
@@ -191,7 +191,7 @@ export default function CounselorRecordsPage() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-[var(--color-text-muted-card)]">
+                      <p className="text-sm text-[#a49484]">
                         {r.memo || '메모 없음'}
                       </p>
                       {memoSuccess === r.sessionId && (

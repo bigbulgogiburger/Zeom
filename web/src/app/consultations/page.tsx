@@ -57,17 +57,13 @@ export default function ConsultationsPage() {
 
   return (
     <RequireLogin>
-      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-lg)' }}>
+      <main className="max-w-[1000px] mx-auto px-6 sm:px-8 py-10 space-y-8">
         <PageTitle>상담 내역</PageTitle>
         <InlineError message={message} />
 
         {loading ? (
           <Card>
-            <div style={{
-              textAlign: 'center',
-              padding: 'var(--spacing-xl)',
-              color: 'var(--color-text-muted-card)',
-            }}>
+            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
               불러오는 중...
             </div>
           </Card>
@@ -77,41 +73,19 @@ export default function ConsultationsPage() {
             desc="상담을 예약하고 이용해보세요."
           />
         ) : (
-          <div style={{ display: 'grid', gap: 'var(--spacing-md)' }}>
+          <div className="grid gap-6">
             {consultations.map((c) => (
               <Card key={c.id}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: 'var(--spacing-md)',
-                  flexWrap: 'wrap',
-                }}>
-                  <div style={{ flex: 1, minWidth: '200px' }}>
-                    <div style={{
-                      display: 'flex',
-                      gap: 'var(--spacing-sm)',
-                      alignItems: 'center',
-                      marginBottom: 'var(--spacing-sm)',
-                      flexWrap: 'wrap',
-                    }}>
-                      <h3 style={{
-                        margin: 0,
-                        fontSize: 'var(--font-size-lg)',
-                        fontWeight: 'var(--font-weight-bold)',
-                        fontFamily: 'var(--font-heading)',
-                      }}>
+                <div className="flex justify-between items-start gap-4 flex-wrap">
+                  <div className="flex-1 min-w-[200px]">
+                    <div className="flex gap-2 items-center mb-2 flex-wrap">
+                      <h3 className="m-0 text-lg font-bold font-heading">
                         {c.counselorName}
                       </h3>
                       <StatusBadge value={c.status} />
                     </div>
 
-                    <div style={{
-                      display: 'grid',
-                      gap: 'var(--spacing-xs)',
-                      fontSize: 'var(--font-size-sm)',
-                      color: 'var(--color-text-muted-card)',
-                    }}>
+                    <div className="grid gap-1 text-sm text-[var(--color-text-muted-card)]">
                       <div>
                         <span>시작: </span>
                         <span>{new Date(c.startedAt).toLocaleString('ko-KR')}</span>
@@ -124,49 +98,27 @@ export default function ConsultationsPage() {
                       )}
                       <div>
                         <span>시간: </span>
-                        <span style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                        <span className="font-medium">
                           {formatDuration(c.durationMinutes)}
                         </span>
                       </div>
                     </div>
 
                     {/* Review Status */}
-                    <div style={{
-                      marginTop: 'var(--spacing-md)',
-                      padding: 'var(--spacing-sm) var(--spacing-md)',
-                      background: c.hasReview
-                        ? 'var(--color-success-light)'
-                        : 'var(--color-warning-light)',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: 'var(--font-size-xs)',
-                      fontWeight: 'var(--font-weight-medium)',
-                      color: c.hasReview
-                        ? 'var(--color-success)'
-                        : 'var(--color-warning)',
-                    }}>
-                      {c.hasReview ? '✅ 리뷰 작성 완료' : '⭐ 리뷰 작성 대기'}
+                    <div className={`mt-4 px-4 py-2 rounded-full text-xs font-medium inline-block ${
+                      c.hasReview
+                        ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+                        : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+                    }`}>
+                      {c.hasReview ? '리뷰 작성 완료' : '리뷰 작성 대기'}
                     </div>
                   </div>
 
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--spacing-xs)',
-                  }}>
+                  <div className="flex flex-col gap-1">
                     {!c.hasReview && c.status === 'COMPLETED' && (
                       <button
                         onClick={() => router.push(`/consultation/${c.id}/review`)}
-                        style={{
-                          background: 'var(--color-gold)',
-                          color: 'var(--color-bg-primary)',
-                          padding: 'var(--spacing-sm) var(--spacing-md)',
-                          fontSize: 'var(--font-size-sm)',
-                          borderRadius: 'var(--radius-md)',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontWeight: 'var(--font-weight-bold)',
-                          fontFamily: 'var(--font-heading)',
-                        }}
+                        className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] px-6 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
                       >
                         리뷰 작성
                       </button>

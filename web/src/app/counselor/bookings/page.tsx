@@ -116,22 +116,22 @@ export default function CounselorBookingsPage() {
       <Card>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium font-heading text-[var(--color-text-on-card)] whitespace-nowrap">
+            <label className="text-sm font-medium font-heading text-[#f9f5ed] whitespace-nowrap">
               날짜
             </label>
             <Input
               type="date"
               value={dateFilter}
               onChange={handleDateChange}
-              className="w-[160px] bg-white border-[var(--color-border-card)]"
+              className="w-[160px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium font-heading text-[var(--color-text-on-card)] whitespace-nowrap">
+            <label className="text-sm font-medium font-heading text-[#f9f5ed] whitespace-nowrap">
               상태
             </label>
             <Select value={statusFilter} onValueChange={handleStatusChange}>
-              <SelectTrigger className="w-[150px] bg-white border-[var(--color-border-card)]">
+              <SelectTrigger className="w-[150px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -148,7 +148,7 @@ export default function CounselorBookingsPage() {
               variant="ghost"
               size="sm"
               onClick={() => { setDateFilter(''); setStatusFilter('ALL'); setPage(1); }}
-              className="text-sm font-heading text-[var(--color-text-muted-card)]"
+              className="text-sm font-heading text-[#a49484] hover:text-[#C9A227]"
             >
               필터 초기화
             </Button>
@@ -157,7 +157,7 @@ export default function CounselorBookingsPage() {
       </Card>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <StatCard title="전체 예약" value={`${totalElements}건`} />
         <StatCard title="확정됨" value={`${confirmedCount}건`} hint="BOOKED + PAID" />
         <StatCard title="완료" value={`${completedCount}건`} />
@@ -171,11 +171,11 @@ export default function CounselorBookingsPage() {
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="animate-pulse flex items-center gap-4">
-                <div className="h-4 w-1/5 bg-[var(--color-bg-secondary)] rounded" />
-                <div className="h-4 w-1/4 bg-[var(--color-bg-secondary)] rounded" />
-                <div className="h-4 w-1/6 bg-[var(--color-bg-secondary)] rounded" />
-                <div className="h-4 w-1/12 bg-[var(--color-bg-secondary)] rounded" />
-                <div className="h-4 w-1/5 bg-[var(--color-bg-secondary)] rounded" />
+                <div className="h-4 w-1/5 bg-[#1a1612] rounded" />
+                <div className="h-4 w-1/4 bg-[#1a1612] rounded" />
+                <div className="h-4 w-1/6 bg-[#1a1612] rounded" />
+                <div className="h-4 w-1/12 bg-[#1a1612] rounded" />
+                <div className="h-4 w-1/5 bg-[#1a1612] rounded" />
               </div>
             ))}
           </div>
@@ -189,26 +189,26 @@ export default function CounselorBookingsPage() {
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-[var(--color-border-card)]">
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">고객명</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">예약시간</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">상태</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">크레딧</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">예약일</TableHead>
+              <TableRow className="border-[rgba(201,162,39,0.15)]">
+                <TableHead className="font-heading font-bold text-[#C9A227]">고객명</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227]">예약시간</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227]">상태</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227]">크레딧</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227]">예약일</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {bookings.map(booking => (
-                <TableRow key={booking.id} className="border-[var(--color-border-card)]">
+                <TableRow key={booking.id} className="border-[rgba(201,162,39,0.15)]">
                   <TableCell className="font-bold font-heading">{booking.customerName}</TableCell>
-                  <TableCell className="text-sm text-[var(--color-text-muted-card)]">
+                  <TableCell className="text-sm text-[#a49484]">
                     {formatDateTime(booking.startTime)}
                   </TableCell>
                   <TableCell>
                     <StatusBadge value={booking.status} />
                   </TableCell>
                   <TableCell className="font-heading">{booking.creditsUsed ?? '-'}</TableCell>
-                  <TableCell className="text-sm text-[var(--color-text-muted-card)]">
+                  <TableCell className="text-sm text-[#a49484]">
                     {formatDate(booking.createdAt)}
                   </TableCell>
                 </TableRow>

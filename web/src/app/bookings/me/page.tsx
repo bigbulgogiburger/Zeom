@@ -180,7 +180,7 @@ export default function MyBookingsPage() {
     switch (state.phase) {
       case 'too_early':
         return (
-          <Button variant="secondary" disabled>
+          <Button variant="secondary" disabled className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227]">
             {state.minutesUntilEntry}분 후 입장 가능
           </Button>
         );
@@ -190,6 +190,7 @@ export default function MyBookingsPage() {
             variant="default"
             disabled={enteringId === b.id}
             onClick={() => enterSession(b.id)}
+            className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold"
           >
             {enteringId === b.id ? '입장 중...' : '입장 가능'}
           </Button>
@@ -198,7 +199,7 @@ export default function MyBookingsPage() {
         return (
           <Button
             variant="default"
-            className="bg-green-600 hover:bg-green-700"
+            className="bg-green-600 hover:bg-green-700 rounded-full font-bold"
             disabled={enteringId === b.id}
             onClick={() => enterSession(b.id)}
           >
@@ -207,7 +208,7 @@ export default function MyBookingsPage() {
         );
       case 'ended':
         return (
-          <Button variant="outline" disabled>
+          <Button variant="outline" disabled className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227]">
             상담 종료
           </Button>
         );
@@ -216,19 +217,19 @@ export default function MyBookingsPage() {
 
   return (
     <RequireLogin>
-      <main className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">내 예약</h1>
+      <main className="max-w-[1000px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+        <h1 className="text-3xl font-black tracking-tight font-heading text-foreground">내 예약</h1>
 
         {message && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive">
             <AlertDescription>{message}</AlertDescription>
           </Alert>
         )}
 
         {loading ? (
-          <div className="grid gap-4">
+          <div className="grid gap-6">
             {[1, 2].map((i) => (
-              <div key={i} className="h-[120px] rounded-xl bg-muted animate-pulse" />
+              <div key={i} className="h-[120px] rounded-2xl bg-muted animate-pulse" />
             ))}
           </div>
         ) : bookings.length === 0 ? (
@@ -244,7 +245,7 @@ export default function MyBookingsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-6">
             {bookings.map((b) => {
               const slots = normalizeSlots(b);
               const slotCount = slots.length;
@@ -283,6 +284,7 @@ export default function MyBookingsPage() {
                         <Button
                           variant="destructive"
                           onClick={() => cancelBooking(b.id)}
+                          className="rounded-full"
                         >
                           예약 취소
                         </Button>

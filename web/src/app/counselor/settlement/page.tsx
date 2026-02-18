@@ -151,13 +151,13 @@ export default function CounselorSettlementPage() {
 
       {/* Summary cards */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <SkeletonCard lines={2} />
           <SkeletonCard lines={2} />
           <SkeletonCard lines={2} />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard
             title="총 수입"
             value={dashboard ? formatAmount(dashboard.totalEarnings) : '-'}
@@ -198,7 +198,7 @@ export default function CounselorSettlementPage() {
 
       {/* Settlement history table */}
       {loading ? (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-6">
           <SkeletonCard lines={4} />
           <SkeletonCard lines={4} />
         </div>
@@ -211,19 +211,19 @@ export default function CounselorSettlementPage() {
         <Card>
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-[var(--color-border-card)]">
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">기간</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)] text-right">상담 건수</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)] text-right">총 금액</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)] text-right">수수료율</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)] text-right">정산액</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)] text-center">상태</TableHead>
-                <TableHead className="font-heading font-bold text-[var(--color-accent-primary)]">정산일</TableHead>
+              <TableRow className="border-b border-[rgba(201,162,39,0.15)]">
+                <TableHead className="font-heading font-bold text-[#C9A227]">기간</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227] text-right">상담 건수</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227] text-right">총 금액</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227] text-right">수수료율</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227] text-right">정산액</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227] text-center">상태</TableHead>
+                <TableHead className="font-heading font-bold text-[#C9A227]">정산일</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {settlements.map((s) => (
-                <TableRow key={s.id} className="border-b border-[var(--color-border-card)]/30">
+                <TableRow key={s.id} className="border-b border-[rgba(201,162,39,0.1)]">
                   <TableCell className="text-sm">{formatPeriod(s.periodStart, s.periodEnd)}</TableCell>
                   <TableCell className="text-sm text-right">{s.totalSessions}건</TableCell>
                   <TableCell className="text-sm text-right">{formatAmount(s.totalAmount)}</TableCell>
@@ -232,7 +232,7 @@ export default function CounselorSettlementPage() {
                   <TableCell className="text-center">
                     <StatusBadge value={STATUS_LABELS[s.status] || s.status} />
                   </TableCell>
-                  <TableCell className="text-sm text-[var(--color-text-muted-card)]">{formatDate(s.paidAt)}</TableCell>
+                  <TableCell className="text-sm text-[#a49484]">{formatDate(s.paidAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

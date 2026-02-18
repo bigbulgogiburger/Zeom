@@ -62,32 +62,32 @@ export default function CounselorDashboardPage() {
   const completedBookings = bookings.filter(b => b.status === 'COMPLETED');
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col space-y-8 max-w-[1000px] mx-auto w-full">
       <PageTitle>대시보드</PageTitle>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <Card>
-          <div className="text-[var(--color-accent-primary)] text-sm font-medium mb-1 font-heading">
+          <div className="text-[#C9A227] text-sm font-medium mb-1 font-heading">
             오늘 전체 상담
           </div>
-          <div className="text-2xl font-black leading-tight font-heading">
+          <div className="text-2xl font-black leading-tight font-heading text-[#f9f5ed]">
             {bookings.length}건
           </div>
         </Card>
         <Card>
-          <div className="text-[var(--color-accent-primary)] text-sm font-medium mb-1 font-heading">
+          <div className="text-[#C9A227] text-sm font-medium mb-1 font-heading">
             대기 중
           </div>
-          <div className="text-2xl font-black leading-tight font-heading">
+          <div className="text-2xl font-black leading-tight font-heading text-[#f9f5ed]">
             {upcomingBookings.length}건
           </div>
         </Card>
         <Card>
-          <div className="text-[var(--color-accent-primary)] text-sm font-medium mb-1 font-heading">
+          <div className="text-[#C9A227] text-sm font-medium mb-1 font-heading">
             완료
           </div>
-          <div className="text-2xl font-black leading-tight font-heading">
+          <div className="text-2xl font-black leading-tight font-heading text-[#f9f5ed]">
             {completedBookings.length}건
           </div>
         </Card>
@@ -97,19 +97,19 @@ export default function CounselorDashboardPage() {
 
       {/* Today's bookings */}
       <div>
-        <h3 className="text-lg font-bold font-heading text-[var(--color-text-on-dark)] mb-3">
+        <h3 className="text-lg font-bold font-heading text-[#f9f5ed] mb-4">
           오늘 상담 목록
         </h3>
 
         {loading ? (
-          <div className="grid gap-3">
+          <div className="grid gap-6">
             {[1, 2, 3].map(i => (
               <Card key={i}>
                 <div className="animate-pulse flex items-center gap-4">
-                  <div className="h-10 w-10 bg-[var(--color-bg-secondary)] rounded-full" />
+                  <div className="h-10 w-10 bg-[#1a1612] rounded-full" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 w-1/3 bg-[var(--color-bg-secondary)] rounded" />
-                    <div className="h-3 w-1/4 bg-[var(--color-bg-secondary)] rounded" />
+                    <div className="h-4 w-1/3 bg-[#1a1612] rounded" />
+                    <div className="h-3 w-1/4 bg-[#1a1612] rounded" />
                   </div>
                 </div>
               </Card>
@@ -121,7 +121,7 @@ export default function CounselorDashboardPage() {
             desc="새로운 예약이 들어오면 여기에 표시됩니다."
           />
         ) : (
-          <div className="grid gap-3">
+          <div className="grid gap-6">
             {bookings.map((booking) => (
               <Card key={booking.id}>
                 <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -132,7 +132,7 @@ export default function CounselorDashboardPage() {
                       </span>
                       <StatusBadge value={booking.status} />
                     </div>
-                    <div className="text-sm text-[var(--color-text-muted-card)]">
+                    <div className="text-sm text-[#a49484]">
                       {formatTime(booking.startTime)} ~ {formatTime(booking.endTime)}
                       {booking.durationMinutes && ` (${booking.durationMinutes}분)`}
                     </div>
@@ -150,7 +150,7 @@ export default function CounselorDashboardPage() {
                   {booking.status === 'IN_PROGRESS' && (
                     <Button
                       onClick={() => router.push(`/counselor/consultation/${booking.id}`)}
-                      className="bg-[var(--color-success)] text-white font-heading font-bold hover:bg-[var(--color-success)]/90"
+                      className="bg-green-600 text-white font-heading font-bold rounded-full hover:bg-green-700"
                     >
                       상담 중 - 입장
                     </Button>

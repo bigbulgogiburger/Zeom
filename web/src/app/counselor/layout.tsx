@@ -29,7 +29,7 @@ function SidebarNav({ onItemClick }: { onItemClick?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className="flex flex-col gap-1.5">
       {menuItems.map((item) => {
         const isActive = pathname === item.href;
         return (
@@ -38,10 +38,10 @@ function SidebarNav({ onItemClick }: { onItemClick?: () => void }) {
             href={item.href}
             onClick={onItemClick}
             className={cn(
-              'px-3 py-2 rounded-md text-sm font-medium font-heading transition-colors no-underline',
+              'px-4 py-3 rounded-xl text-sm font-medium font-heading transition-colors no-underline',
               isActive
-                ? 'bg-[var(--color-gold)] text-[var(--color-bg-primary)]'
-                : 'text-[var(--color-text-on-dark)] hover:bg-[var(--color-bg-card)] hover:text-[var(--color-text-on-card)]'
+                ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold shadow-md'
+                : 'text-[#a49484] hover:bg-[rgba(201,162,39,0.08)] hover:text-[#C9A227]'
             )}
           >
             {item.label}
@@ -73,22 +73,22 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
 
   return (
     <RequireCounselor>
-      <div className="flex min-h-screen bg-[var(--color-bg-primary)]">
+      <div className="flex min-h-screen bg-[#0f0d0a]">
         {/* Desktop sidebar */}
-        <aside className="hidden md:flex flex-col w-64 border-r border-[var(--color-border-card)] bg-[var(--color-bg-secondary)] p-4 gap-4 shrink-0">
-          <div className="font-heading font-bold text-lg text-[var(--color-gold)]">
+        <aside className="hidden md:flex flex-col w-64 border-r border-[rgba(201,162,39,0.1)] bg-[#1a1612] p-5 gap-4 shrink-0">
+          <div className="font-heading font-bold text-lg bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
             선생님 포털
           </div>
-          <Separator className="bg-[var(--color-border-card)]" />
+          <Separator className="bg-[rgba(201,162,39,0.1)]" />
           <SidebarNav />
           <div className="mt-auto">
-            <Separator className="bg-[var(--color-border-card)] mb-4" />
+            <Separator className="bg-[rgba(201,162,39,0.1)] mb-4" />
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-[var(--color-success)] shrink-0" />
-              <span className="text-sm text-[var(--color-text-muted-card)] font-heading truncate">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 shrink-0" />
+              <span className="text-sm text-[#a49484] font-heading truncate">
                 {me?.name} 선생님
               </span>
-              <Badge className="bg-[var(--color-success)] text-white text-[10px] px-1.5 py-0">
+              <Badge className="bg-green-500 text-white text-[10px] px-1.5 py-0">
                 온라인
               </Badge>
             </div>
@@ -96,7 +96,7 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
               variant="outline"
               size="sm"
               onClick={logout}
-              className="w-full border-[var(--color-border-card)] text-[var(--color-text-on-dark)] font-heading font-bold hover:bg-[var(--color-bg-card)]"
+              className="w-full border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full font-heading font-bold hover:bg-[#C9A227]/10"
             >
               로그아웃
             </Button>
@@ -106,33 +106,33 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
         {/* Main content area */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Mobile header */}
-          <header className="md:hidden flex items-center justify-between p-4 border-b border-[var(--color-border-card)] bg-[var(--color-bg-secondary)]">
+          <header className="md:hidden flex items-center justify-between p-4 border-b border-[rgba(201,162,39,0.1)] bg-[rgba(15,13,10,0.8)] backdrop-blur-xl">
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-[var(--color-text-on-dark)] font-heading"
+                  className="text-[#a49484] font-heading hover:text-[#C9A227]"
                 >
                   &#9776; 메뉴
                 </Button>
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="w-64 bg-[var(--color-bg-secondary)] border-[var(--color-border-card)] p-4"
+                className="w-64 bg-[#1a1612] border-[rgba(201,162,39,0.1)] p-4"
               >
-                <SheetTitle className="font-heading font-bold text-lg text-[var(--color-gold)] mb-4">
+                <SheetTitle className="font-heading font-bold text-lg bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent mb-4">
                   선생님 포털
                 </SheetTitle>
-                <Separator className="bg-[var(--color-border-card)] mb-4" />
+                <Separator className="bg-[rgba(201,162,39,0.1)] mb-4" />
                 <SidebarNav onItemClick={() => setSheetOpen(false)} />
-                <Separator className="bg-[var(--color-border-card)] my-4" />
+                <Separator className="bg-[rgba(201,162,39,0.1)] my-4" />
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-[var(--color-success)] shrink-0" />
-                  <span className="text-sm text-[var(--color-text-muted-card)] font-heading truncate">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 shrink-0" />
+                  <span className="text-sm text-[#a49484] font-heading truncate">
                     {me?.name} 선생님
                   </span>
-                  <Badge className="bg-[var(--color-success)] text-white text-[10px] px-1.5 py-0">
+                  <Badge className="bg-green-500 text-white text-[10px] px-1.5 py-0">
                     온라인
                   </Badge>
                 </div>
@@ -140,23 +140,23 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
                   variant="outline"
                   size="sm"
                   onClick={logout}
-                  className="w-full border-[var(--color-border-card)] text-[var(--color-text-on-dark)] font-heading font-bold hover:bg-[var(--color-bg-card)]"
+                  className="w-full border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full font-heading font-bold hover:bg-[#C9A227]/10"
                 >
                   로그아웃
                 </Button>
               </SheetContent>
             </Sheet>
-            <span className="font-heading font-bold text-[var(--color-gold)]">
+            <span className="font-heading font-bold bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
               선생님 포털
             </span>
-            <span className="flex items-center gap-1.5 text-sm text-[var(--color-text-muted-card)] font-heading">
-              <span className="inline-block w-2 h-2 rounded-full bg-[var(--color-success)]" />
+            <span className="flex items-center gap-1.5 text-sm text-[#a49484] font-heading">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
               {me?.name}
             </span>
           </header>
 
           {/* Page content */}
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
+          <main className="flex-1 p-6 md:p-8 overflow-auto">
             {children}
           </main>
         </div>

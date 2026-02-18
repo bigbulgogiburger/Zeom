@@ -59,114 +59,60 @@ export default function CreditsPage() {
 
   return (
     <RequireLogin>
-      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-lg)', maxWidth: 900, margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--spacing-md)' }}>
+      <main className="max-w-[1000px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+        <div className="flex justify-between items-center flex-wrap gap-4">
           <PageTitle>상담권 구매</PageTitle>
           <Link
             href="/credits/history"
-            style={{
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-gold)',
-              fontWeight: 'var(--font-weight-medium)',
-            }}
+            className="text-sm text-[#C9A227] font-medium hover:underline"
           >
-            구매 내역 보기 →
+            구매 내역 보기
           </Link>
         </div>
 
-        <p style={{
-          color: 'var(--color-text-muted-dark)',
-          fontSize: 'var(--font-size-sm)',
-          lineHeight: 'var(--line-height-normal)',
-        }}>
+        <p className="text-[var(--color-text-muted-dark)] text-sm leading-relaxed">
           30분 단위 상담권을 구매하고 예약에 사용하세요
         </p>
 
         {/* Current balance */}
         {credits !== null && (
-          <Card>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'var(--spacing-md)',
-              padding: 'var(--spacing-md) 0',
-            }}>
-              <span style={{ fontSize: 'var(--font-size-lg)' }} aria-hidden="true">🎫</span>
-              <span style={{
-                fontFamily: 'var(--font-heading)',
-                fontWeight: 'var(--font-weight-bold)',
-                fontSize: 'var(--font-size-lg)',
-              }}>
+          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-6">
+            <div className="flex items-center justify-center gap-4 py-3">
+              <span className="text-lg" aria-hidden="true">&#127915;</span>
+              <span className="font-heading font-bold text-lg">
                 현재 보유 상담권:
               </span>
-              <span style={{
-                fontFamily: 'var(--font-heading)',
-                fontWeight: 'var(--font-weight-black)',
-                fontSize: 'var(--font-size-2xl)',
-                color: 'var(--color-gold)',
-              }}>
+              <span className="font-heading font-black text-3xl text-[#C9A227]">
                 {credits}회
               </span>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Product cards */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: 'var(--spacing-lg)',
-        }}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-6">
           {PRODUCTS.map((product) => (
             <Card key={product.id}>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textAlign: 'center',
-                gap: 'var(--spacing-md)',
-                padding: 'var(--spacing-md) 0',
-              }}>
+              <div className="flex flex-col items-center text-center gap-4 py-4">
                 {/* Discount badge */}
                 {product.discount && (
-                  <span style={{
-                    background: 'var(--color-accent-primary)',
-                    color: '#fff',
-                    padding: 'var(--spacing-xs) var(--spacing-md)',
-                    borderRadius: 'var(--radius-pill)',
-                    fontSize: 'var(--font-size-xs)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    fontFamily: 'var(--font-heading)',
-                  }}>
+                  <span className="bg-[var(--color-accent-primary)] text-white px-4 py-1 rounded-full text-xs font-bold font-heading">
                     {product.discount}
                   </span>
                 )}
 
                 {/* Product name */}
-                <div style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontWeight: 'var(--font-weight-bold)',
-                  fontSize: 'var(--font-size-xl)',
-                }}>
+                <div className="font-heading font-bold text-xl">
                   {product.name}
                 </div>
 
                 {/* Duration */}
-                <div style={{
-                  color: 'var(--color-text-muted-card)',
-                  fontSize: 'var(--font-size-sm)',
-                }}>
+                <div className="text-[var(--color-text-muted-card)] text-sm">
                   {product.duration} 상담
                 </div>
 
                 {/* Price */}
-                <div style={{
-                  color: 'var(--color-gold)',
-                  fontFamily: 'var(--font-heading)',
-                  fontWeight: 'var(--font-weight-black)',
-                  fontSize: 'var(--font-size-2xl)',
-                }}>
+                <div className="text-[#C9A227] font-heading font-black text-2xl">
                   {product.price.toLocaleString()}원
                 </div>
 
@@ -174,20 +120,7 @@ export default function CreditsPage() {
                 <button
                   onClick={() => setConfirmProduct(product)}
                   disabled={purchasing}
-                  style={{
-                    width: '100%',
-                    background: 'var(--color-gold)',
-                    color: 'var(--color-bg-primary)',
-                    border: 'none',
-                    borderRadius: 'var(--radius-md)',
-                    padding: 'var(--spacing-md) var(--spacing-xl)',
-                    fontSize: 'var(--font-size-base)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    fontFamily: 'var(--font-heading)',
-                    cursor: 'pointer',
-                    minHeight: '44px',
-                    transition: 'background var(--transition-fast)',
-                  }}
+                  className="w-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] border-none rounded-full py-3 px-8 text-base font-bold font-heading cursor-pointer min-h-[44px] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   구매하기
                 </button>

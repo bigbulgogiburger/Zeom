@@ -90,11 +90,11 @@ function CountUpNumber({
   const value = useCountUp(target, 2000, start);
   return (
     <div className="text-center">
-      <div className="text-[clamp(2rem,5vw,3rem)] font-black font-heading text-primary leading-tight">
+      <div className="text-[clamp(2rem,5vw,3rem)] font-black font-heading leading-tight bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
         {value}
         {suffix}
       </div>
-      <div className="text-sm text-card-foreground mt-1 font-heading font-medium">
+      <div className="text-sm text-[#a49484] mt-1 font-heading font-medium">
         {label}
       </div>
     </div>
@@ -162,8 +162,12 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
   const [statsRef, statsVisible] = useInView();
 
   useEffect(() => {
+    document.documentElement.classList.add('js-anim');
     const t = setTimeout(() => setMounted(true), 100);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      document.documentElement.classList.remove('js-anim');
+    };
   }, []);
 
   const featured = counselors.slice(0, 3);
@@ -172,47 +176,49 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
     <main>
       {/* Section 1 -- Hero (Full Viewport) */}
       <section className="min-h-screen flex flex-col items-center justify-center text-center p-6 bg-background relative"
-        style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.06) 0%, transparent 70%)' }}
+        style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.08) 0%, transparent 70%)' }}
       >
-        <h1
-          className={`fade-up ${mounted ? 'visible' : ''} text-[clamp(2.5rem,6vw,4.5rem)] font-heading font-black tracking-[0.3em] text-foreground m-0`}
-          style={{ animationDelay: '0s' }}
-        >
-          천지연꽃신당
-        </h1>
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8 flex flex-col items-center">
+          <h1
+            className={`fade-up ${mounted ? 'visible' : ''} text-[clamp(3rem,7vw,5rem)] font-heading font-black tracking-[0.3em] m-0 bg-gradient-to-r from-[#C9A227] via-[#f9f5ed] to-[#C9A227] bg-clip-text text-transparent text-center`}
+            style={{ animationDelay: '0s' }}
+          >
+            천지연꽃신당
+          </h1>
 
-        <p
-          className={`fade-up ${mounted ? 'visible' : ''} text-[clamp(0.9rem,2vw,1.2rem)] text-muted-foreground tracking-[0.5em] mt-6 font-heading`}
-          style={{ animationDelay: '0.3s' }}
-        >
-          天 地 蓮 花 神 堂
-        </p>
+          <p
+            className={`fade-up ${mounted ? 'visible' : ''} text-[clamp(0.9rem,2vw,1.2rem)] text-muted-foreground tracking-[0.5em] mt-6 font-heading text-center`}
+            style={{ animationDelay: '0.3s' }}
+          >
+            天 地 蓮 花 神 堂
+          </p>
 
-        <p
-          className={`fade-up ${mounted ? 'visible' : ''} text-[clamp(1rem,2.5vw,1.25rem)] text-primary mt-8 font-heading`}
-          style={{ animationDelay: '0.6s' }}
-        >
-          당신의 운명, 꽃처럼 피어나는 순간
-        </p>
+          <p
+            className={`fade-up ${mounted ? 'visible' : ''} text-[clamp(1rem,2.5vw,1.25rem)] text-primary mt-8 font-heading text-center`}
+            style={{ animationDelay: '0.6s' }}
+          >
+            당신의 운명, 꽃처럼 피어나는 순간
+          </p>
 
-        <div
-          className={`fade-up ${mounted ? 'visible' : ''} flex gap-4 mt-8 flex-wrap justify-center`}
-          style={{ animationDelay: '0.9s' }}
-        >
-          <Button asChild size="lg" className="bg-primary text-primary-foreground font-heading font-bold hover:bg-primary/90 text-base px-8 py-4 h-auto">
-            <Link href="/counselors">
-              상담 예약하기
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="border-2 border-foreground/30 text-foreground font-heading font-bold hover:border-primary hover:text-primary text-base px-8 py-4 h-auto bg-transparent">
-            <Link href="/counselors">
-              상담사 보기
-            </Link>
-          </Button>
+          <div
+            className={`fade-up ${mounted ? 'visible' : ''} flex justify-center gap-5 mt-10 flex-wrap`}
+            style={{ animationDelay: '0.9s' }}
+          >
+            <Button asChild size="lg" className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-heading font-bold hover:opacity-90 text-lg px-10 py-4 h-auto shadow-[0_4px_24px_rgba(201,162,39,0.25)] hover:shadow-[0_6px_32px_rgba(201,162,39,0.35)] transition-all">
+              <Link href="/counselors">
+                상담 예약하기
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="rounded-full border-2 border-[#C9A227] text-[#C9A227] font-heading font-bold hover:bg-[#C9A227]/10 text-lg px-10 py-4 h-auto bg-transparent transition-all">
+              <Link href="/counselors">
+                상담사 보기
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div
-          className={`fade-up scroll-hint ${mounted ? 'visible' : ''} absolute bottom-8 text-muted-foreground text-sm`}
+          className={`fade-up scroll-hint ${mounted ? 'visible' : ''} absolute bottom-8 text-muted-foreground text-sm text-center left-0 right-0`}
           style={{ animationDelay: '1.5s' }}
         >
           ↓ 스크롤하여 더 알아보기
@@ -220,10 +226,10 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
       </section>
 
       {/* Section 2 -- 가치 제안 (Value Proposition) */}
-      <section className="py-16 px-6 bg-background">
-        <div className="max-w-[1200px] mx-auto">
+      <section className="py-28 px-6 bg-background">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8">
           <FadeIn>
-            <h2 className="text-2xl font-heading font-bold text-center pb-8 m-0 text-foreground">
+            <h2 className="text-3xl font-heading font-black tracking-tight text-center mb-10 m-0 text-foreground">
               전통의 지혜, 현대의 편리함
             </h2>
           </FadeIn>
@@ -249,10 +255,10 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
       </section>
 
       {/* Section 3 -- 이용 절차 (How It Works) */}
-      <section className="py-16 px-6 bg-[var(--color-bg-secondary)]">
-        <div className="max-w-[1200px] mx-auto">
+      <section className="py-28 px-6 bg-[#1a1612]">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8">
           <FadeIn>
-            <h2 className="text-2xl font-heading font-bold text-center pb-8 m-0 text-foreground">
+            <h2 className="text-3xl font-heading font-black tracking-tight text-center mb-10 m-0 text-foreground">
               간단한 4단계로 시작하세요
             </h2>
           </FadeIn>
@@ -267,15 +273,15 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
                   delay={0.15 * (i + 1)}
                   className="text-center relative z-[1]"
                 >
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--color-bg-secondary)] border-2 border-primary mb-4">
-                    <span className="text-xl font-heading font-black text-primary">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-black/30 backdrop-blur-xl border-2 border-[#C9A227] mb-4">
+                    <span className="text-xl font-heading font-black text-[#C9A227]">
                       {step.num}
                     </span>
                   </div>
                   <h3 className="font-heading font-bold text-foreground text-base m-0 mb-2">
                     {step.title}
                   </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
+                  <p className="text-[#a49484] text-sm leading-relaxed">
                     {step.desc}
                   </p>
                 </FadeIn>
@@ -286,10 +292,10 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
       </section>
 
       {/* Section 4 -- 상담사 소개 (Featured Counselors) */}
-      <section className="py-16 px-6 bg-background">
-        <div className="max-w-[1200px] mx-auto">
+      <section className="py-28 px-6 bg-background">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8">
           <FadeIn>
-            <h2 className="text-2xl font-heading font-bold text-center pb-8 m-0 text-foreground">
+            <h2 className="text-3xl font-heading font-black tracking-tight text-center mb-10 m-0 text-foreground">
               지금 상담 가능한 선생님
             </h2>
           </FadeIn>
@@ -348,9 +354,9 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
       </section>
 
       {/* Section 5 -- 신뢰 지표 (Trust Metrics) */}
-      <section className="py-16 px-6 bg-card">
-        <div ref={statsRef} className="max-w-[1200px] mx-auto">
-          <div className="landing-grid-stats">
+      <section className="py-28 px-6 bg-black/30 backdrop-blur-xl border-y border-[rgba(201,162,39,0.1)]">
+        <div ref={statsRef} className="max-w-[1200px] mx-auto px-6 sm:px-8 rounded-2xl py-16">
+          <div className="landing-grid-stats text-center">
             {trustStats.map((stat) => (
               <CountUpNumber
                 key={stat.label}
@@ -366,22 +372,22 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
 
       {/* Section 6 -- 최종 CTA */}
       <section
-        className="py-16 px-6 bg-background text-center"
+        className="py-28 px-6 bg-background text-center"
         style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.08) 0%, transparent 70%)' }}
       >
-        <div className="max-w-[1200px] mx-auto">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8 text-center">
           <FadeIn>
-            <h2 className="font-heading font-black text-2xl text-primary m-0 mb-4">
+            <h2 className="font-heading font-black text-3xl tracking-tight text-primary m-0 mb-4 text-center">
               지금 바로 운명의 꽃을 피워보세요
             </h2>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <p className="text-muted-foreground text-base leading-relaxed mb-8 max-w-[480px] mx-auto">
+            <p className="text-[#a49484] text-lg leading-relaxed mb-8 max-w-[480px] mx-auto text-center">
               첫 상담 예약은 간단합니다. 상담사를 선택하고 원하는 시간에 예약하세요.
             </p>
           </FadeIn>
-          <FadeIn delay={0.4}>
-            <Button asChild size="lg" className="bg-primary text-primary-foreground font-heading font-bold hover:bg-primary/90 text-lg px-12 py-4 h-auto">
+          <FadeIn delay={0.4} className="flex justify-center">
+            <Button asChild size="lg" className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-heading font-bold hover:opacity-90 text-lg px-12 py-4 h-auto">
               <Link href="/signup">
                 무료로 시작하기
               </Link>
@@ -391,10 +397,10 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
       </section>
 
       {/* Section 7 -- Footer */}
-      <footer className="py-16 px-6 pb-6 bg-[var(--color-bg-secondary)]">
-        <div className="max-w-[1200px] mx-auto">
+      <footer className="py-12 px-6 bg-[#1a1612]">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8">
           <div className="mb-8">
-            <span className="font-heading font-bold text-foreground text-lg">
+            <span className="font-heading font-bold text-lg bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
               천지연꽃신당
             </span>
           </div>
@@ -414,8 +420,8 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
             ))}
           </div>
 
-          <div className="border-t border-border mt-8 pt-4">
-            <p className="text-muted-foreground text-xs">
+          <div className="border-t border-[rgba(201,162,39,0.1)] mt-8 pt-4">
+            <p className="text-[#a49484] text-xs text-center">
               © 2026 천지연꽃신당. All rights reserved.
             </p>
           </div>

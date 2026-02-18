@@ -109,8 +109,8 @@ export default function CounselorProfilePage() {
           <div className="space-y-4">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="animate-pulse">
-                <div className="h-4 w-1/4 bg-[var(--color-bg-secondary)] rounded mb-2" />
-                <div className="h-10 w-full bg-[var(--color-bg-secondary)] rounded" />
+                <div className="h-4 w-1/4 bg-[#1a1612] rounded mb-2" />
+                <div className="h-10 w-full bg-[#1a1612] rounded" />
               </div>
             ))}
           </div>
@@ -125,7 +125,7 @@ export default function CounselorProfilePage() {
 
       {/* Stats */}
       {profile && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard
             title="평균 평점"
             value={profile.ratingAvg > 0 ? `${profile.ratingAvg.toFixed(1)} ${renderStars(Math.round(profile.ratingAvg))}` : '-'}
@@ -141,7 +141,7 @@ export default function CounselorProfilePage() {
 
       {/* Edit form */}
       <Card>
-        <h3 className="font-heading font-bold text-lg text-[var(--color-accent-primary)] mb-4">
+        <h3 className="font-heading font-bold text-lg text-[#C9A227] mb-4">
           기본 정보
         </h3>
 
@@ -150,7 +150,7 @@ export default function CounselorProfilePage() {
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="상담사 이름"
-            className="bg-white border-[var(--color-border-card)]"
+            className="bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
           />
         </FormField>
 
@@ -159,7 +159,7 @@ export default function CounselorProfilePage() {
             value={specialty}
             onChange={e => setSpecialty(e.target.value)}
             placeholder="예: 사주, 타로, 궁합"
-            className="bg-white border-[var(--color-border-card)]"
+            className="bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
           />
         </FormField>
 
@@ -177,15 +177,15 @@ export default function CounselorProfilePage() {
             placeholder="상담사 소개를 작성해 주세요..."
             rows={5}
             maxLength={INTRO_MAX_LENGTH}
-            className="bg-white border-[var(--color-border-card)]"
+            className="bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
           />
         </FormField>
 
-        <Separator className="my-4 bg-[var(--color-border-card)]" />
+        <Separator className="my-4 bg-[rgba(201,162,39,0.1)]" />
 
         <InlineError message={error} />
         {success && (
-          <div role="status" className="text-[var(--color-success)] text-sm font-medium mb-3">
+          <div role="status" className="text-green-500 text-sm font-medium mb-3">
             {success}
           </div>
         )}

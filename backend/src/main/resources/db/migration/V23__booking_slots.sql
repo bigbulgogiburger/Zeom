@@ -8,5 +8,10 @@ CREATE TABLE booking_slots (
 CREATE INDEX idx_booking_slots_booking ON booking_slots(booking_id);
 
 -- Make slot_id nullable in bookings for multi-slot support (kept for backward compat)
-ALTER TABLE bookings DROP CONSTRAINT IF EXISTS fk_booking_slot;
-ALTER TABLE bookings ALTER COLUMN slot_id SET NULL;
+SET @fk_exists = (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+  WHERE CONSTRAINT_NAME = 'fk_booking_slot' AND TABLE_NAME = 'bookings' AND TABLE_SCHEMA = DATABASE());
+SET @sql = IF(@fk_exists > 0, 'ALTER TABLE bookings DROP FOREIGN KEY fk_booking_slot', 'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+ALTER TABLE bookings MODIFY COLUMN slot_id BIGINT NULL;

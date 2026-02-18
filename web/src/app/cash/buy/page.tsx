@@ -111,58 +111,27 @@ export default function CashBuyPage() {
   if (paymentStatus === 'success') {
     return (
       <RequireLogin>
-        <main style={{
-          padding: 'var(--spacing-xl)',
-          display: 'grid',
-          gap: 'var(--spacing-lg)',
-          maxWidth: '600px',
-          margin: '0 auto',
-        }}>
-          <Card>
-            <div style={{
-              textAlign: 'center',
-              padding: 'var(--spacing-3xl)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--spacing-lg)',
-              alignItems: 'center',
-            }}>
-              <div style={{
-                fontSize: '4rem',
-                animation: 'bounce 1s ease-in-out',
-              }}>
-                💰✨
+        <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 grid gap-8">
+          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-12">
+            <div className="text-center flex flex-col gap-6 items-center">
+              <div className="text-6xl animate-bounce">
+                &#128176;&#10024;
               </div>
-              <div style={{
-                fontSize: 'var(--font-size-2xl)',
-                fontWeight: 'var(--font-weight-black)',
-                fontFamily: 'var(--font-heading)',
-                color: 'var(--color-gold)',
-              }}>
+              <div className="text-2xl font-black font-heading bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
                 충전 완료!
               </div>
               {newBalance !== null && (
-                <div style={{
-                  fontSize: 'var(--font-size-lg)',
-                  color: 'var(--color-text-on-card)',
-                }}>
-                  새로운 잔액: <span style={{
-                    fontWeight: 'var(--font-weight-bold)',
-                    color: 'var(--color-gold)',
-                  }}>
+                <div className="text-lg text-[var(--color-text-on-dark)]">
+                  새로운 잔액: <span className="font-bold text-[#C9A227]">
                     {newBalance.toLocaleString()}원
                   </span>
                 </div>
               )}
-              <div style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-text-muted-card)',
-                marginTop: 'var(--spacing-md)',
-              }}>
+              <div className="text-sm text-[var(--color-text-muted-dark)] mt-4">
                 잠시 후 지갑 페이지로 이동합니다...
               </div>
             </div>
-          </Card>
+          </div>
         </main>
       </RequireLogin>
     );
@@ -170,86 +139,40 @@ export default function CashBuyPage() {
 
   return (
     <RequireLogin>
-      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-lg)' }}>
+      <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 grid gap-8">
         <PageTitle>캐시 충전</PageTitle>
         <InlineError message={message} />
         <InlineSuccess message={successMessage} />
 
         {paymentStatus === 'failed' && (
-          <Card>
-            <div style={{
-              textAlign: 'center',
-              padding: 'var(--spacing-lg)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--spacing-md)',
-              alignItems: 'center',
-            }}>
-              <div style={{ fontSize: '2rem' }}>⚠️</div>
-              <div style={{
-                fontSize: 'var(--font-size-lg)',
-                fontWeight: 'var(--font-weight-bold)',
-                color: 'var(--color-danger)',
-                fontFamily: 'var(--font-heading)',
-              }}>
+          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8">
+            <div className="text-center flex flex-col gap-4 items-center">
+              <div className="text-4xl">&#9888;&#65039;</div>
+              <div className="text-lg font-bold text-[var(--color-danger)] font-heading">
                 결제 실패
               </div>
               <button
                 onClick={handleRetry}
-                style={{
-                  background: 'var(--color-gold)',
-                  color: 'var(--color-bg-primary)',
-                  padding: 'var(--spacing-sm) var(--spacing-xl)',
-                  fontSize: 'var(--font-size-sm)',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: 'var(--font-weight-bold)',
-                  fontFamily: 'var(--font-heading)',
-                }}
+                className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] px-8 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
               >
                 다시 시도
               </button>
             </div>
-          </Card>
+          </div>
         )}
 
-        <div style={{
-          background: 'var(--color-bg-card)',
-          border: `2px solid var(--color-border-card)`,
-          borderRadius: 'var(--radius-lg)',
-          padding: 'var(--spacing-lg)',
-          fontSize: 'var(--font-size-sm)',
-          color: 'var(--color-text-on-card)',
-          lineHeight: 'var(--line-height-normal)',
-        }}>
-          💡 상담 서비스 이용을 위해 필요한 캐시를 충전하세요. 충전한 캐시는 지갑에 보관되며, 상담 예약 시 자동으로 차감됩니다.
+        <div className="bg-[#f9f5ed] border-2 border-[rgba(201,162,39,0.15)] rounded-2xl p-6 text-sm text-[var(--color-text-on-card)] leading-relaxed">
+          상담 서비스 이용을 위해 필요한 캐시를 충전하세요. 충전한 캐시는 지갑에 보관되며, 상담 예약 시 자동으로 차감됩니다.
         </div>
 
         {loading || paymentStatus === 'preparing' ? (
-          <div style={{
-            display: 'grid',
-            gap: 'var(--spacing-lg)',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))'
-          }}>
+          <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
             {[1, 2, 3].map((i) => (
-              <div key={i} style={{
-                border: `2px solid var(--color-border-card)`,
-                background: 'var(--color-bg-card)',
-                borderRadius: 'var(--radius-lg)',
-                padding: 'var(--spacing-lg)',
-                minHeight: '180px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <div style={{
-                  textAlign: 'center',
-                  color: 'var(--color-text-muted-card)',
-                }}>
+              <div key={i} className="border-2 border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] rounded-2xl p-6 min-h-[180px] flex items-center justify-center">
+                <div className="text-center text-[var(--color-text-muted-card)]">
                   {paymentStatus === 'preparing' ? (
                     <>
-                      <div style={{ fontSize: '2rem', marginBottom: 'var(--spacing-sm)' }}>🪷</div>
+                      <div className="text-4xl mb-2">&#129463;</div>
                       <div>결제 준비 중...</div>
                     </>
                   ) : (
@@ -260,143 +183,64 @@ export default function CashBuyPage() {
             ))}
           </div>
         ) : paymentStatus === 'processing' ? (
-          <Card>
-            <div style={{
-              textAlign: 'center',
-              padding: 'var(--spacing-3xl)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--spacing-md)',
-              alignItems: 'center',
-            }}>
-              <div style={{
-                fontSize: '3rem',
-                animation: 'spin 2s linear infinite',
-              }}>
-                🪷
+          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-12">
+            <div className="text-center flex flex-col gap-4 items-center">
+              <div className="text-5xl animate-spin">
+                &#129463;
               </div>
-              <div style={{
-                fontSize: 'var(--font-size-lg)',
-                fontWeight: 'var(--font-weight-bold)',
-                color: 'var(--color-gold)',
-                fontFamily: 'var(--font-heading)',
-              }}>
+              <div className="text-lg font-bold text-[#C9A227] font-heading">
                 결제 처리 중...
               </div>
-              <div style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-text-muted-card)',
-              }}>
+              <div className="text-sm text-[var(--color-text-muted-dark)]">
                 잠시만 기다려 주세요
               </div>
             </div>
-          </Card>
+          </div>
         ) : products.length === 0 ? (
           <EmptyState title="이용 가능한 상품이 없습니다" desc="잠시 후 다시 시도해주세요." />
         ) : (
-          <div style={{
-            display: 'grid',
-            gap: 'var(--spacing-lg)',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))'
-          }}>
+          <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
             {products.map((product) => (
               <Card key={product.id}>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 'var(--spacing-md)',
-                  minHeight: '180px'
-                }}>
+                <div className="flex flex-col gap-4 min-h-[180px]">
                   <div>
-                    <h3 style={{
-                      margin: '0 0 var(--spacing-sm) 0',
-                      fontSize: 'var(--font-size-lg)',
-                      fontWeight: 'var(--font-weight-bold)',
-                      color: 'var(--color-text-on-card)',
-                      fontFamily: 'var(--font-heading)',
-                    }}>
+                    <h3 className="m-0 mb-2 text-lg font-bold text-[var(--color-text-on-card)] font-heading">
                       {product.name}
                     </h3>
                     {product.description && (
-                      <p style={{
-                        margin: '0 0 var(--spacing-sm) 0',
-                        fontSize: 'var(--font-size-sm)',
-                        color: 'var(--color-text-muted-card)',
-                        lineHeight: 'var(--line-height-normal)',
-                      }}>
+                      <p className="m-0 mb-2 text-sm text-[var(--color-text-muted-card)] leading-relaxed">
                         {product.description}
                       </p>
                     )}
                   </div>
 
-                  <div style={{
-                    display: 'grid',
-                    gap: 'var(--spacing-sm)',
-                    padding: 'var(--spacing-md) 0',
-                    borderTop: `1px solid var(--color-border-card)`,
-                    borderBottom: `1px solid var(--color-border-card)`,
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: 'var(--font-size-sm)',
-                    }}>
-                      <span style={{ color: 'var(--color-text-muted-card)' }}>상담 시간</span>
-                      <span style={{
-                        fontWeight: 'var(--font-weight-bold)',
-                        color: 'var(--color-accent-primary)',
-                        fontFamily: 'var(--font-heading)',
-                      }}>
+                  <div className="grid gap-2 py-4 border-t border-b border-[var(--color-border-card)]">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-[var(--color-text-muted-card)]">상담 시간</span>
+                      <span className="font-bold text-[var(--color-accent-primary)] font-heading">
                         {product.durationMinutes}분
                       </span>
                     </div>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: 'var(--font-size-sm)',
-                    }}>
-                      <span style={{ color: 'var(--color-text-muted-card)' }}>충전 캐시</span>
-                      <span style={{
-                        fontWeight: 'var(--font-weight-bold)',
-                        color: 'var(--color-gold)',
-                        fontFamily: 'var(--font-heading)',
-                      }}>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-[var(--color-text-muted-card)]">충전 캐시</span>
+                      <span className="font-bold text-[#C9A227] font-heading">
                         {product.cashAmount.toLocaleString()}원
                       </span>
                     </div>
                   </div>
 
-                  <div style={{ marginTop: 'auto' }}>
-                    <div style={{
-                      fontSize: 'var(--font-size-2xl)',
-                      fontWeight: 'var(--font-weight-black)',
-                      textAlign: 'center',
-                      marginBottom: 'var(--spacing-md)',
-                      color: 'var(--color-gold)',
-                      fontFamily: 'var(--font-heading)',
-                    }}>
+                  <div className="mt-auto">
+                    <div className="text-2xl font-black text-center mb-4 text-[#C9A227] font-heading">
                       {product.priceKrw.toLocaleString()}원
                     </div>
                     <button
                       onClick={() => handlePurchase(product)}
                       disabled={selectedProductId === product.id || paymentStatus !== 'idle'}
-                      style={{
-                        width: '100%',
-                        background: selectedProductId === product.id || paymentStatus !== 'idle'
-                          ? 'var(--color-border-dark)'
-                          : 'var(--color-gold)',
-                        color: selectedProductId === product.id || paymentStatus !== 'idle'
-                          ? 'var(--color-text-muted-dark)'
-                          : 'var(--color-bg-primary)',
-                        border: 'none',
-                        borderRadius: 'var(--radius-md)',
-                        padding: 'var(--spacing-md) var(--spacing-lg)',
-                        fontSize: 'var(--font-size-base)',
-                        fontWeight: 'var(--font-weight-bold)',
-                        cursor: selectedProductId === product.id || paymentStatus !== 'idle' ? 'not-allowed' : 'pointer',
-                        minHeight: '44px',
-                        fontFamily: 'var(--font-heading)',
-                      }}
+                      className={`w-full rounded-full py-3 px-6 text-base font-bold min-h-[44px] font-heading border-none cursor-pointer ${
+                        selectedProductId === product.id || paymentStatus !== 'idle'
+                          ? 'bg-[var(--color-border-dark)] text-[var(--color-text-muted-dark)] cursor-not-allowed'
+                          : 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a]'
+                      }`}
                     >
                       {selectedProductId === product.id ? '처리 중...' : '구매하기'}
                     </button>
@@ -407,44 +251,16 @@ export default function CashBuyPage() {
           </div>
         )}
 
-        <div style={{ marginTop: 'var(--spacing-md)' }}>
+        <div className="mt-4">
           <button
             onClick={() => router.push('/wallet')}
             disabled={paymentStatus === 'processing' || paymentStatus === 'preparing'}
-            style={{
-              background: 'transparent',
-              color: 'var(--color-gold)',
-              border: `1px solid var(--color-border-dark)`,
-              borderRadius: 'var(--radius-md)',
-              padding: 'var(--spacing-sm) var(--spacing-lg)',
-              fontSize: 'var(--font-size-sm)',
-              cursor: paymentStatus === 'processing' || paymentStatus === 'preparing' ? 'not-allowed' : 'pointer',
-              opacity: paymentStatus === 'processing' || paymentStatus === 'preparing' ? 0.5 : 1,
-            }}
+            className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 text-sm hover:bg-[#C9A227]/10 disabled:opacity-50 disabled:cursor-not-allowed bg-transparent"
           >
-            ← 지갑으로 돌아가기
+            지갑으로 돌아가기
           </button>
         </div>
 
-        {/* CSS Animations */}
-        <style jsx>{`
-          @keyframes spin {
-            from {
-              transform: rotate(0deg);
-            }
-            to {
-              transform: rotate(360deg);
-            }
-          }
-          @keyframes bounce {
-            0%, 100% {
-              transform: translateY(0);
-            }
-            50% {
-              transform: translateY(-20px);
-            }
-          }
-        `}</style>
       </main>
     </RequireLogin>
   );

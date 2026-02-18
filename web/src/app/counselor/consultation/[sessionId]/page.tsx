@@ -330,7 +330,7 @@ export default function CounselorConsultationPage() {
         <PageTitle>상담실</PageTitle>
         <InlineError message={message} />
         <Card>
-          <div className="text-center py-8 text-[var(--color-text-muted-card)]">
+          <div className="text-center py-8 text-[#a49484]">
             세션을 불러오는 중...
           </div>
         </Card>
@@ -345,12 +345,12 @@ export default function CounselorConsultationPage() {
 
       {/* Incoming call dialog */}
       <Dialog open={connectionState === ConnectionState.RINGING && !!incomingCall} onOpenChange={() => {}}>
-        <DialogContent className="bg-[var(--color-bg-card)] text-[var(--color-text-on-card)] border-[var(--color-border-card)] max-w-[420px]">
+        <DialogContent className="bg-[#1a1612] text-[#f9f5ed] border-[rgba(201,162,39,0.15)] max-w-[420px] rounded-2xl">
           <DialogHeader>
             <DialogTitle className="font-heading font-bold text-lg">
               고객 호출
             </DialogTitle>
-            <DialogDescription className="text-[var(--color-text-muted-card)] text-sm">
+            <DialogDescription className="text-[#a49484] text-sm">
               고객님이 호출하고 있습니다. 수락하시겠습니까?
             </DialogDescription>
           </DialogHeader>
@@ -362,13 +362,13 @@ export default function CounselorConsultationPage() {
             <Button
               onClick={declineCall}
               variant="outline"
-              className="border-2 border-[var(--color-danger)] text-[var(--color-danger)] bg-transparent font-heading font-bold hover:bg-[var(--color-danger)] hover:text-white"
+              className="border-2 border-[#8B0000] text-[#8B0000] bg-transparent rounded-full font-heading font-bold hover:bg-[#8B0000] hover:text-white"
             >
               거절
             </Button>
             <Button
               onClick={acceptCall}
-              className="bg-[var(--color-success)] text-white font-heading font-bold hover:bg-[var(--color-success)]/90 px-8"
+              className="bg-green-600 text-white rounded-full font-heading font-bold hover:bg-green-700 px-8"
             >
               수락
             </Button>
@@ -390,21 +390,21 @@ export default function CounselorConsultationPage() {
           <h3 className="m-0 mb-2 text-sm font-bold font-heading">고객 정보</h3>
           <div className="space-y-1 text-sm">
             <div>
-              <span className="text-[var(--color-text-muted-card)]">이름: </span>
+              <span className="text-[#a49484]">이름: </span>
               <span className="font-bold">{session.customerName}</span>
             </div>
             <div className="mt-2">
               <Badge
                 className={
                   connectionState === ConnectionState.CONNECTED
-                    ? 'bg-[var(--color-success)] text-white'
+                    ? 'bg-green-600 text-white'
                     : connectionState === ConnectionState.WAITING
-                    ? 'bg-[var(--color-gold)] text-[var(--color-bg-primary)]'
+                    ? 'bg-[#C9A227] text-[#0f0d0a]'
                     : connectionState === ConnectionState.RINGING
-                    ? 'bg-[var(--color-warning)] text-white animate-pulse'
+                    ? 'bg-[#D4A843] text-white animate-pulse'
                     : connectionState === ConnectionState.FAILED
-                    ? 'bg-[var(--color-danger)] text-white'
-                    : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-muted-card)]'
+                    ? 'bg-[#8B0000] text-white'
+                    : 'bg-[#1a1612] text-[#a49484]'
                 }
               >
                 {getConnectionStateMessage()}
@@ -435,10 +435,10 @@ export default function CounselorConsultationPage() {
         <Card>
           <div className="text-center py-12">
             <div className="text-5xl mb-4">📞</div>
-            <div className="font-heading font-bold text-lg text-[var(--color-gold)] mb-2">
+            <div className="font-heading font-bold text-lg text-[#C9A227] mb-2">
               고객의 호출을 기다리는 중...
             </div>
-            <div className="text-sm text-[var(--color-text-muted-card)]">
+            <div className="text-sm text-[#a49484]">
               고객이 상담실에 입장하면 자동으로 알림이 표시됩니다.
             </div>
           </div>
@@ -451,7 +451,7 @@ export default function CounselorConsultationPage() {
           <Card className={chatOpen ? 'lg:col-span-2' : ''}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[400px]">
               {/* Remote Video (Client) */}
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg relative overflow-hidden min-h-[300px]">
+              <div className="bg-[#1a1612] rounded-lg relative overflow-hidden min-h-[300px]">
                 <video
                   ref={remoteVideoRef}
                   autoPlay
@@ -459,7 +459,7 @@ export default function CounselorConsultationPage() {
                   className="w-full h-full object-cover bg-black"
                 />
                 {!callConnected && (
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[var(--color-text-muted-card)]">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[#a49484]">
                     <div className="text-5xl mb-2">&#128100;</div>
                     <div>{session.customerName}</div>
                   </div>
@@ -470,7 +470,7 @@ export default function CounselorConsultationPage() {
               </div>
 
               {/* Local Video (Counselor) */}
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg relative overflow-hidden min-h-[300px]">
+              <div className="bg-[#1a1612] rounded-lg relative overflow-hidden min-h-[300px]">
                 <video
                   ref={localVideoRef}
                   autoPlay
@@ -479,7 +479,7 @@ export default function CounselorConsultationPage() {
                   className="w-full h-full object-cover bg-black"
                 />
                 {!callConnected && (
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[var(--color-text-muted-card)]">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[#a49484]">
                     <div className="text-5xl mb-2">&#128100;</div>
                     <div>나 (선생님)</div>
                   </div>
@@ -512,12 +512,11 @@ export default function CounselorConsultationPage() {
         <Button
           onClick={toggleAudio}
           disabled={!callConnected}
-          className={
+          className={`disabled:opacity-50 ${
             audioEnabled
-              ? 'bg-[var(--color-gold)] text-[var(--color-bg-primary)] font-heading font-bold hover:bg-[var(--color-gold-hover)]'
-              : 'bg-[var(--color-danger)] text-white font-heading font-bold hover:bg-[var(--color-danger)]/90'
-          }
-          style={{ opacity: callConnected ? 1 : 0.5 }}
+              ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
+              : 'bg-[#8B0000] text-white font-heading font-bold hover:bg-[#8B0000]/90'
+          }`}
         >
           {audioEnabled ? '마이크 켜짐' : '마이크 꺼짐'}
         </Button>
@@ -525,12 +524,11 @@ export default function CounselorConsultationPage() {
         <Button
           onClick={toggleVideo}
           disabled={!callConnected}
-          className={
+          className={`disabled:opacity-50 ${
             videoEnabled
-              ? 'bg-[var(--color-gold)] text-[var(--color-bg-primary)] font-heading font-bold hover:bg-[var(--color-gold-hover)]'
-              : 'bg-[var(--color-danger)] text-white font-heading font-bold hover:bg-[var(--color-danger)]/90'
-          }
-          style={{ opacity: callConnected ? 1 : 0.5 }}
+              ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
+              : 'bg-[#8B0000] text-white font-heading font-bold hover:bg-[#8B0000]/90'
+          }`}
         >
           {videoEnabled ? '카메라 켜짐' : '카메라 꺼짐'}
         </Button>
@@ -538,12 +536,11 @@ export default function CounselorConsultationPage() {
         <Button
           onClick={() => setChatOpen(!chatOpen)}
           disabled={!sendbirdCreds}
-          className={
+          className={`disabled:opacity-50 ${
             chatOpen
-              ? 'bg-[var(--color-gold)] text-[var(--color-bg-primary)] font-heading font-bold hover:bg-[var(--color-gold-hover)]'
-              : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-on-card)] font-heading font-bold hover:bg-[var(--color-bg-card-hover)]'
-          }
-          style={{ opacity: sendbirdCreds ? 1 : 0.5 }}
+              ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
+              : 'bg-[#1a1612] text-[#f9f5ed] font-heading font-bold hover:bg-[#C9A227]/10'
+          }`}
         >
           {chatOpen ? '채팅 닫기' : '채팅'}
         </Button>
@@ -552,12 +549,11 @@ export default function CounselorConsultationPage() {
           <Button
             onClick={togglePip}
             disabled={!callConnected}
-            className={
+            className={`disabled:opacity-50 ${
               pipActive
-                ? 'bg-[var(--color-gold)] text-[var(--color-bg-primary)] font-heading font-bold hover:bg-[var(--color-gold-hover)]'
-                : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-on-card)] font-heading font-bold hover:bg-[var(--color-bg-card-hover)]'
-            }
-            style={{ opacity: callConnected ? 1 : 0.5 }}
+                ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
+                : 'bg-[#1a1612] text-[#f9f5ed] font-heading font-bold hover:bg-[#C9A227]/10'
+            }`}
           >
             {pipActive ? 'PIP 끄기' : 'PIP'}
           </Button>
@@ -569,7 +565,7 @@ export default function CounselorConsultationPage() {
               setReconnectAttempts(0);
               initializeSendbird();
             }}
-            className="bg-[var(--color-gold)] text-[var(--color-bg-primary)] font-heading font-bold hover:bg-[var(--color-gold-hover)]"
+            className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-8 font-heading font-bold"
           >
             다시 연결
           </Button>
@@ -578,8 +574,7 @@ export default function CounselorConsultationPage() {
         <Button
           onClick={handleEndSession}
           disabled={loading}
-          className="bg-[var(--color-danger)] text-white font-heading font-bold hover:bg-[var(--color-danger)]/90 px-8"
-          style={{ opacity: loading ? 0.6 : 1 }}
+          className="bg-[#8B0000] text-white font-heading font-bold hover:bg-[#8B0000]/90 rounded-full px-8 disabled:opacity-60"
         >
           {loading ? '종료 중...' : '상담 종료'}
         </Button>

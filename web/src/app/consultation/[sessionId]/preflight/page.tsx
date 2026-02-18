@@ -114,205 +114,116 @@ export default function PreflightPage() {
 
   return (
     <RequireLogin>
-      <main style={{
-        padding: 'var(--spacing-xl)',
-        display: 'grid',
-        gap: 'var(--spacing-lg)',
-        maxWidth: '800px',
-        margin: '0 auto',
-      }}>
+      <main className="max-w-[800px] mx-auto px-6 sm:px-8 py-10 space-y-8">
         <PageTitle>상담 준비 확인</PageTitle>
         <InlineError message={message} />
 
         {/* Camera Preview */}
         {cameraPermission === 'granted' && (
           <Card>
-            <h3 style={{
-              margin: '0 0 var(--spacing-md) 0',
-              fontSize: 'var(--font-size-lg)',
-              fontWeight: 'var(--font-weight-bold)',
-              fontFamily: 'var(--font-heading)',
-            }}>
+            <h3 className="m-0 mb-4 text-lg font-bold font-heading">
               카메라 미리보기
             </h3>
-            <div style={{
-              position: 'relative',
-              width: '100%',
-              paddingBottom: '56.25%', // 16:9 aspect ratio
-              background: '#000',
-              borderRadius: 'var(--radius-md)',
-              overflow: 'hidden',
-            }}>
+            <div className="relative w-full pb-[56.25%] bg-black rounded-xl overflow-hidden">
               <video
                 ref={videoPreviewRef}
                 autoPlay
                 muted
                 playsInline
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
+                className="absolute top-0 left-0 w-full h-full object-cover"
               />
             </div>
           </Card>
         )}
 
         <Card>
-          <h3 style={{
-            margin: '0 0 var(--spacing-md) 0',
-            fontSize: 'var(--font-size-lg)',
-            fontWeight: 'var(--font-weight-bold)',
-            fontFamily: 'var(--font-heading)',
-          }}>
+          <h3 className="m-0 mb-4 text-lg font-bold font-heading">
             디바이스 점검
           </h3>
 
-          <div style={{
-            display: 'grid',
-            gap: 'var(--spacing-md)',
-          }}>
+          <div className="grid gap-4">
             {/* Camera Permission */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: 'var(--spacing-md)',
-              background: cameraPermission === 'granted'
-                ? 'var(--color-success-light)'
+            <div className={`flex justify-between items-center p-4 rounded-xl ${
+              cameraPermission === 'granted'
+                ? 'bg-[var(--color-success-light)]'
                 : cameraPermission === 'denied'
-                  ? 'var(--color-danger-light)'
-                  : 'var(--color-bg-secondary)',
-              borderRadius: 'var(--radius-md)',
-            }}>
+                  ? 'bg-[var(--color-danger-light)]'
+                  : 'bg-[#1a1612]'
+            }`}>
               <div>
-                <div style={{
-                  fontWeight: 'var(--font-weight-bold)',
-                  fontSize: 'var(--font-size-base)',
-                }}>
-                  📹 카메라
+                <div className="font-bold text-base">
+                  카메라
                 </div>
-                <div style={{
-                  fontSize: 'var(--font-size-xs)',
-                  color: 'var(--color-text-muted-card)',
-                  marginTop: 'var(--spacing-xs)',
-                }}>
+                <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
                   화상 상담을 위해 필요합니다
                 </div>
               </div>
-              <div style={{ fontSize: '1.5rem' }}>
+              <div className="text-2xl">
                 {getPermissionIcon(cameraPermission)}
               </div>
             </div>
 
             {/* Microphone Permission */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: 'var(--spacing-md)',
-              background: micPermission === 'granted'
-                ? 'var(--color-success-light)'
+            <div className={`flex justify-between items-center p-4 rounded-xl ${
+              micPermission === 'granted'
+                ? 'bg-[var(--color-success-light)]'
                 : micPermission === 'denied'
-                  ? 'var(--color-danger-light)'
-                  : 'var(--color-bg-secondary)',
-              borderRadius: 'var(--radius-md)',
-            }}>
+                  ? 'bg-[var(--color-danger-light)]'
+                  : 'bg-[#1a1612]'
+            }`}>
               <div>
-                <div style={{
-                  fontWeight: 'var(--font-weight-bold)',
-                  fontSize: 'var(--font-size-base)',
-                }}>
-                  🎤 마이크
+                <div className="font-bold text-base">
+                  마이크
                 </div>
-                <div style={{
-                  fontSize: 'var(--font-size-xs)',
-                  color: 'var(--color-text-muted-card)',
-                  marginTop: 'var(--spacing-xs)',
-                }}>
+                <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
                   음성 상담을 위해 필요합니다
                 </div>
               </div>
-              <div style={{ fontSize: '1.5rem' }}>
+              <div className="text-2xl">
                 {getPermissionIcon(micPermission)}
               </div>
             </div>
 
             {/* Network Quality */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: 'var(--spacing-md)',
-              background: 'var(--color-bg-secondary)',
-              borderRadius: 'var(--radius-md)',
-            }}>
+            <div className="flex justify-between items-center p-4 rounded-xl bg-[#1a1612]">
               <div>
-                <div style={{
-                  fontWeight: 'var(--font-weight-bold)',
-                  fontSize: 'var(--font-size-base)',
-                }}>
-                  📡 네트워크
+                <div className="font-bold text-base">
+                  네트워크
                 </div>
-                <div style={{
-                  fontSize: 'var(--font-size-xs)',
-                  color: 'var(--color-text-muted-card)',
-                  marginTop: 'var(--spacing-xs)',
-                }}>
+                <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
                   {networkQuality === 'good' ? '원활함' : networkQuality === 'fair' ? '보통' : '불안정'}
                 </div>
               </div>
-              <div style={{ fontSize: '1.5rem' }}>
+              <div className="text-2xl">
                 {getNetworkIcon(networkQuality)}
               </div>
             </div>
           </div>
 
           {(cameraPermission === 'denied' || micPermission === 'denied') && (
-            <div style={{
-              marginTop: 'var(--spacing-lg)',
-              padding: 'var(--spacing-md)',
-              background: 'var(--color-danger-light)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-danger)',
-            }}>
-              ⚠️ 브라우저 설정에서 카메라와 마이크 권한을 허용해주세요.
+            <div className="mt-6 p-4 bg-[var(--color-danger-light)] rounded-xl text-sm text-[var(--color-danger)]">
+              브라우저 설정에서 카메라와 마이크 권한을 허용해주세요.
             </div>
           )}
         </Card>
 
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 'var(--spacing-md)',
-        }}>
+        <div className="flex flex-col gap-4">
           <ActionButton
             onClick={enterRoom}
             disabled={!canEnterRoom() || checking}
             loading={checking}
           >
-            🚪 상담실 입장
+            상담실 입장
           </ActionButton>
 
           <button
             onClick={checkPermissions}
             disabled={checking}
-            style={{
-              background: 'transparent',
-              color: 'var(--color-gold)',
-              border: `1px solid var(--color-border-dark)`,
-              borderRadius: 'var(--radius-md)',
-              padding: 'var(--spacing-sm) var(--spacing-lg)',
-              fontSize: 'var(--font-size-sm)',
-              cursor: checking ? 'not-allowed' : 'pointer',
-              opacity: checking ? 0.6 : 1,
-            }}
+            className={`bg-transparent text-[#C9A227] border border-[rgba(201,162,39,0.15)] rounded-full px-6 py-2 text-sm hover:bg-[#C9A227]/10 transition-colors ${
+              checking ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+            }`}
           >
-            🔄 다시 확인
+            다시 확인
           </button>
         </div>
       </main>

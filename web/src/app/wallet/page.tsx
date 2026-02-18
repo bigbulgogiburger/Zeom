@@ -78,70 +78,38 @@ export default function WalletPage() {
 
   return (
     <RequireLogin>
-      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-lg)' }}>
+      <main className="max-w-[1000px] mx-auto px-6 sm:px-8 py-10 space-y-8">
         <PageTitle>내 지갑</PageTitle>
         <InlineError message={message} />
 
         {/* Balance Card */}
         {wallet && (
-          <Card>
-            <div style={{ textAlign: 'center', padding: 'var(--spacing-xl) 0' }}>
-              <div style={{
-                color: 'var(--color-gold)',
-                fontSize: 'var(--font-size-sm)',
-                marginBottom: 'var(--spacing-sm)',
-                fontWeight: 'var(--font-weight-bold)',
-                fontFamily: 'var(--font-heading)',
-              }}>
+          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 text-center max-w-[520px] mx-auto">
+            <div className="text-center py-4">
+              <div className="text-[#C9A227] text-sm mb-3 font-bold font-heading tracking-wide">
                 현재 잔액
               </div>
-              <div style={{
-                fontSize: 'var(--font-size-3xl)',
-                fontWeight: 'var(--font-weight-black)',
-                color: 'var(--color-gold)',
-                marginBottom: 'var(--spacing-lg)',
-                fontFamily: 'var(--font-heading)',
-              }}>
+              <div className="text-5xl font-black text-[#C9A227] mb-8 font-heading">
                 {(wallet.balanceCash ?? wallet.balance ?? 0).toLocaleString()}원
               </div>
               <button
                 onClick={() => router.push('/cash/buy')}
-                style={{
-                  background: 'var(--color-gold)',
-                  color: 'var(--color-bg-primary)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  padding: 'var(--spacing-md) var(--spacing-xl)',
-                  fontSize: 'var(--font-size-base)',
-                  fontWeight: 'var(--font-weight-bold)',
-                  cursor: 'pointer',
-                  minHeight: '44px',
-                  fontFamily: 'var(--font-heading)',
-                }}
+                className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-10 py-3.5 font-bold text-base cursor-pointer min-h-[48px] font-heading border-none hover:shadow-[0_4px_20px_rgba(201,162,39,0.2)] transition-all"
               >
-                💳 충전하기
+                충전하기
               </button>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Transaction History */}
-        <div style={{ marginTop: 'var(--spacing-md)' }}>
-          <h3 style={{
-            fontSize: 'var(--font-size-lg)',
-            marginBottom: 'var(--spacing-md)',
-            fontFamily: 'var(--font-heading)',
-            fontWeight: 'var(--font-weight-bold)',
-          }}>
+        <div>
+          <h3 className="text-xl mb-6 font-heading font-bold text-[var(--color-text-on-dark)]">
             거래 내역
           </h3>
           {loading ? (
             <Card>
-              <div style={{
-                textAlign: 'center',
-                padding: 'var(--spacing-xl)',
-                color: 'var(--color-text-muted-card)',
-              }}>
+              <div className="text-center py-8 text-[var(--color-text-muted-card)]">
                 불러오는 중...
               </div>
             </Card>
@@ -149,65 +117,36 @@ export default function WalletPage() {
             <EmptyState title="거래 내역이 없습니다" desc="지갑을 충전하여 상담 서비스를 이용해보세요." />
           ) : (
             <>
-              <div style={{ display: 'grid', gap: 'var(--spacing-sm)' }}>
+              <div className="grid gap-5">
                 {transactions.map((t) => (
                   <Card key={t.id}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      gap: 'var(--spacing-md)',
-                      flexWrap: 'wrap',
-                    }}>
-                      <div style={{ flex: 1, minWidth: '200px' }}>
-                        <div style={{
-                          display: 'flex',
-                          gap: 'var(--spacing-sm)',
-                          alignItems: 'center',
-                          marginBottom: 'var(--spacing-xs)',
-                        }}>
+                    <div className="flex justify-between items-start gap-4 flex-wrap">
+                      <div className="flex-1 min-w-[200px]">
+                        <div className="flex gap-2 items-center mb-1">
                           <StatusBadge value={t.type} />
-                          <span style={{
-                            fontWeight: 'var(--font-weight-bold)',
-                            fontFamily: 'var(--font-heading)',
-                          }}>
+                          <span className="font-bold font-heading">
                             {getTransactionTypeLabel(t.type)}
                           </span>
                         </div>
                         {t.refType && (
-                          <div style={{
-                            fontSize: 'var(--font-size-sm)',
-                            color: 'var(--color-text-muted-card)',
-                            marginTop: 'var(--spacing-xs)',
-                          }}>
+                          <div className="text-sm text-[var(--color-text-muted-card)] mt-1">
                             {t.refType}{t.refId ? ` #${t.refId}` : ''}
                           </div>
                         )}
-                        <div style={{
-                          fontSize: 'var(--font-size-xs)',
-                          color: 'var(--color-text-muted-card)',
-                          marginTop: 'var(--spacing-sm)',
-                        }}>
+                        <div className="text-xs text-[var(--color-text-muted-card)] mt-2">
                           {new Date(t.createdAt).toLocaleString('ko-KR')}
                         </div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{
-                          fontSize: 'var(--font-size-lg)',
-                          fontWeight: 'var(--font-weight-bold)',
-                          color: t.type === 'CHARGE' || t.type === 'REFUND'
-                            ? 'var(--color-success)'
-                            : 'var(--color-danger)',
-                          fontFamily: 'var(--font-heading)',
-                        }}>
+                      <div className="text-right">
+                        <div className={`text-lg font-bold font-heading ${
+                          t.type === 'CHARGE' || t.type === 'REFUND'
+                            ? 'text-[var(--color-success)]'
+                            : 'text-[var(--color-danger)]'
+                        }`}>
                           {t.type === 'CHARGE' || t.type === 'REFUND' ? '+' : '-'}
                           {Math.abs(t.amount).toLocaleString()}원
                         </div>
-                        <div style={{
-                          fontSize: 'var(--font-size-xs)',
-                          color: 'var(--color-text-muted-card)',
-                          marginTop: 'var(--spacing-xs)',
-                        }}>
+                        <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
                           잔액: {t.balanceAfter.toLocaleString()}원
                         </div>
                       </div>
@@ -218,42 +157,23 @@ export default function WalletPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: 'var(--spacing-sm)',
-                  marginTop: 'var(--spacing-lg)',
-                  flexWrap: 'wrap',
-                }}>
+                <div className="flex justify-center gap-2 mt-6 flex-wrap">
                   <button
                     onClick={() => loadTransactions(page - 1)}
                     disabled={page === 0}
-                    style={{
-                      padding: 'var(--spacing-sm) var(--spacing-lg)',
-                      opacity: page === 0 ? 0.6 : 1,
-                      cursor: page === 0 ? 'not-allowed' : 'pointer',
-                    }}
+                    className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 hover:bg-[#C9A227]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    ← 이전
+                    이전
                   </button>
-                  <span style={{
-                    padding: 'var(--spacing-sm) var(--spacing-lg)',
-                    color: 'var(--color-text-muted-dark)',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}>
+                  <span className="px-6 py-2 text-[var(--color-text-muted-dark)] flex items-center">
                     {page + 1} / {totalPages}
                   </span>
                   <button
                     onClick={() => loadTransactions(page + 1)}
                     disabled={page >= totalPages - 1}
-                    style={{
-                      padding: 'var(--spacing-sm) var(--spacing-lg)',
-                      opacity: page >= totalPages - 1 ? 0.6 : 1,
-                      cursor: page >= totalPages - 1 ? 'not-allowed' : 'pointer',
-                    }}
+                    className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 hover:bg-[#C9A227]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    다음 →
+                    다음
                   </button>
                 </div>
               )}

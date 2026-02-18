@@ -48,28 +48,12 @@ export default function RefundsPage() {
 
   return (
     <RequireLogin>
-      <main style={{ padding: 'var(--spacing-xl)', display: 'grid', gap: 'var(--spacing-lg)' }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: 'var(--spacing-md)',
-          flexWrap: 'wrap',
-        }}>
+      <main className="max-w-[1000px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+        <div className="flex justify-between items-center gap-4 flex-wrap">
           <PageTitle>환불 내역</PageTitle>
           <button
             onClick={() => router.push('/refunds/new')}
-            style={{
-              background: 'var(--color-gold)',
-              color: 'var(--color-bg-primary)',
-              padding: 'var(--spacing-sm) var(--spacing-lg)',
-              fontSize: 'var(--font-size-sm)',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 'var(--font-weight-bold)',
-              fontFamily: 'var(--font-heading)',
-            }}
+            className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] px-6 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
           >
             + 환불 신청
           </button>
@@ -79,11 +63,7 @@ export default function RefundsPage() {
 
         {loading ? (
           <Card>
-            <div style={{
-              textAlign: 'center',
-              padding: 'var(--spacing-xl)',
-              color: 'var(--color-text-muted-card)',
-            }}>
+            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
               불러오는 중...
             </div>
           </Card>
@@ -93,47 +73,22 @@ export default function RefundsPage() {
             desc="예약을 취소하거나 환불이 필요한 경우 신청할 수 있습니다."
           />
         ) : (
-          <div style={{ display: 'grid', gap: 'var(--spacing-md)' }}>
+          <div className="grid gap-6">
             {refunds.map((r) => (
               <Card key={r.id}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: 'var(--spacing-md)',
-                  flexWrap: 'wrap',
-                }}>
-                  <div style={{ flex: 1, minWidth: '200px' }}>
-                    <div style={{
-                      display: 'flex',
-                      gap: 'var(--spacing-sm)',
-                      alignItems: 'center',
-                      marginBottom: 'var(--spacing-sm)',
-                      flexWrap: 'wrap',
-                    }}>
-                      <h3 style={{
-                        margin: 0,
-                        fontSize: 'var(--font-size-lg)',
-                        fontWeight: 'var(--font-weight-bold)',
-                        fontFamily: 'var(--font-heading)',
-                      }}>
+                <div className="flex justify-between items-start gap-4 flex-wrap">
+                  <div className="flex-1 min-w-[200px]">
+                    <div className="flex gap-2 items-center mb-2 flex-wrap">
+                      <h3 className="m-0 text-lg font-bold font-heading">
                         {r.counselorName} 상담
                       </h3>
                       <StatusBadge value={r.status} />
                     </div>
 
-                    <div style={{
-                      display: 'grid',
-                      gap: 'var(--spacing-xs)',
-                      fontSize: 'var(--font-size-sm)',
-                      color: 'var(--color-text-muted-card)',
-                    }}>
+                    <div className="grid gap-1 text-sm text-[var(--color-text-muted-card)]">
                       <div>
                         <span>금액: </span>
-                        <span style={{
-                          fontWeight: 'var(--font-weight-bold)',
-                          color: 'var(--color-gold)',
-                        }}>
+                        <span className="font-bold text-[#C9A227]">
                           {r.amount.toLocaleString()}원
                         </span>
                       </div>
@@ -150,17 +105,8 @@ export default function RefundsPage() {
                     </div>
 
                     {r.reason && (
-                      <div style={{
-                        marginTop: 'var(--spacing-md)',
-                        padding: 'var(--spacing-md)',
-                        background: 'var(--color-bg-secondary)',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: 'var(--font-size-sm)',
-                      }}>
-                        <div style={{
-                          color: 'var(--color-text-muted-card)',
-                          marginBottom: 'var(--spacing-xs)',
-                        }}>
+                      <div className="mt-4 p-4 bg-[#1a1612] rounded-xl text-sm">
+                        <div className="text-[var(--color-text-muted-card)] mb-1">
                           사유:
                         </div>
                         <div>{r.reason}</div>

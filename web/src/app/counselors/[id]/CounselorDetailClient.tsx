@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { API_BASE } from '../../../components/api';
 import { apiFetch } from '../../../components/api-client';
 import { ActionButton, Card, EmptyState } from '../../../components/ui';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
@@ -149,7 +148,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   // Loading error state
   if (loadError) {
     return (
-      <main className="p-6 max-w-[800px] mx-auto">
+      <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10">
         <Alert variant="destructive">
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
@@ -160,14 +159,22 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   // Loading skeleton
   if (!counselor) {
     return (
-      <main className="p-6 max-w-[800px] mx-auto">
-        <div className="grid gap-3">
-          <div className="h-8 w-40 bg-muted rounded" />
-          <Card>
-            <div className="h-12 w-12 rounded-full bg-muted mx-auto mb-3" />
-            <div className="h-5 w-2/5 bg-muted rounded mx-auto mb-2" />
-            <div className="h-3.5 w-3/5 bg-muted rounded mx-auto" />
-          </Card>
+      <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 animate-pulse">
+          <div className="flex flex-col items-center gap-5">
+            <div className="h-16 w-16 rounded-full bg-[#1a1612]" />
+            <div className="h-7 w-2/5 bg-[#1a1612] rounded-lg" />
+            <div className="h-4 w-1/4 bg-[#1a1612] rounded-lg" />
+            <div className="h-4 w-3/5 bg-[#1a1612] rounded-lg" />
+          </div>
+        </div>
+        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 animate-pulse">
+          <div className="h-5 w-1/3 bg-[#1a1612] rounded-lg mb-6" />
+          <div className="grid grid-cols-3 gap-4">
+            <div className="h-12 bg-[#1a1612] rounded-xl" />
+            <div className="h-12 bg-[#1a1612] rounded-xl" />
+            <div className="h-12 bg-[#1a1612] rounded-xl" />
+          </div>
         </div>
       </main>
     );
@@ -176,14 +183,16 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   // Booking success view
   if (bookingSuccess) {
     return (
-      <main className="p-6 max-w-[800px] mx-auto flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <div className="text-5xl mb-4">🎉</div>
-        <h2 className="font-heading text-2xl font-bold text-foreground mb-2">
-          예약이 완료되었습니다!
-        </h2>
-        <p className="text-muted-foreground text-sm">
-          내 예약 페이지로 이동합니다...
-        </p>
+      <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 flex flex-col items-center justify-center min-h-[50vh] text-center">
+        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-12">
+          <div className="text-5xl mb-6">🎉</div>
+          <h2 className="font-heading text-3xl font-black tracking-tight bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent mb-3">
+            예약이 완료되었습니다!
+          </h2>
+          <p className="text-[#a49484] text-lg leading-relaxed">
+            내 예약 페이지로 이동합니다...
+          </p>
+        </div>
       </main>
     );
   }
@@ -191,22 +200,24 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   const slotsByDate = groupSlotsByDate(counselor.slots);
 
   return (
-    <main className="p-6 max-w-[800px] mx-auto grid gap-6">
+    <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 space-y-8">
       {/* Counselor Info Header */}
       <Card>
-        <div className="flex flex-col items-center text-center gap-3">
-          <div className="text-[2.5rem]">
+        <div className="flex flex-col items-center text-center gap-5 py-4">
+          <div className="text-[3.5rem]">
             {specialtyEmoji(counselor.specialty)}
           </div>
           <div>
-            <h2 className="m-0 font-heading font-bold text-2xl text-card-foreground">
+            <h2 className="m-0 font-heading font-black text-3xl tracking-tight text-card-foreground">
               {counselor.name}
             </h2>
-            <Badge variant="secondary" className="mt-2 font-heading font-bold text-xs rounded-full">
-              {counselor.specialty}
-            </Badge>
+            <div className="mt-3">
+              <Badge variant="secondary" className="font-heading font-bold text-xs rounded-full px-3 py-1">
+                {counselor.specialty}
+              </Badge>
+            </div>
           </div>
-          <p className="text-muted-foreground text-base leading-relaxed max-w-[500px]">
+          <p className="text-muted-foreground text-lg leading-relaxed max-w-[500px]">
             {counselor.intro}
           </p>
         </div>
@@ -214,41 +225,40 @@ export default function CounselorDetailClient({ id }: { id: string }) {
 
       {/* Available Slots Section */}
       <div>
-        <h3 className="m-0 mb-4 font-heading text-xl text-foreground">
+        <h3 className="m-0 mb-8 font-heading text-xl font-bold text-[var(--color-text-on-dark)] text-center">
           예약 가능 슬롯
         </h3>
 
         {counselor.slots.length === 0 ? (
           <EmptyState title="현재 가능한 슬롯이 없어요" desc="다른 상담사 또는 시간대를 확인해주세요." />
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-6">
             {Array.from(slotsByDate.entries()).map(([dateLabel, slots]) => (
               <div key={dateLabel}>
-                <h4 className="m-0 mb-2 font-heading text-base font-bold text-foreground">
+                <h4 className="m-0 mb-4 font-heading text-base font-bold text-[var(--color-text-on-dark)]">
                   {dateLabel}
                 </h4>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
                   {slots.map((s) => {
                     const isSelected = selectedSlotIds.has(s.id);
                     return (
-                      <Button
+                      <button
                         key={s.id}
-                        variant="outline"
                         onClick={() => toggleSlot(s)}
                         className={cn(
-                          'relative p-3 text-center font-heading font-medium text-sm transition-all h-auto',
+                          'relative p-3 text-center font-heading font-medium text-sm transition-all duration-300 rounded-xl h-auto',
                           isSelected
-                            ? 'border-primary bg-primary/5 ring-2 ring-primary/15'
-                            : 'border-border bg-card text-card-foreground'
+                            ? 'border-2 border-[#C9A227] bg-[#C9A227]/10 text-[#C9A227] shadow-[0_0_12px_rgba(201,162,39,0.15)]'
+                            : 'border border-[rgba(201,162,39,0.15)] bg-[#1a1612] text-[var(--color-text-on-dark)] hover:border-[#C9A227]/30 hover:bg-[#C9A227]/5'
                         )}
                       >
                         {isSelected && (
-                          <span className="absolute top-1 right-1 text-xs leading-none">
+                          <span className="absolute top-1.5 right-2 text-[#C9A227] text-xs font-bold leading-none">
                             ✓
                           </span>
                         )}
                         {formatTime(s.startAt)} ~ {formatTime(s.endAt)}
-                      </Button>
+                      </button>
                     );
                   })}
                 </div>
@@ -256,17 +266,17 @@ export default function CounselorDetailClient({ id }: { id: string }) {
             ))}
 
             {maxWarning && (
-              <div className="text-yellow-600 text-sm font-medium text-center">
+              <div className="text-[var(--color-warning)] text-sm font-medium text-center bg-[var(--color-warning)]/10 rounded-xl py-2 px-4">
                 {maxWarning}
               </div>
             )}
 
             {selectedSlots.length > 0 && (
               <div className="flex justify-center gap-3 flex-wrap">
-                <Badge variant="outline" className="text-primary border-primary font-heading font-bold text-sm rounded-full px-3">
+                <Badge variant="outline" className="text-[#C9A227] border-[#C9A227]/30 font-heading font-bold text-sm rounded-full px-4 py-1.5">
                   {selectedSlots.length}개 슬롯 선택됨 ({selectedSlots.length * 30}분)
                 </Badge>
-                <Badge variant="secondary" className="font-heading font-bold text-sm rounded-full px-3">
+                <Badge variant="secondary" className="font-heading font-bold text-sm rounded-full px-4 py-1.5">
                   상담권 {selectedSlots.length}회 사용
                 </Badge>
               </div>
@@ -287,57 +297,56 @@ export default function CounselorDetailClient({ id }: { id: string }) {
         </div>
       )}
 
-      {/* Confirmation Dialog */}
+      {/* Confirmation Dialog — Glass-morphism */}
       {showConfirm && selectedSlots.length > 0 && (
-        <Card className="border-primary">
-          <h3 className="m-0 mb-4 font-heading font-bold text-lg text-center">
+        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.15)] rounded-2xl p-8 sm:p-10 shadow-lg">
+          <h3 className="m-0 mb-6 font-heading font-bold text-xl text-center text-[var(--color-text-on-dark)]">
             예약 확인
           </h3>
 
-          <div className="grid gap-2 text-sm mb-4">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">상담사</span>
-              <span className="font-bold">{counselor.name}</span>
+          <div className="grid gap-4 text-sm mb-6">
+            <div className="flex justify-between items-center">
+              <span className="text-[#a49484]">상담사</span>
+              <span className="font-bold text-[var(--color-text-on-dark)]">{counselor.name}</span>
             </div>
 
             {groupConsecutiveSlots(selectedSlots).map((range, i) => (
-              <div key={i} className="flex justify-between">
-                <span className="text-muted-foreground">
+              <div key={i} className="flex justify-between items-center">
+                <span className="text-[#a49484]">
                   {i === 0 ? '시간' : ''}
                 </span>
-                <span className="font-bold">
+                <span className="font-bold text-[var(--color-text-on-dark)]">
                   {formatDate(range.startAt)} {formatTime(range.startAt)} ~ {formatTime(range.endAt)}
                 </span>
               </div>
             ))}
 
-            <div className="border-t border-border pt-2 mt-1 grid gap-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">총 소요시간</span>
-                <span className="font-bold">{selectedSlots.length * 30}분</span>
+            <div className="border-t border-[rgba(201,162,39,0.1)] pt-4 mt-2 grid gap-4">
+              <div className="flex justify-between items-center">
+                <span className="text-[#a49484]">총 소요시간</span>
+                <span className="font-bold text-[var(--color-text-on-dark)]">{selectedSlots.length * 30}분</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">사용 상담권</span>
-                <span className="font-bold">{selectedSlots.length}회</span>
+              <div className="flex justify-between items-center">
+                <span className="text-[#a49484]">사용 상담권</span>
+                <span className="font-bold text-[var(--color-text-on-dark)]">{selectedSlots.length}회</span>
               </div>
             </div>
           </div>
 
           {bookingError && (
-            <Alert variant="destructive" className="mb-2">
+            <Alert variant="destructive" className="mb-4">
               <AlertDescription>{bookingError}</AlertDescription>
             </Alert>
           )}
 
-          <div className={cn('flex gap-2', bookingError && 'mt-2')}>
-            <Button
-              variant="outline"
+          <div className={cn('flex gap-4', bookingError && 'mt-3')}>
+            <button
               onClick={() => { setShowConfirm(false); setBookingError(''); }}
               disabled={booking}
-              className="flex-1 font-heading font-bold"
+              className="flex-1 rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] font-heading font-bold py-3 bg-transparent hover:bg-[#C9A227]/10 transition-all duration-300 disabled:opacity-50"
             >
               취소
-            </Button>
+            </button>
             <ActionButton
               onClick={handleBook}
               loading={booking}
@@ -346,7 +355,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
               예약 확정
             </ActionButton>
           </div>
-        </Card>
+        </div>
       )}
     </main>
   );

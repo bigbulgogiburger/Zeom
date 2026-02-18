@@ -73,39 +73,18 @@ export default function ReviewPage() {
   if (submitted) {
     return (
       <RequireLogin>
-        <main style={{
-          padding: 'var(--spacing-xl)',
-          display: 'grid',
-          gap: 'var(--spacing-lg)',
-          maxWidth: '600px',
-          margin: '0 auto',
-        }}>
-          <Card>
-            <div style={{
-              textAlign: 'center',
-              padding: 'var(--spacing-3xl)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--spacing-lg)',
-              alignItems: 'center',
-            }}>
-              <div style={{ fontSize: '3rem' }}>✅</div>
-              <div style={{
-                fontSize: 'var(--font-size-xl)',
-                fontWeight: 'var(--font-weight-bold)',
-                fontFamily: 'var(--font-heading)',
-                color: 'var(--color-success)',
-              }}>
+        <main className="py-8 px-6 grid gap-8 max-w-[600px] mx-auto">
+          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-12">
+            <div className="text-center flex flex-col gap-6 items-center">
+              <div className="text-5xl">&#9989;</div>
+              <div className="text-xl font-bold font-heading bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
                 리뷰가 등록되었습니다
               </div>
-              <div style={{
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-text-muted-card)',
-              }}>
+              <div className="text-sm text-[var(--color-text-muted-dark)]">
                 소중한 의견 감사합니다. 잠시 후 상담 내역 페이지로 이동합니다.
               </div>
             </div>
-          </Card>
+          </div>
         </main>
       </RequireLogin>
     );
@@ -114,21 +93,11 @@ export default function ReviewPage() {
   if (!reservation) {
     return (
       <RequireLogin>
-        <main style={{
-          padding: 'var(--spacing-xl)',
-          display: 'grid',
-          gap: 'var(--spacing-lg)',
-          maxWidth: '600px',
-          margin: '0 auto',
-        }}>
+        <main className="py-8 px-6 grid gap-8 max-w-[600px] mx-auto">
           <PageTitle>상담 후기</PageTitle>
           <InlineError message={message} />
           <Card>
-            <div style={{
-              textAlign: 'center',
-              padding: 'var(--spacing-xl)',
-              color: 'var(--color-text-muted-card)',
-            }}>
+            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
               예약 정보를 불러오는 중...
             </div>
           </Card>
@@ -139,34 +108,16 @@ export default function ReviewPage() {
 
   return (
     <RequireLogin>
-      <main style={{
-        padding: 'var(--spacing-xl)',
-        display: 'grid',
-        gap: 'var(--spacing-lg)',
-        maxWidth: '600px',
-        margin: '0 auto',
-      }}>
+      <main className="py-8 px-6 grid gap-6 max-w-[600px] mx-auto">
         <PageTitle>상담 후기 작성</PageTitle>
         <InlineError message={message} />
 
         <Card>
-          <div style={{
-            marginBottom: 'var(--spacing-lg)',
-            padding: 'var(--spacing-md)',
-            background: 'var(--color-bg-secondary)',
-            borderRadius: 'var(--radius-md)',
-          }}>
-            <div style={{
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-text-muted-card)',
-              marginBottom: 'var(--spacing-xs)',
-            }}>
+          <div className="mb-6 p-4 bg-[#1a1612] rounded-xl">
+            <div className="text-sm text-[var(--color-text-muted-card)] mb-1">
               상담 일시
             </div>
-            <div style={{
-              fontSize: 'var(--font-size-base)',
-              fontWeight: 'var(--font-weight-medium)',
-            }}>
+            <div className="text-base font-medium">
               {new Date(reservation.startAt).toLocaleString('ko-KR')}
             </div>
           </div>
@@ -179,17 +130,9 @@ export default function ReviewPage() {
 
         <button
           onClick={() => router.push('/consultations')}
-          style={{
-            background: 'transparent',
-            color: 'var(--color-gold)',
-            border: `1px solid var(--color-border-dark)`,
-            borderRadius: 'var(--radius-md)',
-            padding: 'var(--spacing-sm) var(--spacing-lg)',
-            fontSize: 'var(--font-size-sm)',
-            cursor: 'pointer',
-          }}
+          className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 text-sm hover:bg-[#C9A227]/10 bg-transparent cursor-pointer"
         >
-          ← 나중에 작성하기
+          나중에 작성하기
         </button>
       </main>
     </RequireLogin>
