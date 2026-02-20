@@ -36,6 +36,8 @@ argument-hint: "[선택사항: 특정 스킬 이름 또는 집중할 영역]"
 | `verify-frontend-ui` | 프론트엔드 UI/디자인 시스템 품질 검증 | `web/src/app/globals.css`, `web/src/components/ui/*.tsx`, `web/src/components/ui.tsx` |
 | `verify-e2e-tests` | E2E 테스트 설정 및 품질 검증 | `web/e2e/*.spec.ts`, `web/playwright.config.ts`, `web/src/__tests__/*.test.tsx` |
 | `verify-admin-auth` | Admin API 엔드포인트 인증/인가 가드 검증 | `backend/**/admin/*.java`, `backend/**/ops/*.java`, `backend/**/settlement/SettlementController.java` |
+| `verify-auth-system` | 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀번호 리셋, 소셜 로그인) | `backend/**/auth/*.java`, `web/src/app/login/**`, `web/src/app/signup/**`, `web/src/app/forgot-password/**`, `web/src/app/reset-password/**`, `web/src/app/verify-email/**` |
+| `verify-notification-system` | 알림/이메일/SMS 시스템 무결성 검증 | `backend/**/notification/*.java`, `web/src/app/notifications/**`, `web/src/app/notification-preferences/**`, `web/src/components/notification-bell.tsx` |
 
 ## 워크플로우
 

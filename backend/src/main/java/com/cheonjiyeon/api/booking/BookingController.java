@@ -32,8 +32,27 @@ public class BookingController {
     @PostMapping("/{id}/cancel")
     public BookingDtos.BookingResponse cancel(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id,
+            @RequestBody(required = false) BookingDtos.CancelRequest cancelRequest
+    ) {
+        String reason = cancelRequest != null ? cancelRequest.reason() : null;
+        return bookingService.cancel(authHeader, id, reason);
+    }
+
+    @PutMapping("/{id}/retry-payment")
+    public BookingDtos.RetryPaymentResponse retryPayment(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long id
     ) {
-        return bookingService.cancel(authHeader, id);
+        return bookingService.retryPayment(authHeader, id);
+    }
+
+    @PutMapping("/{id}/reschedule")
+    public BookingDtos.BookingResponse reschedule(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id,
+            @Valid @RequestBody BookingDtos.RescheduleRequest req
+    ) {
+        return bookingService.reschedule(authHeader, id, req);
     }
 }

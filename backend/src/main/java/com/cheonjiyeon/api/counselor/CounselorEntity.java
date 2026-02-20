@@ -31,11 +31,15 @@ public class CounselorEntity {
     @Column(nullable = false)
     private Boolean isActive;
 
+    @Column(name = "supported_consultation_types", length = 100)
+    private String supportedConsultationTypes = "VIDEO";
+
     @PrePersist
     void onCreate() {
         if (ratingAvg == null) ratingAvg = BigDecimal.ZERO;
         if (reviewCount == null) reviewCount = 0;
         if (isActive == null) isActive = true;
+        if (supportedConsultationTypes == null) supportedConsultationTypes = "VIDEO";
     }
 
     public Long getId() { return id; }
@@ -53,4 +57,6 @@ public class CounselorEntity {
     public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+    public String getSupportedConsultationTypes() { return supportedConsultationTypes; }
+    public void setSupportedConsultationTypes(String supportedConsultationTypes) { this.supportedConsultationTypes = supportedConsultationTypes; }
 }

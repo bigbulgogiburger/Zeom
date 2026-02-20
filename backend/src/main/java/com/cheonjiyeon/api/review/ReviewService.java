@@ -8,6 +8,9 @@ import com.cheonjiyeon.api.booking.BookingRepository;
 import com.cheonjiyeon.api.common.ApiException;
 import com.cheonjiyeon.api.counselor.CounselorEntity;
 import com.cheonjiyeon.api.counselor.CounselorRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,12 @@ public class ReviewService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "counselor-reviews", allEntries = true),
+            @CacheEvict(value = "counselor-ratings", allEntries = true),
+            @CacheEvict(value = "counselor-detail", allEntries = true),
+            @CacheEvict(value = "counselors", allEntries = true)
+    })
     public ReviewEntity createReview(String authHeader, Long reservationId, ReviewDtos.CreateReviewRequest req) {
         UserEntity user = resolveUser(authHeader);
 
@@ -91,6 +100,19 @@ public class ReviewService {
         counselorRepository.save(counselor);
     }
 
+    @Transactional
+    @CacheEvict(value = "counselor-reviews", allEntries = true)
+    public ReviewEntity reportReview(String authHeader, Long reviewId, String reason) {
+        resolveUser(authHeader);
+
+        ReviewEntity review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ApiException(404, "리뷰를 찾을 수 없습니다."));
+
+        review.setReportedCount(review.getReportedCount() + 1);
+        return reviewRepository.save(review);
+    }
+
+    @Cacheable(value = "counselor-reviews", key = "#counselorId + ':' + #page + ':' + #size")
     public ReviewDtos.ReviewListResponse getReviewsByCounselor(Long counselorId, int page, int size) {
         Page<ReviewEntity> reviewPage = reviewRepository.findByCounselorIdOrderByCreatedAtDesc(
                 counselorId,

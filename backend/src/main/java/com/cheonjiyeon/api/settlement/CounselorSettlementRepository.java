@@ -12,4 +12,6 @@ public interface CounselorSettlementRepository extends JpaRepository<CounselorSe
     Page<CounselorSettlementEntity> findByCounselorIdOrderByCreatedAtDesc(Long counselorId, Pageable pageable);
     Optional<CounselorSettlementEntity> findByCounselorIdAndPeriodStartAndPeriodEnd(Long counselorId, LocalDate periodStart, LocalDate periodEnd);
     List<CounselorSettlementEntity> findByCounselorIdOrderByPeriodStartDesc(Long counselorId);
+    Page<CounselorSettlementEntity> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
+    Page<CounselorSettlementEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
 }

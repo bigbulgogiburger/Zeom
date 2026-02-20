@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { apiFetch } from './api-client';
 import { clearTokens, getRefreshToken } from './auth-client';
 import { useAuth } from './auth-context';
 import CreditWidget from './credit-widget';
 import WalletWidget from './wallet-widget';
+import NotificationBell from './notification-bell';
+import LanguageSwitcher from './language-switcher';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -16,6 +19,7 @@ export default function AppHeader() {
   const { me, refreshMe } = useAuth();
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const t = useTranslations('common');
 
   async function logout() {
     const refreshToken = getRefreshToken();
@@ -54,6 +58,7 @@ export default function AppHeader() {
           {me && <Link href="/credits" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">상담권</Link>}
           {me && <Link href="/bookings/me" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">내예약</Link>}
           {me && <Link href="/sessions" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">세션관리</Link>}
+          {me && <Link href="/notifications" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">알림</Link>}
           {isCounselor && <Link href="/counselor" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">선생님 포털</Link>}
           {isAdmin && <Link href="/dashboard" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">대시보드</Link>}
           {isAdmin && <Link href="/admin/timeline" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">타임라인</Link>}
@@ -62,10 +67,12 @@ export default function AppHeader() {
 
         {/* Desktop right section */}
         <div className="app-header-right">
+          <LanguageSwitcher />
           {me ? (
             <>
               <CreditWidget />
               <WalletWidget />
+              <NotificationBell />
               <span className="app-header-user">{me.name}</span>
               <Button
                 variant="outline"
@@ -73,13 +80,13 @@ export default function AppHeader() {
                 onClick={logout}
                 className="rounded-full border border-[rgba(201,162,39,0.2)] text-[#a49484] bg-transparent font-medium hover:border-[#C9A227] hover:text-[#C9A227] hover:bg-transparent"
               >
-                로그아웃
+                {t('logout')}
               </Button>
             </>
           ) : (
             <span className="app-header-auth-links flex gap-3 items-center">
-              <Link href="/login" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">로그인</Link>
-              <Link href="/signup" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">회원가입</Link>
+              <Link href="/login" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">{t('login')}</Link>
+              <Link href="/signup" className="text-[#a49484] hover:text-[#C9A227] transition-colors duration-200">{t('signup')}</Link>
             </span>
           )}
 
@@ -103,6 +110,8 @@ export default function AppHeader() {
                 {me && <Link href="/credits" onClick={closeDrawer} className={navLinkClass}>상담권</Link>}
                 {me && <Link href="/bookings/me" onClick={closeDrawer} className={navLinkClass}>내예약</Link>}
                 {me && <Link href="/sessions" onClick={closeDrawer} className={navLinkClass}>세션관리</Link>}
+                {me && <Link href="/notifications" onClick={closeDrawer} className={navLinkClass}>알림</Link>}
+                {me && <Link href="/notification-preferences" onClick={closeDrawer} className={navLinkClass}>알림 설정</Link>}
               </nav>
 
               {isCounselor && (
@@ -140,15 +149,20 @@ export default function AppHeader() {
                     onClick={logout}
                     className="mx-2 rounded-full border border-[rgba(201,162,39,0.2)] text-[#a49484] bg-transparent font-medium hover:border-[#C9A227] hover:text-[#C9A227] hover:bg-transparent"
                   >
-                    로그아웃
+                    {t('logout')}
                   </Button>
                 </div>
               ) : (
                 <nav className="flex flex-col gap-1">
-                  <Link href="/login" onClick={closeDrawer} className={navLinkClass}>로그인</Link>
-                  <Link href="/signup" onClick={closeDrawer} className={navLinkClass}>회원가입</Link>
+                  <Link href="/login" onClick={closeDrawer} className={navLinkClass}>{t('login')}</Link>
+                  <Link href="/signup" onClick={closeDrawer} className={navLinkClass}>{t('signup')}</Link>
                 </nav>
               )}
+
+              <Separator className="my-3 bg-[rgba(201,162,39,0.15)]" />
+              <div className="px-2">
+                <LanguageSwitcher />
+              </div>
             </SheetContent>
           </Sheet>
         </div>

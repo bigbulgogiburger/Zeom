@@ -533,7 +533,7 @@ public class CounselorPortalService {
     private CounselorPortalDtos.CounselorProfileResponse toProfileResponse(CounselorEntity c) {
         return new CounselorPortalDtos.CounselorProfileResponse(
                 c.getId(), c.getName(), c.getSpecialty(), c.getIntro(),
-                c.getRatingAvg(), c.getReviewCount(), c.getIsActive());
+                c.getRatingAvg(), c.getReviewCount(), c.getIsActive(), c.getSupportedConsultationTypes());
     }
 
     private CounselorPortalDtos.CounselorBookingItem toBookingItem(BookingEntity b) {

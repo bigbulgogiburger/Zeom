@@ -58,6 +58,17 @@ notification:
     retry-attempts: ${NOTIFICATION_HTTP_RETRY_ATTEMPTS:3}
     retry-backoff-ms: ${NOTIFICATION_HTTP_RETRY_BACKOFF_MS:200}
 
+email:
+  provider: ${EMAIL_PROVIDER:fake}
+  from: ${EMAIL_FROM:noreply@cheonjiyeon.com}
+
+sms:
+  provider: ${SMS_PROVIDER:fake}
+  aligo:
+    api-key: ${ALIGO_API_KEY:}
+    user-id: ${ALIGO_USER_ID:}
+    sender: ${ALIGO_SENDER:010-0000-0000}
+
 portone:
   enabled: ${PORTONE_ENABLED:false}
   api-key: ${PORTONE_API_KEY:}
@@ -93,3 +104,15 @@ cors:
 
 server:
   port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: cheonjiyeon-api

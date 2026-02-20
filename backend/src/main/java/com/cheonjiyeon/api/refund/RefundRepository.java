@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface RefundRepository extends JpaRepository<RefundEntity, Long> {
     Page<RefundEntity> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     Optional<RefundEntity> findByReservationIdAndStatus(Long reservationId, String status);
+    Page<RefundEntity> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
 }

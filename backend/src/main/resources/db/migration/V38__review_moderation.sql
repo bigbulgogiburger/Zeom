@@ -1,0 +1,4 @@
+ALTER TABLE reviews ADD COLUMN moderation_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE reviews ADD COLUMN reported_count INT NOT NULL DEFAULT 0;
+ALTER TABLE reviews ADD COLUMN moderated_at TIMESTAMP;
+ALTER TABLE reviews ADD COLUMN moderated_by BIGINT;

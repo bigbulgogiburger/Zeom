@@ -9,13 +9,29 @@ public class BookingDtos {
     public record CreateBookingRequest(
             @NotNull Long counselorId,
             Long slotId,
-            List<Long> slotIds
+            List<Long> slotIds,
+            String consultationType
+    ) {}
+
+    public record RescheduleRequest(
+            @NotNull List<Long> newSlotIds
+    ) {}
+
+    public record CancelRequest(
+            String reason
     ) {}
 
     public record SlotInfo(
             Long slotId,
             LocalDateTime startAt,
             LocalDateTime endAt
+    ) {}
+
+    public record RetryPaymentResponse(
+            Long bookingId,
+            String status,
+            int retryCount,
+            String message
     ) {}
 
     public record BookingResponse(
@@ -27,6 +43,9 @@ public class BookingDtos {
             LocalDateTime endAt,
             String status,
             List<SlotInfo> slots,
-            int creditsUsed
+            int creditsUsed,
+            String cancelReason,
+            int paymentRetryCount,
+            String consultationType
     ) {}
 }

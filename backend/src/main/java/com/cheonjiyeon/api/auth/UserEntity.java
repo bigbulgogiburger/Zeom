@@ -45,6 +45,24 @@ public class UserEntity {
     @Column(name = "terms_agreed_at")
     private LocalDateTime termsAgreedAt;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified;
+
+    @Column(name = "email_verification_token")
+    private String emailVerificationToken;
+
+    @Column(name = "email_verification_sent_at")
+    private LocalDateTime emailVerificationSentAt;
+
+    @Column(name = "suspended_at")
+    private LocalDateTime suspendedAt;
+
+    @Column(name = "suspended_reason", columnDefinition = "TEXT")
+    private String suspendedReason;
+
+    @Column(name = "deletion_requested_at")
+    private LocalDateTime deletionRequestedAt;
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
@@ -73,4 +91,16 @@ public class UserEntity {
     public void setTermsAgreed(boolean termsAgreed) { this.termsAgreed = termsAgreed; }
     public LocalDateTime getTermsAgreedAt() { return termsAgreedAt; }
     public void setTermsAgreedAt(LocalDateTime termsAgreedAt) { this.termsAgreedAt = termsAgreedAt; }
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+    public String getEmailVerificationToken() { return emailVerificationToken; }
+    public void setEmailVerificationToken(String emailVerificationToken) { this.emailVerificationToken = emailVerificationToken; }
+    public LocalDateTime getEmailVerificationSentAt() { return emailVerificationSentAt; }
+    public void setEmailVerificationSentAt(LocalDateTime emailVerificationSentAt) { this.emailVerificationSentAt = emailVerificationSentAt; }
+    public LocalDateTime getSuspendedAt() { return suspendedAt; }
+    public void setSuspendedAt(LocalDateTime suspendedAt) { this.suspendedAt = suspendedAt; }
+    public String getSuspendedReason() { return suspendedReason; }
+    public void setSuspendedReason(String suspendedReason) { this.suspendedReason = suspendedReason; }
+    public LocalDateTime getDeletionRequestedAt() { return deletionRequestedAt; }
+    public void setDeletionRequestedAt(LocalDateTime deletionRequestedAt) { this.deletionRequestedAt = deletionRequestedAt; }
 }

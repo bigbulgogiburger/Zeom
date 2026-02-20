@@ -33,6 +33,11 @@ public class FakeSendbirdClient implements SendbirdProvider {
     }
 
     @Override
+    public void sendAdminMessage(String channelUrl, String message) {
+        log.info("[FAKE] Sent admin message to channel {}: {}", channelUrl, message);
+    }
+
+    @Override
     public String getAppId() {
         return "fake-sendbird-app-id";
     }

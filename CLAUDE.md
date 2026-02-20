@@ -222,6 +222,8 @@ GitHub Actions workflows in `.github/workflows/`:
 | `verify-frontend-ui` | 프론트엔드 UI/디자인 시스템 품질 검증 |
 | `verify-e2e-tests` | E2E 테스트 설정 및 품질 검증 |
 | `verify-admin-auth` | Admin API 엔드포인트 인증/인가 가드 검증 |
+| `verify-auth-system` | 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀번호 리셋, 소셜 로그인) |
+| `verify-notification-system` | 알림/이메일/SMS 시스템 무결성 검증 |
 | `verify-implementation` | 통합 검증 (위 스킬 순차 실행) |
 | `manage-skills` | 검증 스킬 유지보수 및 드리프트 탐지 |
 

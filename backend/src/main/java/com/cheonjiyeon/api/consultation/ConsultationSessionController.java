@@ -14,9 +14,14 @@ import java.util.List;
 @RequestMapping("/api/v1/sessions")
 public class ConsultationSessionController {
     private final ConsultationSessionService sessionService;
+    private final ConsecutiveSessionService consecutiveSessionService;
 
-    public ConsultationSessionController(ConsultationSessionService sessionService) {
+    public ConsultationSessionController(
+            ConsultationSessionService sessionService,
+            ConsecutiveSessionService consecutiveSessionService
+    ) {
         this.sessionService = sessionService;
+        this.consecutiveSessionService = consecutiveSessionService;
     }
 
     @PostMapping("/{reservationId}/start")
@@ -53,6 +58,16 @@ public class ConsultationSessionController {
         return sessionService.getCounselorToken(reservationId, authHeader);
     }
 
+    @GetMapping("/{reservationId}/can-enter")
+    public ConsultationSessionDtos.CanEnterResponse canEnter(@PathVariable Long reservationId) {
+        return sessionService.canEnter(reservationId);
+    }
+
+    @GetMapping("/{reservationId}/summary")
+    public ConsultationSessionDtos.SessionSummaryResponse getSessionSummary(@PathVariable Long reservationId) {
+        return sessionService.getSessionSummary(reservationId);
+    }
+
     @PostMapping("/counselor-auth")
     public ConsultationSessionDtos.CounselorAuthResponse getCounselorAuth(
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -65,6 +80,39 @@ public class ConsultationSessionController {
     ) {
         List<BookingEntity> bookings = sessionService.getCounselorTodayBookings(authHeader);
         return bookings.stream().map(this::toBookingResponse).toList();
+    }
+
+    @GetMapping("/{sessionId}/next-consecutive")
+    public ConsultationSessionDtos.NextConsecutiveResponse getNextConsecutive(@PathVariable Long sessionId) {
+        ConsultationSessionEntity session = sessionService.getSessionById(sessionId);
+        return consecutiveSessionService.findNextConsecutiveBooking(session.getReservationId());
+    }
+
+    @PostMapping("/{sessionId}/continue-next")
+    public ConsultationSessionDtos.ContinueNextResponse continueNext(
+            @PathVariable Long sessionId,
+            @Valid @RequestBody ConsultationSessionDtos.ContinueNextRequest req
+    ) {
+        return consecutiveSessionService.continueToNextSession(sessionId, req.nextBookingId());
+    }
+
+    @PostMapping("/{sessionId}/consume-credit")
+    public ConsultationSessionDtos.ConsumeCreditResponse consumeCredit(@PathVariable Long sessionId) {
+        ConsultationSessionEntity session = sessionService.getSessionById(sessionId);
+        return consecutiveSessionService.consumeNextCredit(session.getReservationId());
+    }
+
+    @PostMapping("/{reservationId}/counselor-ready")
+    public ConsultationSessionDtos.CounselorReadyResponse counselorReady(
+            @PathVariable Long reservationId,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        return sessionService.markCounselorReady(reservationId, authHeader);
+    }
+
+    @GetMapping("/{sessionId}/status")
+    public ConsultationSessionDtos.SessionStatusResponse getSessionStatus(@PathVariable Long sessionId) {
+        return sessionService.getSessionStatus(sessionId);
     }
 
     private BookingDtos.BookingResponse toBookingResponse(BookingEntity booking) {
@@ -90,7 +138,10 @@ public class ConsultationSessionController {
                 booking.getSlot() != null ? booking.getSlot().getEndAt() : null,
                 booking.getStatus(),
                 slotInfos,
-                booking.getCreditsUsed()
+                booking.getCreditsUsed(),
+                booking.getCancelReason(),
+                booking.getPaymentRetryCount(),
+                booking.getConsultationType()
         );
     }
 }

@@ -59,7 +59,7 @@ public class CounselorPortalDtos {
 
     public record CounselorProfileResponse(Long id, String name, String specialty, String intro,
                                             BigDecimal ratingAvg, Integer reviewCount,
-                                            Boolean isActive) {}
+                                            Boolean isActive, String supportedConsultationTypes) {}
 
     // Schedule
     public record UpdateScheduleRequest(List<SlotInput> slots) {}

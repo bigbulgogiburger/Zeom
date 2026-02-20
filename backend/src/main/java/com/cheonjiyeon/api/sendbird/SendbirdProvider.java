@@ -28,6 +28,11 @@ public interface SendbirdProvider {
     void deleteChannel(String channelUrl);
 
     /**
+     * Send an admin message to a group channel
+     */
+    void sendAdminMessage(String channelUrl, String message);
+
+    /**
      * Get the Sendbird app ID
      */
     String getAppId();

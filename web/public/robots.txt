@@ -1,0 +1,14 @@
+# 천지연꽃신당 robots.txt
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /signup
+Disallow: /admin/
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /mypage/
+Disallow: /counselor/
+
+Sitemap: https://www.cheonjiyeon.com/sitemap.xml

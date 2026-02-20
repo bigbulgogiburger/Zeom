@@ -1,5 +1,6 @@
 package com.cheonjiyeon.api.settlement;
 
+import com.cheonjiyeon.api.audit.AuditLogService;
 import com.cheonjiyeon.api.booking.BookingEntity;
 import com.cheonjiyeon.api.booking.BookingRepository;
 import com.cheonjiyeon.api.common.ApiException;
@@ -8,6 +9,8 @@ import com.cheonjiyeon.api.credit.CreditEntity;
 import com.cheonjiyeon.api.credit.CreditRepository;
 import com.cheonjiyeon.api.credit.CreditUsageLogEntity;
 import com.cheonjiyeon.api.credit.CreditUsageLogRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,19 +33,22 @@ public class SettlementService {
     private final CreditUsageLogRepository usageLogRepository;
     private final CreditRepository creditRepository;
     private final BookingRepository bookingRepository;
+    private final AuditLogService auditLogService;
 
     public SettlementService(
             SettlementTransactionRepository settlementTransactionRepository,
             CounselorSettlementRepository counselorSettlementRepository,
             CreditUsageLogRepository usageLogRepository,
             CreditRepository creditRepository,
-            BookingRepository bookingRepository
+            BookingRepository bookingRepository,
+            AuditLogService auditLogService
     ) {
         this.settlementTransactionRepository = settlementTransactionRepository;
         this.counselorSettlementRepository = counselorSettlementRepository;
         this.usageLogRepository = usageLogRepository;
         this.creditRepository = creditRepository;
         this.bookingRepository = bookingRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -100,12 +106,21 @@ public class SettlementService {
         }
 
         // Update credit_usage_log entries
+        // Credits may have been already CONSUMED during the live session (at 30-min boundaries).
+        // Only process RESERVED entries; skip already-CONSUMED ones.
         List<CreditUsageLogEntity> usageLogs = usageLogRepository.findByBookingId(booking.getId());
         int actualMinutes = (int) Math.ceil(durationSec / 60.0);
         int refundRemaining = creditsRefunded;
 
         for (CreditUsageLogEntity log : usageLogs) {
             log.setActualMinutes(actualMinutes);
+
+            // Skip already-consumed credits (consumed during live session)
+            if ("CONSUMED".equals(log.getStatus())) {
+                usageLogRepository.save(log);
+                continue;
+            }
+
             log.setConsumedAt(LocalDateTime.now());
 
             if (creditsRefunded == 0) {
@@ -123,7 +138,7 @@ public class SettlementService {
                 credit.setRemainingUnits(credit.getRemainingUnits() + log.getUnitsUsed());
                 creditRepository.save(credit);
             } else {
-                // Partial refund: distribute refund across usage logs
+                // Partial refund: distribute refund across remaining RESERVED logs
                 int refundFromThis = Math.min(refundRemaining, log.getUnitsUsed());
                 if (refundFromThis > 0 && refundFromThis == log.getUnitsUsed()) {
                     log.setStatus("RELEASED");
@@ -250,5 +265,78 @@ public class SettlementService {
                 SettlementDtos.CounselorSettlementSummary.from(settlement),
                 periodTxs
         );
+    }
+
+    // --- 어드민 정산 워크플로우 ---
+
+    @Transactional
+    public SettlementDtos.CounselorSettlementSummary confirmSettlement(Long adminUserId, Long settlementId) {
+        CounselorSettlementEntity settlement = counselorSettlementRepository.findById(settlementId)
+                .orElseThrow(() -> new ApiException(404, "정산 내역을 찾을 수 없습니다."));
+
+        if (!"PENDING".equals(settlement.getStatus()) && !"REQUESTED".equals(settlement.getStatus())) {
+            throw new ApiException(400, "대기/요청 상태의 정산만 확정할 수 있습니다. 현재 상태: " + settlement.getStatus());
+        }
+
+        settlement.setStatus("CONFIRMED");
+        settlement.setConfirmedAt(LocalDateTime.now());
+        CounselorSettlementEntity saved = counselorSettlementRepository.save(settlement);
+        auditLogService.log(adminUserId, "SETTLEMENT_CONFIRMED", "SETTLEMENT", settlementId);
+        return SettlementDtos.CounselorSettlementSummary.from(saved);
+    }
+
+    @Transactional
+    public SettlementDtos.CounselorSettlementSummary paySettlement(Long adminUserId, Long settlementId) {
+        CounselorSettlementEntity settlement = counselorSettlementRepository.findById(settlementId)
+                .orElseThrow(() -> new ApiException(404, "정산 내역을 찾을 수 없습니다."));
+
+        if (!"CONFIRMED".equals(settlement.getStatus())) {
+            throw new ApiException(400, "확정되지 않은 정산은 지급할 수 없습니다.");
+        }
+
+        settlement.setStatus("PAID");
+        settlement.setPaidAt(LocalDateTime.now());
+        CounselorSettlementEntity saved = counselorSettlementRepository.save(settlement);
+        auditLogService.log(adminUserId, "SETTLEMENT_PAID", "SETTLEMENT", settlementId);
+        return SettlementDtos.CounselorSettlementSummary.from(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CounselorSettlementEntity> getAdminSettlements(String status, Pageable pageable) {
+        if (status != null && !status.isBlank()) {
+            return counselorSettlementRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
+        }
+        return counselorSettlementRepository.findAllByOrderByCreatedAtDesc(pageable);
+    }
+
+    // --- 환불-정산 상호작용: 상담사 수입 차감 ---
+
+    @Transactional
+    public void deductCounselorEarningForRefund(Long bookingId, Long refundAmount) {
+        settlementTransactionRepository.findByBookingId(bookingId).ifPresent(tx -> {
+            long currentEarning = tx.getCounselorEarning();
+            long deduction = Math.min(refundAmount, currentEarning);
+            tx.setCounselorEarning(currentEarning - deduction);
+            settlementTransactionRepository.save(tx);
+
+            // 해당 정산 기간의 counselor_settlement도 업데이트
+            LocalDate txDate = tx.getSettledAt().toLocalDate();
+            LocalDate periodStart = txDate.with(TemporalAdjusters.firstDayOfMonth());
+            LocalDate periodEnd = txDate.with(TemporalAdjusters.lastDayOfMonth());
+
+            counselorSettlementRepository.findByCounselorIdAndPeriodStartAndPeriodEnd(
+                    tx.getCounselorId(), periodStart, periodEnd
+            ).ifPresent(settlement -> {
+                // PAID 상태 정산은 다음 정산에서 상계 (로그만 남김)
+                if ("PAID".equals(settlement.getStatus())) {
+                    auditLogService.log(0L, "SETTLEMENT_REFUND_DEFERRED",
+                            "SETTLEMENT", settlement.getId());
+                } else {
+                    settlement.setNetAmount(settlement.getNetAmount() - deduction);
+                    settlement.setGrossAmount(settlement.getGrossAmount() - refundAmount);
+                    counselorSettlementRepository.save(settlement);
+                }
+            });
+        });
     }
 }

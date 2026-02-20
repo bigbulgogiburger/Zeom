@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Noto_Serif_KR, Noto_Sans_KR } from 'next/font/google';
+import Script from 'next/script';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import SessionExpiryGuard from '../components/session-expiry-guard';
 import { AuthProvider } from '../components/auth-context';
@@ -26,11 +29,37 @@ const notoSansKr = Noto_Sans_KR({
 
 export const metadata: Metadata = {
   title: {
-    default: '천지연꽃신당 — 온라인 점사 상담',
+    default: '천지연꽃신당 | 온라인 점사·상담 예약',
     template: '%s | 천지연꽃신당',
   },
-  description: '온라인 점사 상담을 위한 예약·결제·상담방 통합 플랫폼',
+  description: '전문 상담사와 1:1 화상상담. 사주, 타로, 신점, 꿈해몽 전문가를 만나보세요. 예약부터 화상 상담까지 한 곳에서.',
+  keywords: ['점사', '사주', '타로', '신점', '온라인 상담', '천지연꽃신당', '운세', '궁합', '꿈해몽', '화상상담', '1:1 상담'],
   robots: { index: true, follow: true },
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    siteName: '천지연꽃신당',
+    title: '천지연꽃신당 | 온라인 점사·상담 예약',
+    description: '전문 상담사와 1:1 화상상담. 사주, 타로, 신점, 꿈해몽 전문가를 만나보세요.',
+    url: 'https://www.cheonjiyeon.com',
+    images: [
+      {
+        url: 'https://www.cheonjiyeon.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '천지연꽃신당 — 온라인 점사·상담 예약 플랫폼',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '천지연꽃신당 | 온라인 점사·상담 예약',
+    description: '전문 상담사와 1:1 화상상담. 사주, 타로, 신점, 꿈해몽 전문가를 만나보세요.',
+    images: ['https://www.cheonjiyeon.com/og-image.png'],
+  },
+  alternates: {
+    canonical: 'https://www.cheonjiyeon.com',
+  },
 };
 
 export const viewport: Viewport = {
@@ -39,20 +68,38 @@ export const viewport: Viewport = {
   themeColor: '#0f0d0a',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="ko" className={`${notoSerifKr.variable} ${notoSansKr.variable}`}>
+    <html lang={locale} className={`${notoSerifKr.variable} ${notoSansKr.variable}`}>
       <body>
-        <ErrorBoundary>
-          <GlobalErrorHandler />
-          <AuthProvider>
-            <ToastProvider>
-              <SessionExpiryGuard />
-              <AppHeader />
-              {children}
-            </ToastProvider>
-          </AuthProvider>
-        </ErrorBoundary>
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}
+            </Script>
+          </>
+        )}
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          <ErrorBoundary>
+            <GlobalErrorHandler />
+            <AuthProvider>
+              <ToastProvider>
+                <SessionExpiryGuard />
+                <AppHeader />
+                {children}
+              </ToastProvider>
+            </AuthProvider>
+          </ErrorBoundary>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

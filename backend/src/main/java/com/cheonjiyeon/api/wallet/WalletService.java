@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
@@ -82,6 +83,23 @@ public class WalletService {
         Page<CashTransactionEntity> txPage = cashTransactionService.getTransactionHistory(
                 user.getId(),
                 PageRequest.of(page, size)
+        );
+
+        return new WalletDtos.TransactionHistoryResponse(
+                txPage.getContent().stream()
+                        .map(WalletDtos.TransactionItem::from)
+                        .toList(),
+                txPage.getTotalPages(),
+                txPage.getTotalElements(),
+                txPage.getNumber()
+        );
+    }
+
+    public WalletDtos.TransactionHistoryResponse getFilteredTransactionHistory(
+            String authHeader, String type, LocalDate from, LocalDate to, int page, int size) {
+        UserEntity user = resolveUser(authHeader);
+        Page<CashTransactionEntity> txPage = cashTransactionService.getFilteredTransactionHistory(
+                user.getId(), type, from, to, PageRequest.of(page, size)
         );
 
         return new WalletDtos.TransactionHistoryResponse(

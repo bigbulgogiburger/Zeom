@@ -30,6 +30,7 @@ public class AuthService {
     private final AlertWebhookService alertWebhookService;
     private final WalletService walletService;
     private final CounselorRepository counselorRepository;
+    private final EmailVerificationService emailVerificationService;
     private final boolean allowE2eAdminBootstrap;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -40,6 +41,7 @@ public class AuthService {
                        AlertWebhookService alertWebhookService,
                        WalletService walletService,
                        CounselorRepository counselorRepository,
+                       EmailVerificationService emailVerificationService,
                        @Value("${auth.allow-e2e-admin-bootstrap:false}") boolean allowE2eAdminBootstrap) {
         this.userRepository = userRepository;
         this.tokenStore = tokenStore;
@@ -48,6 +50,7 @@ public class AuthService {
         this.alertWebhookService = alertWebhookService;
         this.walletService = walletService;
         this.counselorRepository = counselorRepository;
+        this.emailVerificationService = emailVerificationService;
         this.allowE2eAdminBootstrap = allowE2eAdminBootstrap;
     }
 
@@ -97,6 +100,18 @@ public class AuthService {
 
         walletService.createWalletForUser(saved.getId());
         auditLogService.log(saved.getId(), "AUTH_SIGNUP", "USER", saved.getId());
+
+        // 이메일 인증 발송 (이메일이 e2e 테스트 계정이 아닌 경우)
+        if (!e2eAdmin && !e2eCounselor) {
+            try {
+                emailVerificationService.sendVerificationEmail(saved);
+            } catch (Exception e) {
+                // 인증 이메일 발송 실패 시에도 회원가입은 계속 진행
+                org.slf4j.LoggerFactory.getLogger(AuthService.class)
+                        .warn("Failed to send verification email for userId={}", saved.getId(), e);
+            }
+        }
+
         return issueTokens(saved, req.deviceId(), req.deviceName());
     }
 
@@ -219,6 +234,25 @@ public class AuthService {
         return toResponse(user);
     }
 
+    @Transactional
+    public AuthDtos.MessageResponse changePassword(String bearerToken, String currentPassword, String newPassword) {
+        UserEntity user = resolveUser(extractToken(bearerToken));
+
+        if (!encoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new ApiException(400, "현재 비밀번호가 올바르지 않습니다.");
+        }
+
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new ApiException(400, "새 비밀번호는 8자 이상이어야 합니다.");
+        }
+
+        user.setPasswordHash(encoder.encode(newPassword));
+        userRepository.save(user);
+
+        auditLogService.log(user.getId(), "PASSWORD_CHANGED", "USER", user.getId());
+        return new AuthDtos.MessageResponse("비밀번호가 변경되었습니다.");
+    }
+
     public UserEntity requireAdmin(String bearerToken) {
         UserEntity user = resolveUser(extractToken(bearerToken));
         if (!"ADMIN".equals(user.getRole())) throw new ApiException(403, "관리자 권한이 필요합니다.");
@@ -279,6 +313,7 @@ public class AuthService {
                 user.getId(), user.getEmail(), user.getName(), user.getRole(),
                 user.getPhone(),
                 user.getBirthDate() != null ? user.getBirthDate().toString() : null,
-                user.getGender());
+                user.getGender(),
+                user.isEmailVerified());
     }
 }

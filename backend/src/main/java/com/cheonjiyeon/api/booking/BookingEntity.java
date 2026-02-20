@@ -37,6 +37,15 @@ public class BookingEntity {
     @Column(nullable = false)
     private int creditsUsed;
 
+    @Column(name = "cancel_reason")
+    private String cancelReason;
+
+    @Column(name = "payment_retry_count", nullable = false)
+    private int paymentRetryCount = 0;
+
+    @Column(name = "consultation_type", length = 20)
+    private String consultationType = "VIDEO";
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -58,5 +67,11 @@ public class BookingEntity {
     public void setStatus(String status) { this.status = status; }
     public int getCreditsUsed() { return creditsUsed; }
     public void setCreditsUsed(int creditsUsed) { this.creditsUsed = creditsUsed; }
+    public String getCancelReason() { return cancelReason; }
+    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
+    public int getPaymentRetryCount() { return paymentRetryCount; }
+    public void setPaymentRetryCount(int paymentRetryCount) { this.paymentRetryCount = paymentRetryCount; }
+    public String getConsultationType() { return consultationType; }
+    public void setConsultationType(String consultationType) { this.consultationType = consultationType; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

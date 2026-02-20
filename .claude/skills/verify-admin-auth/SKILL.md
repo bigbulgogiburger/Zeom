@@ -24,6 +24,12 @@ description: Admin API 엔드포인트의 인증/인가 가드 검증. admin 엔
 |------|---------|
 | `backend/src/main/java/com/cheonjiyeon/api/admin/AdminSessionController.java` | Admin 세션 모니터링 (/admin/sessions) |
 | `backend/src/main/java/com/cheonjiyeon/api/admin/AdminAuditController.java` | Admin 감사로그 (/admin/audit) |
+| `backend/src/main/java/com/cheonjiyeon/api/admin/AdminCounselorApplicationController.java` | 상담사 신청 관리 (/admin/counselor-applications) |
+| `backend/src/main/java/com/cheonjiyeon/api/admin/AdminDisputeController.java` | 분쟁 관리 (/admin/disputes) |
+| `backend/src/main/java/com/cheonjiyeon/api/admin/AdminRefundPageController.java` | 환불 관리 (/admin/refunds) |
+| `backend/src/main/java/com/cheonjiyeon/api/admin/AdminReviewModerationController.java` | 리뷰 모더레이션 (/admin/reviews) |
+| `backend/src/main/java/com/cheonjiyeon/api/admin/AdminUserController.java` | 사용자 관리 (/admin/users) |
+| `backend/src/main/java/com/cheonjiyeon/api/admin/AdminAnalyticsController.java` | 분석 대시보드 (/admin/analytics) |
 | `backend/src/main/java/com/cheonjiyeon/api/ops/OpsController.java` | 운영 대시보드 (requireAdmin) |
 | `backend/src/main/java/com/cheonjiyeon/api/ops/OpsTimelineController.java` | 운영 타임라인 (requireAdmin) |
 | `backend/src/main/java/com/cheonjiyeon/api/settlement/SettlementController.java` | 정산 관리 (/admin/settlements) |
@@ -61,6 +67,16 @@ grep -c '@GetMapping\|@PostMapping\|@PutMapping\|@DeleteMapping' backend/src/mai
 ```bash
 grep -c 'requireAdmin' backend/src/main/java/com/cheonjiyeon/api/admin/AdminAuditController.java
 grep -c '@GetMapping\|@PostMapping' backend/src/main/java/com/cheonjiyeon/api/admin/AdminAuditController.java
+```
+
+각 신규 admin 컨트롤러도 동일하게 검사:
+
+```bash
+for f in AdminCounselorApplicationController AdminDisputeController AdminRefundPageController AdminReviewModerationController AdminUserController AdminAnalyticsController; do
+  echo "=== $f ==="
+  grep -c 'requireAdmin' backend/src/main/java/com/cheonjiyeon/api/admin/${f}.java
+  grep -c '@GetMapping\|@PostMapping\|@PutMapping\|@DeleteMapping' backend/src/main/java/com/cheonjiyeon/api/admin/${f}.java
+done
 ```
 
 ```bash

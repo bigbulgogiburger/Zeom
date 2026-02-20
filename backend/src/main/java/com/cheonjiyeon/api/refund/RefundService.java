@@ -8,7 +8,10 @@ import com.cheonjiyeon.api.booking.BookingRepository;
 import com.cheonjiyeon.api.common.ApiException;
 import com.cheonjiyeon.api.payment.PaymentEntity;
 import com.cheonjiyeon.api.payment.PaymentRepository;
+import com.cheonjiyeon.api.settlement.SettlementService;
 import com.cheonjiyeon.api.wallet.WalletService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,8 @@ import java.time.LocalDateTime;
 
 @Service
 public class RefundService {
+    private static final Logger log = LoggerFactory.getLogger(RefundService.class);
+
     private final RefundRepository refundRepository;
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
@@ -25,6 +30,7 @@ public class RefundService {
     private final AuthService authService;
     private final TokenStore tokenStore;
     private final UserRepository userRepository;
+    private final SettlementService settlementService;
 
     public RefundService(
             RefundRepository refundRepository,
@@ -33,7 +39,8 @@ public class RefundService {
             WalletService walletService,
             AuthService authService,
             TokenStore tokenStore,
-            UserRepository userRepository
+            UserRepository userRepository,
+            SettlementService settlementService
     ) {
         this.refundRepository = refundRepository;
         this.bookingRepository = bookingRepository;
@@ -42,6 +49,7 @@ public class RefundService {
         this.authService = authService;
         this.tokenStore = tokenStore;
         this.userRepository = userRepository;
+        this.settlementService = settlementService;
     }
 
     @Transactional
@@ -93,6 +101,13 @@ public class RefundService {
 
         // Credit wallet
         walletService.refund(refund.getUserId(), refund.getAmount(), "REFUND", refund.getId());
+
+        // 환불 승인 시 관련 정산의 상담사 수입 차감
+        try {
+            settlementService.deductCounselorEarningForRefund(refund.getReservationId(), refund.getAmount());
+        } catch (Exception e) {
+            log.warn("환불-정산 차감 처리 중 오류 (환불은 정상 처리됨): refundId={}, bookingId={}", refund.getId(), refund.getReservationId(), e);
+        }
 
         return refundRepository.save(refund);
     }

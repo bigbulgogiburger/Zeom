@@ -31,12 +31,25 @@ public class ReviewEntity {
 
     private LocalDateTime replyAt;
 
+    @Column(name = "moderation_status", nullable = false, length = 20)
+    private String moderationStatus;
+
+    @Column(name = "reported_count", nullable = false)
+    private int reportedCount;
+
+    @Column(name = "moderated_at")
+    private LocalDateTime moderatedAt;
+
+    @Column(name = "moderated_by")
+    private Long moderatedBy;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
+        if (moderationStatus == null) moderationStatus = "ACTIVE";
     }
 
     public Long getId() { return id; }
@@ -55,4 +68,12 @@ public class ReviewEntity {
     public LocalDateTime getReplyAt() { return replyAt; }
     public void setReplyAt(LocalDateTime replyAt) { this.replyAt = replyAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public String getModerationStatus() { return moderationStatus; }
+    public void setModerationStatus(String moderationStatus) { this.moderationStatus = moderationStatus; }
+    public int getReportedCount() { return reportedCount; }
+    public void setReportedCount(int reportedCount) { this.reportedCount = reportedCount; }
+    public LocalDateTime getModeratedAt() { return moderatedAt; }
+    public void setModeratedAt(LocalDateTime moderatedAt) { this.moderatedAt = moderatedAt; }
+    public Long getModeratedBy() { return moderatedBy; }
+    public void setModeratedBy(Long moderatedBy) { this.moderatedBy = moderatedBy; }
 }

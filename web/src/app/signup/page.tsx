@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { API_BASE } from '../../components/api';
 import { setTokens } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
@@ -13,8 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-
-const STEPS = ['기본 정보', '추가 정보', '약관 동의'] as const;
 
 const YEARS = Array.from({ length: 71 }, (_, i) => 2010 - i);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -33,10 +32,10 @@ function formatPhone(value: string): string {
   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
 }
 
-function ProgressIndicator({ current }: { current: number }) {
+function ProgressIndicator({ current, steps }: { current: number; steps: string[] }) {
   return (
     <div className="flex items-center justify-center gap-0 mb-10">
-      {STEPS.map((label, i) => {
+      {steps.map((label, i) => {
         const isCompleted = i < current;
         const isActive = i === current;
         const isPending = i > current;
@@ -59,7 +58,7 @@ function ProgressIndicator({ current }: { current: number }) {
                 {label}
               </span>
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <div className={cn(
                 'w-12 h-0.5 mx-3 mb-7 transition-colors',
                 i < current ? 'bg-[#C9A227]' : 'bg-[#C9A227]/20',
@@ -79,6 +78,10 @@ export default function SignupPage() {
   const router = useRouter();
   const { refreshMe } = useAuth();
   const { toast } = useToast();
+  const t = useTranslations('signup');
+  const tc = useTranslations('common');
+
+  const STEPS = [t('steps.basicInfo'), t('steps.additionalInfo'), t('steps.terms')];
 
   // Step 1
   const [email, setEmail] = useState('');
@@ -109,10 +112,43 @@ export default function SignupPage() {
   const step1Valid = emailValid && passwordValid && confirmValid && nameValid;
 
   // Step 1 errors (show only when field has been touched / has value)
-  const emailError = email && !emailValid ? '올바른 이메일 형식을 입력해주세요' : '';
-  const passwordError = password && !passwordValid ? '비밀번호는 8자 이상이어야 합니다' : '';
-  const confirmError = confirmPassword && !confirmValid ? '비밀번호가 일치하지 않습니다' : '';
-  const nameError = name && !nameValid ? '이름은 2자 이상 입력해주세요' : '';
+  const emailError = email && !emailValid ? t('validation.emailInvalid') : '';
+  const passwordError = password && !passwordValid ? t('validation.passwordMin') : '';
+  const confirmError = confirmPassword && !confirmValid ? t('validation.passwordMismatch') : '';
+  const nameError = name && !nameValid ? t('validation.nameMin') : '';
+
+  // Social login
+  const [socialLoading, setSocialLoading] = useState<string | null>(null);
+
+  async function handleSocialLogin(provider: 'kakao' | 'naver') {
+    setSocialLoading(provider);
+    setError('');
+    try {
+      const mockToken = `mock_${provider}_token_${Date.now()}`;
+      const res = await fetch(`${API_BASE}/api/v1/auth/oauth/${provider}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessToken: mockToken,
+          deviceId: 'web-main',
+          deviceName: navigator.userAgent.slice(0, 120),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.message ?? t('socialLoginFailed'));
+        return;
+      }
+      setTokens(json.accessToken, json.refreshToken);
+      await refreshMe();
+      toast(t('signupSuccess'), 'success');
+      router.push('/counselors');
+    } catch {
+      setError(t('serverError'));
+    } finally {
+      setSocialLoading(null);
+    }
+  }
 
   // Step 3 validation
   const requiredTermsAgreed = termsAgreed && privacyAgreed;
@@ -158,16 +194,16 @@ export default function SignupPage() {
       const json = await res.json();
       if (!res.ok) {
         setLoading(false);
-        setError(json.message ?? '회원가입에 실패했습니다');
+        setError(json.message ?? t('signupFailed'));
         return;
       }
       setTokens(json.accessToken, json.refreshToken);
       await refreshMe();
-      toast('회원가입이 완료되었습니다!', 'success');
+      toast(t('signupSuccessVerify'), 'success');
       router.push('/counselors');
     } catch {
       setLoading(false);
-      setError('서버에 연결할 수 없습니다');
+      setError(t('serverError'));
     }
   }
 
@@ -182,16 +218,16 @@ export default function SignupPage() {
         <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 sm:p-10">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent font-heading m-0">
-              천지연꽃신당
+              {t('title')}
             </h1>
           </div>
 
-          <ProgressIndicator current={step} />
+          <ProgressIndicator current={step} steps={STEPS} />
 
-          {/* Step 1: 기본 정보 */}
+          {/* Step 1: Basic Info */}
           {step === 0 && (
             <div>
-              <FormField label="이메일" required error={emailError}>
+              <FormField label={t('email')} required error={emailError}>
                 <Input
                   type="email"
                   value={email}
@@ -202,13 +238,13 @@ export default function SignupPage() {
                 />
               </FormField>
 
-              <FormField label="비밀번호" required error={passwordError} hint="8자 이상 입력해주세요">
+              <FormField label={t('password')} required error={passwordError} hint={t('passwordHint')}>
                 <div className="relative w-full">
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="비밀번호"
+                    placeholder={t('passwordPlaceholder')}
                     autoComplete="new-password"
                     className="min-h-[44px] pr-16 bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
                   />
@@ -220,18 +256,18 @@ export default function SignupPage() {
                     tabIndex={-1}
                     className="absolute right-1 top-1/2 -translate-y-1/2 text-[#a49484] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[#C9A227]"
                   >
-                    {showPassword ? '숨기기' : '보기'}
+                    {showPassword ? tc('hide') : tc('view')}
                   </Button>
                 </div>
               </FormField>
 
-              <FormField label="비밀번호 확인" required error={confirmError}>
+              <FormField label={t('passwordConfirm')} required error={confirmError}>
                 <div className="relative w-full">
                   <Input
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="비밀번호 확인"
+                    placeholder={t('passwordConfirmPlaceholder')}
                     autoComplete="new-password"
                     className="min-h-[44px] pr-16 bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
                   />
@@ -243,17 +279,17 @@ export default function SignupPage() {
                     tabIndex={-1}
                     className="absolute right-1 top-1/2 -translate-y-1/2 text-[#a49484] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[#C9A227]"
                   >
-                    {showConfirmPassword ? '숨기기' : '보기'}
+                    {showConfirmPassword ? tc('hide') : tc('view')}
                   </Button>
                 </div>
               </FormField>
 
-              <FormField label="이름" required error={nameError}>
+              <FormField label={t('name')} required error={nameError}>
                 <Input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="이름"
+                  placeholder={t('namePlaceholder')}
                   autoComplete="name"
                   className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
                 />
@@ -264,15 +300,15 @@ export default function SignupPage() {
                 disabled={!step1Valid}
                 className="w-full mt-6"
               >
-                다음
+                {tc('next')}
               </ActionButton>
             </div>
           )}
 
-          {/* Step 2: 추가 정보 */}
+          {/* Step 2: Additional Info */}
           {step === 1 && (
             <div>
-              <FormField label="전화번호" hint="선택 사항입니다">
+              <FormField label={t('phone')} hint={t('phoneHint')}>
                 <Input
                   type="tel"
                   value={phone}
@@ -283,16 +319,16 @@ export default function SignupPage() {
                 />
               </FormField>
 
-              <FormField label="생년월일" hint="선택 사항입니다">
+              <FormField label={t('birthDate')} hint={t('birthDateHint')}>
                 <div className="grid grid-cols-3 gap-2">
                   <select
                     value={birthYear}
                     onChange={(e) => setBirthYear(e.target.value)}
                     className={selectClass}
                   >
-                    <option value="">년</option>
+                    <option value="">{t('year')}</option>
                     {YEARS.map((y) => (
-                      <option key={y} value={y}>{y}년</option>
+                      <option key={y} value={y}>{y}</option>
                     ))}
                   </select>
                   <select
@@ -300,9 +336,9 @@ export default function SignupPage() {
                     onChange={(e) => setBirthMonth(e.target.value)}
                     className={selectClass}
                   >
-                    <option value="">월</option>
+                    <option value="">{t('month')}</option>
                     {MONTHS.map((m) => (
-                      <option key={m} value={m}>{m}월</option>
+                      <option key={m} value={m}>{m}</option>
                     ))}
                   </select>
                   <select
@@ -310,17 +346,17 @@ export default function SignupPage() {
                     onChange={(e) => setBirthDay(e.target.value)}
                     className={selectClass}
                   >
-                    <option value="">일</option>
+                    <option value="">{t('day')}</option>
                     {DAYS.map((d) => (
-                      <option key={d} value={d}>{d}일</option>
+                      <option key={d} value={d}>{d}</option>
                     ))}
                   </select>
                 </div>
               </FormField>
 
-              <FormField label="성별" hint="선택 사항입니다">
+              <FormField label={t('gender')} hint={t('genderHint')}>
                 <div className="flex gap-6 pt-1">
-                  {([['male', '남성'], ['female', '여성'], ['none', '선택안함']] as const).map(([val, label]) => (
+                  {([['male', t('male')], ['female', t('female')], ['none', t('noSelect')]] as const).map(([val, label]) => (
                     <label key={val} className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
                       <input
                         type="radio"
@@ -343,22 +379,22 @@ export default function SignupPage() {
                   onClick={() => setStep(0)}
                   className="flex-1 min-h-[44px] font-bold font-heading rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10"
                 >
-                  이전
+                  {tc('previous')}
                 </Button>
                 <ActionButton
                   onClick={() => setStep(2)}
                   className="flex-1"
                 >
-                  다음
+                  {tc('next')}
                 </ActionButton>
               </div>
             </div>
           )}
 
-          {/* Step 3: 약관 동의 */}
+          {/* Step 3: Terms */}
           {step === 2 && (
             <div>
-              {/* 전체 동의 */}
+              {/* Agree all */}
               <div className="border-b border-[rgba(201,162,39,0.15)] pb-4 mb-4">
                 <label className="flex items-center gap-2 cursor-pointer font-bold text-base text-foreground py-2">
                   <Checkbox
@@ -366,11 +402,11 @@ export default function SignupPage() {
                     onCheckedChange={(checked) => handleAllTerms(checked === true)}
                     className="w-5 h-5"
                   />
-                  전체 동의
+                  {t('agreeAll')}
                 </label>
               </div>
 
-              {/* 이용약관 */}
+              {/* Terms of service */}
               <div className="mb-3">
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground py-2">
@@ -379,7 +415,7 @@ export default function SignupPage() {
                       onCheckedChange={(checked) => setTermsAgreed(checked === true)}
                       className="w-5 h-5"
                     />
-                    <span><span className="text-destructive font-bold">[필수]</span> 이용약관 동의</span>
+                    <span><span className="text-destructive font-bold">{t('termsRequired')}</span> {t('termsOfService')}</span>
                   </label>
                   <Button
                     type="button"
@@ -388,7 +424,7 @@ export default function SignupPage() {
                     onClick={() => setExpandedTerm(expandedTerm === 'terms' ? null : 'terms')}
                     className="text-[#a49484] text-xs underline min-h-0 h-auto px-1 hover:text-[#C9A227]"
                   >
-                    보기
+                    {tc('view')}
                   </Button>
                 </div>
                 {expandedTerm === 'terms' && (
@@ -398,7 +434,7 @@ export default function SignupPage() {
                 )}
               </div>
 
-              {/* 개인정보 수집 */}
+              {/* Privacy policy */}
               <div className="mb-3">
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground py-2">
@@ -407,7 +443,7 @@ export default function SignupPage() {
                       onCheckedChange={(checked) => setPrivacyAgreed(checked === true)}
                       className="w-5 h-5"
                     />
-                    <span><span className="text-destructive font-bold">[필수]</span> 개인정보 수집 및 이용 동의</span>
+                    <span><span className="text-destructive font-bold">{t('termsRequired')}</span> {t('privacyPolicy')}</span>
                   </label>
                   <Button
                     type="button"
@@ -416,7 +452,7 @@ export default function SignupPage() {
                     onClick={() => setExpandedTerm(expandedTerm === 'privacy' ? null : 'privacy')}
                     className="text-[#a49484] text-xs underline min-h-0 h-auto px-1 hover:text-[#C9A227]"
                   >
-                    보기
+                    {tc('view')}
                   </Button>
                 </div>
                 {expandedTerm === 'privacy' && (
@@ -426,7 +462,7 @@ export default function SignupPage() {
                 )}
               </div>
 
-              {/* 마케팅 수신 */}
+              {/* Marketing consent */}
               <div className="mb-6">
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground py-2">
@@ -435,7 +471,7 @@ export default function SignupPage() {
                       onCheckedChange={(checked) => setMarketingAgreed(checked === true)}
                       className="w-5 h-5"
                     />
-                    <span><span className="text-[#a49484] font-bold">[선택]</span> 마케팅 정보 수신 동의</span>
+                    <span><span className="text-[#a49484] font-bold">{t('termsOptional')}</span> {t('marketingConsent')}</span>
                   </label>
                   <Button
                     type="button"
@@ -444,7 +480,7 @@ export default function SignupPage() {
                     onClick={() => setExpandedTerm(expandedTerm === 'marketing' ? null : 'marketing')}
                     className="text-[#a49484] text-xs underline min-h-0 h-auto px-1 hover:text-[#C9A227]"
                   >
-                    보기
+                    {tc('view')}
                   </Button>
                 </div>
                 {expandedTerm === 'marketing' && (
@@ -469,7 +505,7 @@ export default function SignupPage() {
                   onClick={() => setStep(1)}
                   className="flex-1 min-h-[44px] font-bold font-heading rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10"
                 >
-                  이전
+                  {tc('previous')}
                 </Button>
                 <ActionButton
                   onClick={handleSubmit}
@@ -477,17 +513,46 @@ export default function SignupPage() {
                   loading={loading}
                   className="flex-1"
                 >
-                  가입하기
+                  {t('submit')}
                 </ActionButton>
               </div>
             </div>
           )}
+
+          {/* Social Login */}
+          <div className="mt-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-[rgba(201,162,39,0.15)]" />
+              <span className="text-xs text-[#a49484]">{tc('or')}</span>
+              <div className="flex-1 h-px bg-[rgba(201,162,39,0.15)]" />
+            </div>
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => handleSocialLogin('kakao')}
+                disabled={socialLoading !== null}
+                className="w-full min-h-[44px] rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-opacity disabled:opacity-50"
+                style={{ backgroundColor: '#FEE500', color: '#191919' }}
+              >
+                {socialLoading === 'kakao' ? t('kakaoLoading') : t('kakaoSignup')}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSocialLogin('naver')}
+                disabled={socialLoading !== null}
+                className="w-full min-h-[44px] rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-opacity disabled:opacity-50"
+                style={{ backgroundColor: '#03C75A', color: '#ffffff' }}
+              >
+                {socialLoading === 'naver' ? t('naverLoading') : t('naverSignup')}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="text-center mt-8 text-sm text-[#a49484]">
-          이미 계정이 있으신가요?{' '}
+          {t('hasAccount')}{' '}
           <Link href="/login" className="text-[#C9A227] font-bold hover:underline hover:text-[#D4A843] transition-colors">
-            로그인
+            {t('loginLink')}
           </Link>
         </div>
       </div>

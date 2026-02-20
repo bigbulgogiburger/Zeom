@@ -15,6 +15,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -98,6 +99,18 @@ public class BookingService {
         int creditsNeeded = resolvedSlotIds.size();
         boolean useCredits = creditRepository.sumTotalUnitsByUserId(user.getId()) > 0;
 
+        // Validate consultation type
+        String consultationType = req.consultationType() != null ? req.consultationType() : "VIDEO";
+        if (!"VIDEO".equals(consultationType) && !"CHAT".equals(consultationType)) {
+            throw new ApiException(400, "상담 유형은 VIDEO 또는 CHAT만 가능합니다.");
+        }
+        if ("CHAT".equals(consultationType)) {
+            String supportedTypes = counselor.getSupportedConsultationTypes();
+            if (supportedTypes == null || !supportedTypes.contains("CHAT")) {
+                throw new ApiException(400, "이 상담사는 채팅 상담을 지원하지 않습니다.");
+            }
+        }
+
         BookingEntity booking = new BookingEntity();
         booking.setUser(user);
         booking.setCounselor(counselor);
@@ -105,6 +118,7 @@ public class BookingService {
         booking.setSlot(sortedByTime.get(0));
         booking.setStatus("BOOKED");
         booking.setCreditsUsed(useCredits ? creditsNeeded : 0);
+        booking.setConsultationType(consultationType);
 
         try {
             BookingEntity saved = bookingRepository.save(booking);
@@ -137,7 +151,7 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingDtos.BookingResponse cancel(String authHeader, Long bookingId) {
+    public BookingDtos.BookingResponse cancel(String authHeader, Long bookingId, String reason) {
         UserEntity user = resolveUser(authHeader);
         BookingEntity booking = bookingRepository.findByIdAndUserId(bookingId, user.getId())
                 .orElseThrow(() -> new ApiException(404, "예약을 찾을 수 없습니다."));
@@ -147,6 +161,10 @@ public class BookingService {
         }
 
         booking.setStatus("CANCELED");
+
+        if (reason != null && !reason.isBlank()) {
+            booking.setCancelReason(reason);
+        }
 
         // Release reserved credits
         if (booking.getCreditsUsed() > 0) {
@@ -169,6 +187,124 @@ public class BookingService {
 
         BookingEntity saved = bookingRepository.save(booking);
         auditLogService.log(user.getId(), "BOOKING_CANCELED", "BOOKING", saved.getId());
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public BookingDtos.RetryPaymentResponse retryPayment(String authHeader, Long bookingId) {
+        UserEntity user = resolveUser(authHeader);
+        BookingEntity booking = bookingRepository.findByIdAndUserId(bookingId, user.getId())
+                .orElseThrow(() -> new ApiException(404, "예약을 찾을 수 없습니다."));
+
+        if (!"PAYMENT_FAILED".equals(booking.getStatus())) {
+            throw new ApiException(400, "결제 실패 상태의 예약만 재시도할 수 있습니다.");
+        }
+
+        if (booking.getPaymentRetryCount() >= 3) {
+            throw new ApiException(400, "결제 재시도 횟수를 초과했습니다. 고객센터에 문의해주세요.");
+        }
+
+        booking.setPaymentRetryCount(booking.getPaymentRetryCount() + 1);
+        booking.setStatus("BOOKED");
+        BookingEntity saved = bookingRepository.save(booking);
+
+        auditLogService.log(user.getId(), "BOOKING_PAYMENT_RETRY", "BOOKING", saved.getId());
+
+        return new BookingDtos.RetryPaymentResponse(
+                saved.getId(),
+                saved.getStatus(),
+                saved.getPaymentRetryCount(),
+                "결제를 다시 시도할 수 있습니다."
+        );
+    }
+
+    @Transactional
+    public BookingDtos.BookingResponse reschedule(String authHeader, Long bookingId, BookingDtos.RescheduleRequest req) {
+        UserEntity user = resolveUser(authHeader);
+        BookingEntity booking = bookingRepository.findByIdAndUserId(bookingId, user.getId())
+                .orElseThrow(() -> new ApiException(404, "예약을 찾을 수 없습니다."));
+
+        if (!"BOOKED".equals(booking.getStatus())) {
+            throw new ApiException(400, "예약 상태가 BOOKED일 때만 변경할 수 있습니다.");
+        }
+
+        // Check 24-hour restriction: earliest slot must be at least 24h in the future
+        List<BookingSlotEntity> currentBookingSlots = booking.getBookingSlots();
+        if (currentBookingSlots != null && !currentBookingSlots.isEmpty()) {
+            LocalDateTime earliestStart = currentBookingSlots.stream()
+                    .map(bs -> bs.getSlot().getStartAt())
+                    .min(Comparator.naturalOrder())
+                    .orElseThrow();
+            if (earliestStart.isBefore(LocalDateTime.now().plusHours(24))) {
+                throw new ApiException(400, "상담 시작 24시간 전까지만 변경할 수 있습니다.");
+            }
+        } else if (booking.getSlot() != null) {
+            if (booking.getSlot().getStartAt().isBefore(LocalDateTime.now().plusHours(24))) {
+                throw new ApiException(400, "상담 시작 24시간 전까지만 변경할 수 있습니다.");
+            }
+        }
+
+        List<Long> newSlotIds = req.newSlotIds();
+        if (newSlotIds == null || newSlotIds.isEmpty()) {
+            throw new ApiException(400, "최소 1개의 새 슬롯을 선택해야 합니다.");
+        }
+        if (newSlotIds.size() > 3) {
+            throw new ApiException(400, "최대 3개의 슬롯까지 예약할 수 있습니다.");
+        }
+
+        // Release old slots
+        if (currentBookingSlots != null && !currentBookingSlots.isEmpty()) {
+            for (BookingSlotEntity bs : currentBookingSlots) {
+                bs.getSlot().setAvailable(true);
+                slotRepository.save(bs.getSlot());
+            }
+            currentBookingSlots.clear();
+        } else if (booking.getSlot() != null) {
+            booking.getSlot().setAvailable(true);
+            slotRepository.save(booking.getSlot());
+        }
+
+        // Lock and acquire new slots
+        List<Long> sortedIds = newSlotIds.stream().sorted().toList();
+        List<SlotEntity> newSlots = slotRepository.findByIdsForUpdate(sortedIds);
+
+        if (newSlots.size() != newSlotIds.size()) {
+            throw new ApiException(404, "슬롯을 찾을 수 없습니다.");
+        }
+
+        CounselorEntity counselor = booking.getCounselor();
+        for (SlotEntity slot : newSlots) {
+            if (!slot.getCounselor().getId().equals(counselor.getId())) {
+                throw new ApiException(400, "상담사와 슬롯 정보가 일치하지 않습니다.");
+            }
+            if (!slot.isAvailable()) {
+                throw new ApiException(409, "이미 예약된 슬롯입니다.");
+            }
+        }
+
+        // Mark new slots as unavailable
+        for (SlotEntity slot : newSlots) {
+            slot.setAvailable(false);
+            slotRepository.save(slot);
+        }
+
+        // Sort by time
+        List<SlotEntity> sortedByTime = newSlots.stream()
+                .sorted(Comparator.comparing(SlotEntity::getStartAt))
+                .toList();
+
+        // Update booking slot reference
+        booking.setSlot(sortedByTime.get(0));
+
+        // Create new booking_slots join entries
+        for (SlotEntity slot : sortedByTime) {
+            BookingSlotEntity bs = new BookingSlotEntity(booking, slot);
+            bookingSlotRepository.save(bs);
+            booking.getBookingSlots().add(bs);
+        }
+
+        BookingEntity saved = bookingRepository.save(booking);
+        auditLogService.log(user.getId(), "BOOKING_RESCHEDULED", "BOOKING", saved.getId());
         return toResponse(saved);
     }
 
@@ -228,7 +364,10 @@ public class BookingService {
                 endAt,
                 booking.getStatus(),
                 slotInfos,
-                booking.getCreditsUsed()
+                booking.getCreditsUsed(),
+                booking.getCancelReason(),
+                booking.getPaymentRetryCount(),
+                booking.getConsultationType()
         );
     }
 }

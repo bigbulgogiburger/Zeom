@@ -35,7 +35,8 @@ public class AuthDtos {
     public record LogoutRequest(@NotBlank String refreshToken) {}
 
     public record UserResponse(Long id, String email, String name, String role,
-                                   String phone, String birthDate, String gender) {}
+                                   String phone, String birthDate, String gender,
+                                   boolean emailVerified) {}
 
     public record SessionItem(Long id, String deviceId, String deviceName, LocalDateTime expiresAt, LocalDateTime createdAt) {}
     public record SessionsResponse(List<SessionItem> sessions) {}

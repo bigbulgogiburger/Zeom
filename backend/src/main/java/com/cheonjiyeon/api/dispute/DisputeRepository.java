@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DisputeRepository extends JpaRepository<DisputeEntity, Long> {
     Page<DisputeEntity> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+    Page<DisputeEntity> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
 }

@@ -77,27 +77,16 @@ public class SettlementController {
     public SettlementDtos.CounselorSettlementSummary confirmSettlement(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long id) {
-        authService.requireAdmin(authHeader);
-        CounselorSettlementEntity settlement = counselorSettlementRepository.findById(id)
-                .orElseThrow(() -> new ApiException(404, "정산 내역을 찾을 수 없습니다."));
-        settlement.setStatus("CONFIRMED");
-        settlement.setConfirmedAt(java.time.LocalDateTime.now());
-        return SettlementDtos.CounselorSettlementSummary.from(counselorSettlementRepository.save(settlement));
+        var admin = authService.requireAdmin(authHeader);
+        return settlementService.confirmSettlement(admin.getId(), id);
     }
 
     @PostMapping("/api/v1/admin/settlements/{id}/pay")
     public SettlementDtos.CounselorSettlementSummary paySettlement(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long id) {
-        authService.requireAdmin(authHeader);
-        CounselorSettlementEntity settlement = counselorSettlementRepository.findById(id)
-                .orElseThrow(() -> new ApiException(404, "정산 내역을 찾을 수 없습니다."));
-        if (!"CONFIRMED".equals(settlement.getStatus())) {
-            throw new ApiException(400, "확정되지 않은 정산은 지급할 수 없습니다.");
-        }
-        settlement.setStatus("PAID");
-        settlement.setPaidAt(java.time.LocalDateTime.now());
-        return SettlementDtos.CounselorSettlementSummary.from(counselorSettlementRepository.save(settlement));
+        var admin = authService.requireAdmin(authHeader);
+        return settlementService.paySettlement(admin.getId(), id);
     }
 
     private UserEntity resolveUser(String authHeader) {

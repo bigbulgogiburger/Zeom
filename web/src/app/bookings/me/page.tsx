@@ -9,6 +9,15 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { EmptyStateCard } from '@/components/empty-state';
 
 type BookingSlot = { slotId: number; startAt: string; endAt: string };
 
@@ -19,10 +28,21 @@ type Booking = {
   slots: BookingSlot[];
   status: string;
   creditsUsed: number;
+  cancelReason?: string;
+  paymentRetryCount?: number;
   slotId?: number;
   startAt?: string;
   endAt?: string;
 };
+
+const CANCEL_REASONS = [
+  { value: 'SCHEDULE_CHANGE', label: '일정 변경' },
+  { value: 'PERSONAL', label: '개인 사정' },
+  { value: 'OTHER_COUNSELOR', label: '다른 상담사 선호' },
+  { value: 'OTHER', label: '기타' },
+] as const;
+
+const MAX_PAYMENT_RETRIES = 3;
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -66,7 +86,9 @@ function getStatusBadgeVariant(status: string): 'default' | 'secondary' | 'destr
   switch (status) {
     case 'PAID': return 'default';
     case 'BOOKED': return 'secondary';
-    case 'CANCELLED': return 'destructive';
+    case 'CANCELLED':
+    case 'CANCELED':
+    case 'PAYMENT_FAILED': return 'destructive';
     case 'COMPLETED': return 'outline';
     default: return 'secondary';
   }
@@ -76,14 +98,32 @@ function getStatusLabel(status: string): string {
   switch (status) {
     case 'BOOKED': return '예약됨';
     case 'PAID': return '결제완료';
-    case 'CANCELLED': return '취소됨';
+    case 'CANCELLED':
+    case 'CANCELED': return '취소됨';
     case 'COMPLETED': return '완료';
+    case 'PAYMENT_FAILED': return '결제실패';
     default: return status;
   }
 }
 
-const ENTRY_BEFORE_MS = 5 * 60 * 1000;  // 5 minutes before start
-const ENTRY_AFTER_MS = 10 * 60 * 1000;  // 10 minutes after end
+function getCancelPolicyInfo(slots: BookingSlot[]): { refundRate: number; message: string } | null {
+  if (slots.length === 0) return null;
+  const sorted = [...slots].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+  const earliestStart = new Date(sorted[0].startAt).getTime();
+  const now = Date.now();
+  const hoursUntilStart = (earliestStart - now) / (1000 * 60 * 60);
+
+  if (hoursUntilStart >= 24) {
+    return { refundRate: 100, message: '24시간 이전 취소: 전액 환불' };
+  } else if (hoursUntilStart >= 12) {
+    return { refundRate: 50, message: '12~24시간 전 취소: 50% 환불' };
+  } else {
+    return { refundRate: 0, message: '12시간 이내 취소: 환불 불가' };
+  }
+}
+
+const ENTRY_BEFORE_MS = 5 * 60 * 1000;
+const ENTRY_AFTER_MS = 10 * 60 * 1000;
 
 type EntryState =
   | { phase: 'too_early'; minutesUntilEntry: number }
@@ -117,6 +157,15 @@ function getEntryState(slots: BookingSlot[], now: number): EntryState {
   return { phase: 'ended' };
 }
 
+function canReschedule(slots: BookingSlot[]): boolean {
+  if (slots.length === 0) return false;
+  const sorted = [...slots].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+  const earliestStart = new Date(sorted[0].startAt).getTime();
+  const now = Date.now();
+  const hoursUntilStart = (earliestStart - now) / (1000 * 60 * 60);
+  return hoursUntilStart >= 24;
+}
+
 export default function MyBookingsPage() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -124,8 +173,16 @@ export default function MyBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [enteringId, setEnteringId] = useState<number | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [retryingId, setRetryingId] = useState<number | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
-  // Real-time countdown: update every second
+  // Cancel modal state
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelBookingId, setCancelBookingId] = useState<number | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelOtherText, setCancelOtherText] = useState('');
+  const [cancelling, setCancelling] = useState(false);
+
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
@@ -133,31 +190,85 @@ export default function MyBookingsPage() {
 
   async function load() {
     setLoading(true);
-    const r = await apiFetch('/api/v1/bookings/me', { cache: 'no-store' });
-    const json = await r.json();
-    if (!r.ok) {
-      setMessage(json.message ?? '조회 실패');
+    setLoadError(false);
+    try {
+      const r = await apiFetch('/api/v1/bookings/me', { cache: 'no-store' });
+      const json = await r.json();
+      if (!r.ok) {
+        setMessage(json.message ?? '조회 실패');
+        setLoadError(true);
+        setLoading(false);
+        return;
+      }
+      setBookings(json);
+      setMessage('');
+    } catch {
+      setMessage('예약 목록을 불러오지 못했습니다.');
+      setLoadError(true);
+    } finally {
       setLoading(false);
-      return;
     }
-    setBookings(json);
-    setLoading(false);
   }
 
   useEffect(() => {
-    load().catch(() => {
-      setMessage('조회 실패');
-      setLoading(false);
-    });
+    load();
   }, []);
 
-  async function cancelBooking(id: number) {
-    const r = await apiFetch(`/api/v1/bookings/${id}/cancel`, { method: 'POST' });
+  function openCancelModal(bookingId: number) {
+    setCancelBookingId(bookingId);
+    setCancelReason('');
+    setCancelOtherText('');
+    setCancelModalOpen(true);
+  }
+
+  async function confirmCancel() {
+    if (cancelBookingId === null) return;
+    setCancelling(true);
+
+    const reasonValue = cancelReason === 'OTHER' && cancelOtherText.trim()
+      ? `OTHER: ${cancelOtherText.trim()}`
+      : cancelReason || undefined;
+
+    const body = reasonValue ? JSON.stringify({ reason: reasonValue }) : undefined;
+
+    const r = await apiFetch(`/api/v1/bookings/${cancelBookingId}/cancel`, {
+      method: 'POST',
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body,
+    });
     const json = await r.json();
-    if (!r.ok) return setMessage(json.message ?? '취소 실패');
+    setCancelling(false);
+
+    if (!r.ok) {
+      setMessage(json.message ?? '취소 실패');
+      setCancelModalOpen(false);
+      return;
+    }
 
     setMessage('예약이 취소되었습니다.');
+    setCancelModalOpen(false);
     await load();
+  }
+
+  async function retryPayment(bookingId: number) {
+    setRetryingId(bookingId);
+    setMessage('');
+    try {
+      const r = await apiFetch(`/api/v1/bookings/${bookingId}/retry-payment`, {
+        method: 'PUT',
+      });
+      const json = await r.json();
+      if (!r.ok) {
+        setMessage(json.message ?? '결제 재시도에 실패했습니다.');
+        return;
+      }
+      setMessage('결제를 다시 시도할 수 있습니다.');
+      await load();
+    } catch {
+      setMessage('결제 재시도 중 오류가 발생했습니다.');
+    } finally {
+      setRetryingId(null);
+    }
   }
 
   async function enterSession(bookingId: number) {
@@ -215,13 +326,59 @@ export default function MyBookingsPage() {
     }
   }
 
+  function renderPaymentFailedActions(b: Booking) {
+    if (b.status !== 'PAYMENT_FAILED') return null;
+
+    const retryCount = b.paymentRetryCount ?? 0;
+    const exhausted = retryCount >= MAX_PAYMENT_RETRIES;
+
+    return (
+      <div className="space-y-3">
+        <div className="bg-[var(--color-danger)]/10 border border-[var(--color-danger)]/20 rounded-xl px-4 py-3 text-sm">
+          <p className="text-[var(--color-danger)] font-bold font-heading mb-1">
+            결제에 실패했습니다
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {exhausted
+              ? '결제 재시도 횟수를 초과했습니다.'
+              : `재시도 횟수: ${retryCount}/${MAX_PAYMENT_RETRIES}`}
+          </p>
+        </div>
+        {exhausted ? (
+          <Button
+            variant="outline"
+            className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] w-full"
+            onClick={() => router.push('/support')}
+          >
+            고객센터 문의
+          </Button>
+        ) : (
+          <Button
+            variant="default"
+            className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold w-full"
+            disabled={retryingId === b.id}
+            onClick={() => retryPayment(b.id)}
+          >
+            {retryingId === b.id ? '처리 중...' : '다시 시도'}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  const cancelBooking = cancelBookingId !== null
+    ? bookings.find((b) => b.id === cancelBookingId)
+    : null;
+  const cancelSlots = cancelBooking ? normalizeSlots(cancelBooking) : [];
+  const cancelPolicy = cancelSlots.length > 0 ? getCancelPolicyInfo(cancelSlots) : null;
+
   return (
     <RequireLogin>
       <main className="max-w-[1000px] mx-auto px-6 sm:px-8 py-10 space-y-8">
         <h1 className="text-3xl font-black tracking-tight font-heading text-foreground">내 예약</h1>
 
         {message && (
-          <Alert variant="destructive">
+          <Alert variant={message.includes('취소되었습니다') || message.includes('다시 시도') ? 'default' : 'destructive'}>
             <AlertDescription>{message}</AlertDescription>
           </Alert>
         )}
@@ -232,24 +389,30 @@ export default function MyBookingsPage() {
               <div key={i} className="h-[120px] rounded-2xl bg-muted animate-pulse" />
             ))}
           </div>
+        ) : loadError ? (
+          <EmptyStateCard
+            icon="!"
+            title="예약 목록을 불러오지 못했습니다"
+            description="네트워크 상태를 확인하고 다시 시도해주세요."
+            actionLabel="다시 시도"
+            actionHref="#"
+            className="cursor-pointer"
+          />
         ) : bookings.length === 0 ? (
-          <Card>
-            <CardContent>
-              <div className="font-bold text-lg">예약 내역이 없어요</div>
-              <div className="text-muted-foreground text-sm mt-1">
-                아직 예약이 없습니다.{' '}
-                <Link href="/counselors" className="text-primary underline">
-                  상담사 둘러보기
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+          <EmptyStateCard
+            icon="📅"
+            title="예약 내역이 없어요"
+            description="아직 예약이 없습니다. 상담사를 둘러보고 예약해보세요."
+            actionLabel="상담사 둘러보기"
+            actionHref="/counselors"
+          />
         ) : (
           <div className="grid gap-6">
             {bookings.map((b) => {
               const slots = normalizeSlots(b);
               const slotCount = slots.length;
               const ranges = groupConsecutiveSlots(slots);
+              const showReschedule = b.status === 'BOOKED' && canReschedule(slots);
 
               return (
                 <Card key={b.id}>
@@ -276,14 +439,29 @@ export default function MyBookingsPage() {
                         </div>
                       ))}
                     </div>
+                    {b.cancelReason && (b.status === 'CANCELED' || b.status === 'CANCELLED') && (
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        취소 사유: {b.cancelReason}
+                      </div>
+                    )}
+                    {renderPaymentFailedActions(b)}
                   </CardContent>
                   {(b.status === 'BOOKED' || b.status === 'PAID') && (
                     <CardFooter className="gap-2 flex-wrap">
                       {renderEntryButton(b, slots)}
+                      {showReschedule && (
+                        <Button
+                          variant="outline"
+                          onClick={() => router.push(`/counselors/${b.counselorId}`)}
+                          className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227]"
+                        >
+                          예약 변경
+                        </Button>
+                      )}
                       {b.status === 'BOOKED' && (
                         <Button
                           variant="destructive"
-                          onClick={() => cancelBooking(b.id)}
+                          onClick={() => openCancelModal(b.id)}
                           className="rounded-full"
                         >
                           예약 취소
@@ -296,6 +474,83 @@ export default function MyBookingsPage() {
             })}
           </div>
         )}
+
+        {/* Cancel Reason Modal */}
+        <Dialog open={cancelModalOpen} onOpenChange={(open) => { if (!open) setCancelModalOpen(false); }}>
+          <DialogContent className="bg-[var(--color-bg-card)] text-[var(--color-text-on-card)] border-[rgba(201,162,39,0.15)] rounded-2xl max-w-[420px]">
+            <DialogHeader>
+              <DialogTitle className="font-heading font-bold text-lg">
+                예약 취소
+              </DialogTitle>
+              <DialogDescription className="text-[var(--color-text-muted-card)] text-sm leading-normal">
+                취소 사유를 선택해주세요.
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Cancel policy info */}
+            {cancelPolicy && (
+              <div className={`rounded-xl px-4 py-3 text-sm border ${
+                cancelPolicy.refundRate === 100
+                  ? 'bg-green-900/20 border-green-700/30 text-green-400'
+                  : cancelPolicy.refundRate === 50
+                    ? 'bg-yellow-900/20 border-yellow-700/30 text-yellow-400'
+                    : 'bg-red-900/20 border-red-700/30 text-red-400'
+              }`}>
+                <p className="font-bold font-heading">{cancelPolicy.message}</p>
+                {cancelPolicy.refundRate < 100 && (
+                  <p className="text-xs mt-1 opacity-80">
+                    {cancelPolicy.refundRate === 0
+                      ? '이 시간대에는 취소 시 환불이 불가합니다.'
+                      : '환불 금액의 50%만 돌려받으실 수 있습니다.'}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="grid gap-3 py-2">
+              {CANCEL_REASONS.map((r) => (
+                <button
+                  key={r.value}
+                  onClick={() => setCancelReason(r.value)}
+                  className={`text-left px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-heading ${
+                    cancelReason === r.value
+                      ? 'border-[#C9A227] bg-[#C9A227]/10 text-[#C9A227] font-bold'
+                      : 'border-[rgba(201,162,39,0.15)] text-[var(--color-text-on-card)] hover:border-[#C9A227]/30'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+
+              {cancelReason === 'OTHER' && (
+                <textarea
+                  value={cancelOtherText}
+                  onChange={(e) => setCancelOtherText(e.target.value)}
+                  placeholder="취소 사유를 입력해주세요..."
+                  className="mt-2 w-full min-h-[80px] rounded-xl border border-[rgba(201,162,39,0.15)] bg-[#1a1612] text-[var(--color-text-on-card)] px-4 py-3 text-sm placeholder:text-[#a49484]/50 focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40 resize-none"
+                />
+              )}
+            </div>
+
+            <DialogFooter className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setCancelModalOpen(false)}
+                disabled={cancelling}
+                className="border-2 border-[var(--color-border-card)] text-[var(--color-text-on-card)] bg-transparent font-heading font-bold hover:bg-[var(--color-bg-card-hover)]"
+              >
+                닫기
+              </Button>
+              <Button
+                onClick={confirmCancel}
+                disabled={cancelling}
+                className="bg-[var(--color-danger)] text-white hover:bg-[var(--color-danger)]/90 font-heading font-bold"
+              >
+                {cancelling ? '취소 중...' : '예약 취소'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </RequireLogin>
   );

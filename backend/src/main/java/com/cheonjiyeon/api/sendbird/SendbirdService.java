@@ -38,6 +38,10 @@ public class SendbirdService {
         provider.deleteChannel(channelUrl);
     }
 
+    public void sendAdminMessage(String channelUrl, String message) {
+        provider.sendAdminMessage(channelUrl, message);
+    }
+
     public String getAppId() {
         return provider.getAppId();
     }

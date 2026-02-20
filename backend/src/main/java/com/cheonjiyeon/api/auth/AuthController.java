@@ -54,4 +54,17 @@ public class AuthController {
     ) {
         return authService.revokeSession(authHeader, id);
     }
+
+    public record ChangePasswordRequest(
+            @jakarta.validation.constraints.NotBlank String currentPassword,
+            @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(min = 8, max = 50) String newPassword
+    ) {}
+
+    @PutMapping("/change-password")
+    public AuthDtos.MessageResponse changePassword(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @Valid @RequestBody ChangePasswordRequest req
+    ) {
+        return authService.changePassword(authHeader, req.currentPassword(), req.newPassword());
+    }
 }

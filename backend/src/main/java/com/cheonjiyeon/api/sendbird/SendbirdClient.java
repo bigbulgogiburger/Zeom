@@ -202,6 +202,25 @@ public class SendbirdClient implements SendbirdProvider {
     }
 
     @Override
+    public void sendAdminMessage(String channelUrl, String message) {
+        Map<String, Object> request = Map.of(
+                "message_type", "ADMM",
+                "message", message
+        );
+
+        try {
+            restClient.post()
+                    .uri("/v3/group_channels/{channel_url}/messages", channelUrl)
+                    .body(request)
+                    .retrieve()
+                    .toBodilessEntity();
+            log.info("Sent admin message to channel {}: {}", channelUrl, message);
+        } catch (Exception e) {
+            log.warn("Failed to send admin message to channel {}: {}", channelUrl, e.getMessage());
+        }
+    }
+
+    @Override
     public String getAppId() {
         return appId;
     }

@@ -2,7 +2,6 @@ package com.cheonjiyeon.api.scheduler;
 
 import com.cheonjiyeon.api.consultation.ConsultationSessionEntity;
 import com.cheonjiyeon.api.consultation.ConsultationSessionRepository;
-import com.cheonjiyeon.api.sendbird.SendbirdService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -15,27 +14,21 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Auto-terminate consultation sessions that exceed 60 minutes.
+ * Auto-terminate consultation sessions that exceed 65 minutes (60min + 5min grace).
  *
- * Runs every 5 minutes (cron: 0 star-slash-5 star star star question-mark)
- * Finds sessions where startedAt + 60min less-than now AND endedAt IS NULL
- * Auto-ends them with reason equals TIMEOUT and deletes Sendbird channel
+ * Runs every 5 minutes. Finds sessions where startedAt + 65min < now AND endedAt IS NULL.
+ * Auto-ends them with reason TIMEOUT. Channel deletion is handled by ChannelCleanupJob.
  */
 @Component
 @ConditionalOnProperty(name = "scheduler.enabled", havingValue = "true", matchIfMissing = true)
 public class SessionAutoTerminationJob {
     private static final Logger log = LoggerFactory.getLogger(SessionAutoTerminationJob.class);
-    private static final int MAX_SESSION_MINUTES = 60;
+    private static final int MAX_SESSION_MINUTES = 65; // 60min + 5min grace period
 
     private final ConsultationSessionRepository sessionRepository;
-    private final SendbirdService sendbirdService;
 
-    public SessionAutoTerminationJob(
-            ConsultationSessionRepository sessionRepository,
-            SendbirdService sendbirdService
-    ) {
+    public SessionAutoTerminationJob(ConsultationSessionRepository sessionRepository) {
         this.sessionRepository = sessionRepository;
-        this.sendbirdService = sendbirdService;
     }
 
     @Scheduled(cron = "${scheduler.session-auto-terminate-cron:0 */5 * * * ?}")
@@ -66,10 +59,7 @@ public class SessionAutoTerminationJob {
 
                 sessionRepository.save(session);
 
-                // Delete Sendbird channel
-                if (session.getSendbirdRoomId() != null) {
-                    sendbirdService.deleteChannel(session.getSendbirdRoomId());
-                }
+                // Channel deletion is now handled by ChannelCleanupJob (1 hour after session end)
 
                 log.info("Auto-terminated session {} (reservation: {}, duration: {}s)",
                         session.getId(), session.getReservationId(), durationSec);

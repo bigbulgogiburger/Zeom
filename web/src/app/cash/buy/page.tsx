@@ -19,6 +19,41 @@ type CashProduct = {
 
 type PaymentStatus = 'idle' | 'preparing' | 'processing' | 'success' | 'failed';
 
+type PayMethod = 'CARD' | 'EASY_PAY' | 'TRANSFER';
+
+type PayMethodOption = {
+  id: PayMethod;
+  label: string;
+  icon: string;
+  channelKey?: string;
+  easyPayProvider?: string;
+};
+
+const PAY_METHODS: PayMethodOption[] = [
+  { id: 'CARD', label: '신용카드', icon: '💳' },
+  { id: 'EASY_PAY', label: '카카오페이', icon: '🟡', easyPayProvider: 'KAKAOPAY' },
+  { id: 'EASY_PAY', label: '토스페이', icon: '🔵', easyPayProvider: 'TOSSPAY' },
+  { id: 'EASY_PAY', label: '네이버페이', icon: '🟢', easyPayProvider: 'NAVERPAY' },
+  { id: 'TRANSFER', label: '계좌이체', icon: '🏦' },
+];
+
+const MAX_RETRY_COUNT = 3;
+
+const FAILURE_MESSAGES: Record<string, string> = {
+  'CARD_LIMIT_EXCEEDED': '카드 한도가 초과되었습니다. 다른 카드를 이용해 주세요.',
+  'CARD_DECLINED': '카드가 거절되었습니다. 카드사에 문의해 주세요.',
+  'INSUFFICIENT_FUNDS': '잔액이 부족합니다.',
+  'NETWORK_ERROR': '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+  'TIMEOUT': '결제 시간이 초과되었습니다. 다시 시도해 주세요.',
+};
+
+function getFailureMessage(errorCode: string | undefined, defaultMsg: string): string {
+  if (errorCode && FAILURE_MESSAGES[errorCode]) {
+    return FAILURE_MESSAGES[errorCode];
+  }
+  return defaultMsg || '결제 처리 중 오류가 발생했습니다.';
+}
+
 export default function CashBuyPage() {
   const router = useRouter();
   const [products, setProducts] = useState<CashProduct[]>([]);
@@ -28,6 +63,9 @@ export default function CashBuyPage() {
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
   const [newBalance, setNewBalance] = useState<number | null>(null);
+  const [failureCount, setFailureCount] = useState(0);
+  const [failureReason, setFailureReason] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState<number>(0);
 
   async function loadProducts() {
     setLoading(true);
@@ -48,6 +86,7 @@ export default function CashBuyPage() {
   async function handlePurchase(product: CashProduct) {
     setMessage('');
     setSuccessMessage('');
+    setFailureReason('');
     setSelectedProductId(product.id);
     setPaymentStatus('preparing');
 
@@ -58,20 +97,29 @@ export default function CashBuyPage() {
 
       // Step 2: Call PortOne payment
       setPaymentStatus('processing');
-      const response = await PortOne.requestPayment({
+      const method = PAY_METHODS[selectedMethod];
+      const paymentRequest: Record<string, unknown> = {
         storeId: storeId,
         paymentId: paymentId,
         orderName: product.name,
         totalAmount: product.priceKrw,
         currency: 'KRW',
-        channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY || 'channel-key-test',
-        payMethod: 'CARD',
-      });
+        channelKey: method.channelKey || process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY || 'channel-key-test',
+        payMethod: method.id,
+      };
+      if (method.easyPayProvider) {
+        paymentRequest.easyPay = { easyPayProvider: method.easyPayProvider };
+      }
+      const response = await PortOne.requestPayment(paymentRequest as Parameters<typeof PortOne.requestPayment>[0]);
 
       if (response?.code != null) {
         // Payment failed
+        const newCount = failureCount + 1;
+        setFailureCount(newCount);
         setPaymentStatus('failed');
-        setMessage(`결제 실패: ${response.message || '알 수 없는 오류'}`);
+        const reason = getFailureMessage(response.code, response.message || '알 수 없는 오류');
+        setFailureReason(reason);
+        setMessage(`결제 실패: ${reason}`);
         setSelectedProductId(null);
         return;
       }
@@ -84,6 +132,7 @@ export default function CashBuyPage() {
       setNewBalance(walletData.balanceCash ?? walletData.balance ?? 0);
 
       // Success!
+      setFailureCount(0);
       setPaymentStatus('success');
       setSuccessMessage(`충전 완료! 새로운 잔액: ${(walletData.balanceCash ?? walletData.balance ?? 0).toLocaleString()}원`);
 
@@ -93,8 +142,12 @@ export default function CashBuyPage() {
       }, 3000);
 
     } catch (error: any) {
+      const newCount = failureCount + 1;
+      setFailureCount(newCount);
       setPaymentStatus('failed');
-      setMessage(error.message || '결제 처리 중 오류가 발생했습니다.');
+      const reason = getFailureMessage(undefined, error.message);
+      setFailureReason(reason);
+      setMessage(reason);
       setSelectedProductId(null);
     }
   }
@@ -102,10 +155,13 @@ export default function CashBuyPage() {
   function handleRetry() {
     setMessage('');
     setSuccessMessage('');
+    setFailureReason('');
     setSelectedProductId(null);
     setPaymentStatus('idle');
     setNewBalance(null);
   }
+
+  const isRetryExhausted = failureCount >= MAX_RETRY_COUNT;
 
   // Success state
   if (paymentStatus === 'success') {
@@ -151,18 +207,71 @@ export default function CashBuyPage() {
               <div className="text-lg font-bold text-[var(--color-danger)] font-heading">
                 결제 실패
               </div>
-              <button
-                onClick={handleRetry}
-                className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] px-8 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
-              >
-                다시 시도
-              </button>
+              {failureReason && (
+                <div className="text-sm text-[var(--color-text-muted-dark)] max-w-[400px]">
+                  {failureReason}
+                </div>
+              )}
+              {failureCount > 1 && !isRetryExhausted && (
+                <div className="text-xs text-[var(--color-text-muted-dark)]">
+                  실패 횟수: {failureCount}/{MAX_RETRY_COUNT}
+                </div>
+              )}
+              {isRetryExhausted ? (
+                <div className="flex flex-col gap-3 items-center">
+                  <div className="text-sm text-[var(--color-danger)] font-heading font-bold">
+                    결제 시도 횟수를 초과했습니다.
+                  </div>
+                  <div className="text-sm text-[var(--color-text-muted-dark)]">
+                    고객센터에 문의해 주세요.
+                  </div>
+                  <div className="flex gap-3 mt-2">
+                    <button
+                      onClick={() => router.push('/wallet')}
+                      className="border-2 border-[#C9A227]/30 text-[#C9A227] px-6 py-2 text-sm rounded-full bg-transparent cursor-pointer font-heading hover:bg-[#C9A227]/10"
+                    >
+                      지갑으로 돌아가기
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={handleRetry}
+                  className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] px-8 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
+                >
+                  다시 시도하기
+                </button>
+              )}
             </div>
           </div>
         )}
 
         <div className="bg-[#f9f5ed] border-2 border-[rgba(201,162,39,0.15)] rounded-2xl p-6 text-sm text-[var(--color-text-on-card)] leading-relaxed">
           상담 서비스 이용을 위해 필요한 캐시를 충전하세요. 충전한 캐시는 지갑에 보관되며, 상담 예약 시 자동으로 차감됩니다.
+        </div>
+
+        {/* Payment Method Selection */}
+        <div>
+          <h3 className="text-base font-heading font-bold text-[var(--color-text-on-dark)] mb-4">
+            결제 수단 선택
+          </h3>
+          <div className="flex gap-3 flex-wrap">
+            {PAY_METHODS.map((method, idx) => (
+              <button
+                key={`${method.id}-${method.label}`}
+                onClick={() => setSelectedMethod(idx)}
+                disabled={paymentStatus !== 'idle' && paymentStatus !== 'failed'}
+                className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border-2 text-sm font-heading transition-all cursor-pointer ${
+                  selectedMethod === idx
+                    ? 'bg-[#C9A227]/15 border-[#C9A227] text-[#C9A227] font-bold shadow-[0_0_12px_rgba(201,162,39,0.15)]'
+                    : 'bg-black/20 border-[rgba(201,162,39,0.15)] text-[var(--color-text-muted-dark)] hover:border-[#C9A227]/40 hover:bg-[#C9A227]/5'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <span className="text-lg">{method.icon}</span>
+                <span>{method.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {loading || paymentStatus === 'preparing' ? (
@@ -235,9 +344,9 @@ export default function CashBuyPage() {
                     </div>
                     <button
                       onClick={() => handlePurchase(product)}
-                      disabled={selectedProductId === product.id || paymentStatus !== 'idle'}
+                      disabled={selectedProductId === product.id || paymentStatus !== 'idle' || isRetryExhausted}
                       className={`w-full rounded-full py-3 px-6 text-base font-bold min-h-[44px] font-heading border-none cursor-pointer ${
-                        selectedProductId === product.id || paymentStatus !== 'idle'
+                        selectedProductId === product.id || paymentStatus !== 'idle' || isRetryExhausted
                           ? 'bg-[var(--color-border-dark)] text-[var(--color-text-muted-dark)] cursor-not-allowed'
                           : 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a]'
                       }`}

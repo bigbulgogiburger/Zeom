@@ -3,16 +3,20 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import SendBirdCall from 'sendbird-calls';
-import { apiFetch, getSessionToken, endSession as apiEndSession } from '@/components/api-client';
+import { apiFetch, getSessionToken, endSession as apiEndSession, getNextConsecutive, consumeSessionCredit } from '@/components/api-client';
 import { RequireLogin } from '@/components/route-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import SessionTimer from '@/components/session-timer';
+import type { TimerThreshold } from '@/components/session-timer';
 import ConsultationChat from '@/components/consultation-chat';
 import NetworkQuality from '@/components/network-quality';
 import CreditIndicator from '@/components/credit-indicator';
+import ConnectionMonitor from '@/app/consultation/components/connection-monitor';
+import QualityIndicator from '@/app/consultation/components/quality-indicator';
+import ConsecutiveSessionModal from '@/app/consultation/components/consecutive-session-modal';
 
 type Session = {
   id: number;
@@ -88,6 +92,11 @@ export default function ConsultationRoomPage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [pipActive, setPipActive] = useState(false);
   const [pipSupported, setPipSupported] = useState(false);
+  const [showConsecutiveModal, setShowConsecutiveModal] = useState(false);
+  const [consecutiveInfo, setConsecutiveInfo] = useState<{ nextBookingId: number; nextSlotStartAt: string; nextSlotEndAt: string } | null>(null);
+  const [effectiveDurationOverride, setEffectiveDurationOverride] = useState<number | null>(null);
+  const [effectiveStartOverride, setEffectiveStartOverride] = useState<string | null>(null);
+  const [sessionEnding, setSessionEnding] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -308,7 +317,7 @@ export default function ConsultationRoomPage() {
 
       await apiEndSession(sessionId);
 
-      router.push(`/consultation/${sessionId}/complete`);
+      router.push(`/consultation/${sessionId}/summary`);
     } catch (error: any) {
       setMessage(error.message || '세션 종료 중 오류가 발생했습니다.');
     } finally {
@@ -316,12 +325,80 @@ export default function ConsultationRoomPage() {
     }
   }
 
-  const handleTimeUp = () => {
-    setMessage('세션 시간이 종료되었습니다. 곧 자동으로 종료됩니다.');
-    setTimeout(() => {
-      handleEndSession();
-    }, 3000);
-  };
+  // Called when main timer expires (before grace period)
+  const handleTimeUp = useCallback(async () => {
+    if (sessionEnding) return;
+    // Check for consecutive booking before entering grace period
+    try {
+      const result = await getNextConsecutive(sessionId);
+      if (result.hasNext) {
+        setConsecutiveInfo({
+          nextBookingId: result.nextBookingId,
+          nextSlotStartAt: result.nextSlotStartAt,
+          nextSlotEndAt: result.nextSlotEndAt,
+        });
+        setShowConsecutiveModal(true);
+        return; // Don't enter grace period; show modal instead
+      }
+    } catch {
+      // If check fails, proceed normally to grace period
+    }
+    // No consecutive booking: grace period will start via SessionTimer
+  }, [sessionId, sessionEnding]);
+
+  // Called when grace period ends — force end without confirmation
+  const handleGracePeriodEnd = useCallback(async () => {
+    if (sessionEnding) return;
+    setSessionEnding(true);
+    setLoading(true);
+    try {
+      if (currentCallRef.current) {
+        currentCallRef.current.end();
+      }
+      await apiEndSession(sessionId);
+      router.push(`/consultation/${sessionId}/summary`);
+    } catch {
+      setSessionEnding(false);
+      setLoading(false);
+    }
+  }, [sessionId, sessionEnding, router]);
+
+  // Called when user chooses to continue consecutive session
+  const handleConsecutiveContinue = useCallback((result: { extendedDurationMinutes: number; newEndTime: string; sessionId: number }) => {
+    setShowConsecutiveModal(false);
+    setConsecutiveInfo(null);
+    // Reset timer with new duration
+    setEffectiveDurationOverride(result.extendedDurationMinutes);
+    setEffectiveStartOverride(new Date().toISOString());
+    setMessage('');
+  }, []);
+
+  // Called when user chooses to end at consecutive prompt
+  const handleConsecutiveEnd = useCallback(async () => {
+    if (sessionEnding) return;
+    setShowConsecutiveModal(false);
+    setConsecutiveInfo(null);
+    setSessionEnding(true);
+    setLoading(true);
+    try {
+      if (currentCallRef.current) {
+        currentCallRef.current.end();
+      }
+      await apiEndSession(sessionId);
+      router.push(`/consultation/${sessionId}/summary`);
+    } catch {
+      setSessionEnding(false);
+      setLoading(false);
+    }
+  }, [sessionId, sessionEnding, router]);
+
+  // Handle threshold alerts
+  const handleThreshold = useCallback((threshold: TimerThreshold) => {
+    // Consume credit at 30-min boundary if applicable
+    if (threshold === 'expired') {
+      consumeSessionCredit(sessionId).catch(() => {});
+    }
+  }, [sessionId]);
 
   function toggleAudio() {
     if (currentCallRef.current) {
@@ -363,7 +440,8 @@ export default function ConsultationRoomPage() {
   }, []);
 
   const counselorDisplayName = tokenData?.calleeName || session?.counselorName || '';
-  const effectiveDuration = tokenData?.durationMinutes ?? session?.durationMinutes ?? 0;
+  const effectiveDuration = effectiveDurationOverride ?? tokenData?.durationMinutes ?? session?.durationMinutes ?? 0;
+  const effectiveStart = effectiveStartOverride ?? session?.startedAt;
   const channelUrl = tokenData?.channelUrl || session?.sendbirdChannelUrl || '';
 
   if (!session) {
@@ -412,9 +490,12 @@ export default function ConsultationRoomPage() {
         {/* Top bar: Timer + Info + Quality + Credits */}
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <SessionTimer
-            startTime={session.startedAt}
+            startTime={effectiveStart}
             durationMinutes={effectiveDuration}
             onTimeUp={handleTimeUp}
+            onThreshold={handleThreshold}
+            gracePeriodMinutes={2}
+            onGracePeriodEnd={handleGracePeriodEnd}
           />
 
           <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
@@ -501,6 +582,11 @@ export default function ConsultationRoomPage() {
                   <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-[#C9A227] px-3 py-1 rounded-full text-xs font-heading font-bold">
                     상담사
                   </div>
+                  {callConnected && (
+                    <div className="absolute top-2 right-2">
+                      <QualityIndicator call={currentCallRef.current} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Local Video */}
@@ -600,6 +686,32 @@ export default function ConsultationRoomPage() {
             {loading ? '종료 중...' : '상담 종료'}
           </Button>
         </div>
+
+        {/* Connection Monitor Overlay */}
+        {callConnected && (
+          <ConnectionMonitor
+            call={currentCallRef.current}
+            onReconnect={() => initializeSendbird(true)}
+            onAudioOnlyFallback={() => {
+              if (currentCallRef.current) {
+                currentCallRef.current.stopVideo();
+                setVideoEnabled(false);
+              }
+            }}
+          />
+        )}
+
+        {/* Consecutive Session Modal */}
+        {showConsecutiveModal && consecutiveInfo && (
+          <ConsecutiveSessionModal
+            sessionId={sessionId}
+            nextBookingId={consecutiveInfo.nextBookingId}
+            nextSlotStartAt={consecutiveInfo.nextSlotStartAt}
+            nextSlotEndAt={consecutiveInfo.nextSlotEndAt}
+            onContinue={handleConsecutiveContinue}
+            onEnd={handleConsecutiveEnd}
+          />
+        )}
       </main>
     </RequireLogin>
   );

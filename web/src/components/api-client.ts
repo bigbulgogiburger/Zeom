@@ -73,9 +73,71 @@ export async function getWallet() {
   return res.json();
 }
 
-export async function getWalletTransactions(page = 0, size = 20) {
-  const res = await apiFetch(`/api/v1/wallet/transactions?page=${page}&size=${size}`, { cache: 'no-store' });
+export async function getWalletTransactions(page = 0, size = 20, filters?: { type?: string; from?: string; to?: string }) {
+  const params = new URLSearchParams();
+  params.set('page', String(page));
+  params.set('size', String(size));
+  if (filters?.type) params.set('type', filters.type);
+  if (filters?.from) params.set('from', filters.from);
+  if (filters?.to) params.set('to', filters.to);
+  const res = await apiFetch(`/api/v1/wallet/transactions?${params.toString()}`, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch transactions');
+  return res.json();
+}
+
+export async function getTransactionReceipt(txId: number) {
+  const res = await apiFetch(`/api/v1/cash/transactions/${txId}/receipt`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('영수증을 불러올 수 없습니다.');
+  return res.json();
+}
+
+export async function getTransactionReceiptHtml(txId: number) {
+  const res = await apiFetch(`/api/v1/cash/transactions/${txId}/receipt/html`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('영수증을 불러올 수 없습니다.');
+  return res.blob();
+}
+
+export async function exportTransactionsCsv(filters?: { type?: string; from?: string; to?: string }) {
+  const params = new URLSearchParams();
+  if (filters?.type) params.set('type', filters.type);
+  if (filters?.from) params.set('from', filters.from);
+  if (filters?.to) params.set('to', filters.to);
+  const res = await apiFetch(`/api/v1/cash/transactions/csv?${params.toString()}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('CSV 내보내기에 실패했습니다.');
+  return res.blob();
+}
+
+// Counselor Bank Account API
+export async function getCounselorBankAccount() {
+  const res = await apiFetch('/api/v1/counselor/bank-account', { cache: 'no-store' });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error('계좌 정보를 불러올 수 없습니다.');
+  return res.json();
+}
+
+export async function registerCounselorBankAccount(data: { bankCode: string; accountNumber: string; holderName: string }) {
+  const res = await apiFetch('/api/v1/counselor/bank-account', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message || '계좌 등록에 실패했습니다.');
+  }
+  return res.json();
+}
+
+export async function updateCounselorBankAccount(data: { bankCode: string; accountNumber: string; holderName: string }) {
+  const res = await apiFetch('/api/v1/counselor/bank-account', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message || '계좌 수정에 실패했습니다.');
+  }
   return res.json();
 }
 
@@ -125,6 +187,19 @@ export async function endSession(sessionId: string) {
   return res.json();
 }
 
+// Consultation waiting room / summary API methods
+export async function checkCanEnter(reservationId: string) {
+  const res = await apiFetch(`/api/v1/sessions/${reservationId}/can-enter`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('입장 가능 여부를 확인할 수 없습니다.');
+  return res.json();
+}
+
+export async function getSessionSummary(reservationId: string) {
+  const res = await apiFetch(`/api/v1/sessions/${reservationId}/summary`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('상담 요약을 불러올 수 없습니다.');
+  return res.json();
+}
+
 // Counselor API methods
 export async function getCounselorTodayBookings() {
   const res = await apiFetch('/api/v1/sessions/counselor/bookings/today', { cache: 'no-store' });
@@ -153,6 +228,45 @@ export async function startSession(bookingId: string) {
     method: 'POST',
   });
   if (!res.ok) throw new Error('Failed to start session');
+  return res.json();
+}
+
+// Session realtime API methods
+export async function getNextConsecutive(sessionId: string) {
+  const res = await apiFetch(`/api/v1/sessions/${sessionId}/next-consecutive`, { cache: 'no-store' });
+  if (!res.ok) return { hasNext: false };
+  return res.json();
+}
+
+export async function continueNextSession(sessionId: string, nextBookingId: number) {
+  const res = await apiFetch(`/api/v1/sessions/${sessionId}/continue-next`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nextBookingId }),
+  });
+  if (!res.ok) throw new Error('연속 상담 연장에 실패했습니다.');
+  return res.json();
+}
+
+export async function consumeSessionCredit(sessionId: string) {
+  const res = await apiFetch(`/api/v1/sessions/${sessionId}/consume-credit`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('크레딧 소모에 실패했습니다.');
+  return res.json();
+}
+
+export async function markCounselorReady(sessionId: string) {
+  const res = await apiFetch(`/api/v1/sessions/${sessionId}/counselor-ready`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('상담사 준비 상태 변경에 실패했습니다.');
+  return res.json();
+}
+
+export async function getSessionStatus(sessionId: string) {
+  const res = await apiFetch(`/api/v1/sessions/${sessionId}/status`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('세션 상태를 확인할 수 없습니다.');
   return res.json();
 }
 

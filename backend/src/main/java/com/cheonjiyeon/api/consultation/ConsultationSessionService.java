@@ -9,6 +9,8 @@ import com.cheonjiyeon.api.booking.BookingSlotEntity;
 import com.cheonjiyeon.api.common.ApiException;
 import com.cheonjiyeon.api.counselor.CounselorEntity;
 import com.cheonjiyeon.api.counselor.CounselorRepository;
+import com.cheonjiyeon.api.credit.CreditUsageLogEntity;
+import com.cheonjiyeon.api.credit.CreditUsageLogRepository;
 import com.cheonjiyeon.api.sendbird.SendbirdService;
 import com.cheonjiyeon.api.settlement.SettlementService;
 import org.slf4j.Logger;
@@ -29,29 +31,35 @@ public class ConsultationSessionService {
     private static final Logger log = LoggerFactory.getLogger(ConsultationSessionService.class);
 
     private final ConsultationSessionRepository sessionRepository;
+    private final ConsultationMemoRepository memoRepository;
     private final BookingRepository bookingRepository;
     private final SendbirdService sendbirdService;
     private final CounselorRepository counselorRepository;
     private final TokenStore tokenStore;
     private final UserRepository userRepository;
     private final SettlementService settlementService;
+    private final CreditUsageLogRepository creditUsageLogRepository;
 
     public ConsultationSessionService(
             ConsultationSessionRepository sessionRepository,
+            ConsultationMemoRepository memoRepository,
             BookingRepository bookingRepository,
             SendbirdService sendbirdService,
             CounselorRepository counselorRepository,
             TokenStore tokenStore,
             UserRepository userRepository,
-            SettlementService settlementService
+            SettlementService settlementService,
+            CreditUsageLogRepository creditUsageLogRepository
     ) {
         this.sessionRepository = sessionRepository;
+        this.memoRepository = memoRepository;
         this.bookingRepository = bookingRepository;
         this.sendbirdService = sendbirdService;
         this.counselorRepository = counselorRepository;
         this.tokenStore = tokenStore;
         this.userRepository = userRepository;
         this.settlementService = settlementService;
+        this.creditUsageLogRepository = creditUsageLogRepository;
     }
 
     @Transactional
@@ -83,7 +91,23 @@ public class ConsultationSessionService {
         session.setSendbirdRoomId(sendbirdRoomId);
         session.setStartedAt(LocalDateTime.now());
 
-        return sessionRepository.save(session);
+        ConsultationSessionEntity saved = sessionRepository.save(session);
+
+        // Consume first credit immediately on session start
+        consumeFirstCredit(reservationId);
+
+        return saved;
+    }
+
+    private void consumeFirstCredit(Long bookingId) {
+        List<CreditUsageLogEntity> reserved = creditUsageLogRepository
+                .findByBookingIdAndStatusOrderByUsedAtAsc(bookingId, "RESERVED");
+        if (!reserved.isEmpty()) {
+            CreditUsageLogEntity first = reserved.getFirst();
+            first.setStatus("CONSUMED");
+            first.setConsumedAt(LocalDateTime.now());
+            creditUsageLogRepository.save(first);
+        }
     }
 
     @Transactional
@@ -102,9 +126,7 @@ public class ConsultationSessionService {
         session.setEndReason(endReason);
         session.setDurationSec(durationSec);
 
-        if (session.getSendbirdRoomId() != null) {
-            sendbirdService.deleteChannel(session.getSendbirdRoomId());
-        }
+        // Channel deletion is now handled by ChannelCleanupJob (1 hour after session end)
 
         ConsultationSessionEntity saved = sessionRepository.save(session);
 
@@ -121,6 +143,11 @@ public class ConsultationSessionService {
     public ConsultationSessionEntity getSessionByReservationId(Long reservationId) {
         return sessionRepository.findByReservationId(reservationId)
                 .orElseThrow(() -> new ApiException(404, "Session not found for reservation: " + reservationId));
+    }
+
+    public ConsultationSessionEntity getSessionById(Long sessionId) {
+        return sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ApiException(404, "Session not found: " + sessionId));
     }
 
     public ConsultationSessionDtos.SessionTokenResponse getSessionToken(Long reservationId) {
@@ -237,6 +264,140 @@ public class ConsultationSessionService {
             );
         }
         return 30; // default
+    }
+
+    public ConsultationSessionDtos.CanEnterResponse canEnter(Long reservationId) {
+        BookingEntity booking = bookingRepository.findById(reservationId)
+                .orElseThrow(() -> new ApiException(404, "Reservation not found: " + reservationId));
+
+        LocalDateTime scheduledStart = getScheduledStart(booking);
+        if (scheduledStart == null) {
+            return new ConsultationSessionDtos.CanEnterResponse(false, -1, "예약된 시간이 없습니다.");
+        }
+
+        long secondsUntil = Duration.between(LocalDateTime.now(), scheduledStart).getSeconds();
+
+        // Allow entry 5 minutes (300 seconds) before scheduled start
+        if (secondsUntil <= 300) {
+            return new ConsultationSessionDtos.CanEnterResponse(true, Math.max(secondsUntil, 0), "입장 가능합니다.");
+        }
+
+        return new ConsultationSessionDtos.CanEnterResponse(false, secondsUntil, "아직 입장할 수 없습니다. 시작 5분 전부터 입장 가능합니다.");
+    }
+
+    public ConsultationSessionDtos.SessionSummaryResponse getSessionSummary(Long reservationId) {
+        ConsultationSessionEntity session = getSessionByReservationId(reservationId);
+
+        BookingEntity booking = bookingRepository.findById(reservationId)
+                .orElseThrow(() -> new ApiException(404, "Reservation not found: " + reservationId));
+
+        String memoContent = null;
+        Optional<ConsultationMemoEntity> memo = memoRepository.findBySessionId(session.getId());
+        if (memo.isPresent()) {
+            memoContent = memo.get().getContent();
+        }
+
+        return new ConsultationSessionDtos.SessionSummaryResponse(
+                session.getId(),
+                session.getReservationId(),
+                booking.getCounselor().getName(),
+                booking.getCounselor().getSpecialty(),
+                session.getStartedAt(),
+                session.getEndedAt(),
+                session.getDurationSec(),
+                session.getEndReason(),
+                booking.getCreditsUsed(),
+                memoContent
+        );
+    }
+
+    @Transactional
+    public ConsultationSessionDtos.CounselorReadyResponse markCounselorReady(Long reservationId, String authHeader) {
+        UserEntity currentUser = resolveUser(authHeader);
+
+        BookingEntity booking = bookingRepository.findById(reservationId)
+                .orElseThrow(() -> new ApiException(404, "Reservation not found: " + reservationId));
+
+        CounselorEntity counselor = booking.getCounselor();
+        if (counselor.getUserId() == null || !counselor.getUserId().equals(currentUser.getId())) {
+            throw new ApiException(403, "이 예약의 상담사가 아닙니다.");
+        }
+
+        ConsultationSessionEntity session = sessionRepository.findByReservationId(reservationId)
+                .orElseThrow(() -> new ApiException(404, "Session not found for reservation: " + reservationId));
+
+        session.setCounselorReadyAt(LocalDateTime.now());
+        sessionRepository.save(session);
+
+        return new ConsultationSessionDtos.CounselorReadyResponse(true, session.getCounselorReadyAt());
+    }
+
+    public ConsultationSessionDtos.SessionStatusResponse getSessionStatus(Long sessionId) {
+        ConsultationSessionEntity session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ApiException(404, "Session not found: " + sessionId));
+
+        BookingEntity booking = bookingRepository.findById(session.getReservationId())
+                .orElseThrow(() -> new ApiException(404, "Reservation not found: " + session.getReservationId()));
+
+        String state;
+        long remainingSeconds = 0;
+
+        if (session.getEndedAt() != null) {
+            state = "ENDED";
+        } else if (session.getStartedAt() != null) {
+            state = "ACTIVE";
+            LocalDateTime endTime = calculateSessionEndTime(booking);
+            if (endTime != null) {
+                remainingSeconds = Math.max(0, Duration.between(LocalDateTime.now(), endTime).getSeconds());
+            }
+        } else {
+            state = "WAITING";
+        }
+
+        // Count consumed vs total credits from usage logs
+        List<CreditUsageLogEntity> usageLogs = creditUsageLogRepository.findByBookingId(booking.getId());
+        int totalCredits = usageLogs.stream().mapToInt(CreditUsageLogEntity::getUnitsUsed).sum();
+        int creditsUsed = (int) usageLogs.stream()
+                .filter(l -> "CONSUMED".equals(l.getStatus()))
+                .count();
+
+        return new ConsultationSessionDtos.SessionStatusResponse(
+                session.getId(),
+                session.getReservationId(),
+                session.getCounselorReadyAt() != null,
+                session.getCounselorReadyAt(),
+                remainingSeconds,
+                creditsUsed,
+                totalCredits,
+                state
+        );
+    }
+
+    private LocalDateTime calculateSessionEndTime(BookingEntity booking) {
+        if (booking.getBookingSlots() != null && !booking.getBookingSlots().isEmpty()) {
+            return booking.getBookingSlots().stream()
+                    .sorted(Comparator.comparing(bs -> bs.getSlot().getStartAt()))
+                    .reduce((first, second) -> second)
+                    .map(bs -> bs.getSlot().getEndAt())
+                    .orElse(null);
+        }
+        if (booking.getSlot() != null) {
+            return booking.getSlot().getEndAt();
+        }
+        return null;
+    }
+
+    private LocalDateTime getScheduledStart(BookingEntity booking) {
+        if (booking.getBookingSlots() != null && !booking.getBookingSlots().isEmpty()) {
+            return booking.getBookingSlots().stream()
+                    .map(bs -> bs.getSlot().getStartAt())
+                    .min(Comparator.naturalOrder())
+                    .orElse(null);
+        }
+        if (booking.getSlot() != null) {
+            return booking.getSlot().getStartAt();
+        }
+        return null;
     }
 
     private UserEntity resolveUser(String authHeader) {

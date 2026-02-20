@@ -1,0 +1,16 @@
+CREATE TABLE referral_codes (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE,
+    code VARCHAR(20) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE referral_rewards (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    referrer_id BIGINT NOT NULL,
+    referee_id BIGINT NOT NULL,
+    reward_amount BIGINT NOT NULL DEFAULT 2000,
+    referrer_rewarded BOOLEAN DEFAULT FALSE,
+    referee_rewarded BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

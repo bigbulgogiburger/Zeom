@@ -50,6 +50,17 @@ description: 결제/지갑/크레딧 시스템 무결성 검증. 결제 관련 �
 | `backend/src/main/java/com/cheonjiyeon/api/settlement/SettlementController.java` | 정산 엔드포인트 |
 | `backend/src/main/java/com/cheonjiyeon/api/settlement/SettlementService.java` | 정산 비즈니스 로직 |
 | `backend/src/main/java/com/cheonjiyeon/api/settlement/CounselorSettlementEntity.java` | 상담사 정산 엔티티 |
+| `backend/src/main/java/com/cheonjiyeon/api/settlement/CounselorBankAccountController.java` | 상담사 정산 계좌 관리 |
+| `backend/src/main/java/com/cheonjiyeon/api/settlement/CounselorBankAccountService.java` | 상담사 정산 계좌 서비스 |
+| `backend/src/main/java/com/cheonjiyeon/api/settlement/SettlementPdfService.java` | 정산 PDF 생성 서비스 |
+| `backend/src/main/java/com/cheonjiyeon/api/scheduler/SettlementBatchScheduler.java` | 정산 배치 스케줄러 |
+| `backend/src/main/java/com/cheonjiyeon/api/cash/CashTransactionController.java` | 캐시 거래 REST 엔드포인트 |
+| `backend/src/main/java/com/cheonjiyeon/api/cash/ReceiptService.java` | 영수증 HTML 생성 서비스 |
+| `backend/src/main/java/com/cheonjiyeon/api/coupon/CouponEntity.java` | 쿠폰 엔티티 |
+| `backend/src/main/java/com/cheonjiyeon/api/coupon/CouponUsageEntity.java` | 쿠폰 사용 엔티티 |
+| `backend/src/main/java/com/cheonjiyeon/api/referral/ReferralCodeEntity.java` | 추천 코드 엔티티 |
+| `backend/src/main/java/com/cheonjiyeon/api/referral/ReferralRewardEntity.java` | 추천 보상 엔티티 |
+| `web/src/app/counselor/settlement/page.tsx` | 상담사 정산 페이지 |
 
 ## Workflow
 

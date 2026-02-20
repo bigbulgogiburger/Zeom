@@ -24,6 +24,8 @@ description: 모든 검증 스킬을 순차적으로 실행하는 통합 검증.
 | 4 | verify-frontend-ui | 프론트엔드 UI/디자인 시스템 품질 검증 |
 | 5 | verify-e2e-tests | E2E 테스트 설정 및 품질 검증 |
 | 6 | verify-admin-auth | Admin API 엔드포인트 인증/인가 가드 검증 |
+| 7 | verify-auth-system | 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀번호 리셋, 소셜 로그인) |
+| 8 | verify-notification-system | 알림/이메일/SMS 시스템 무결성 검증 |
 
 ## Workflow
 
@@ -45,6 +47,8 @@ git diff HEAD --name-only
 - `web/src/app/globals.css` 또는 `web/src/components/ui/` → `verify-frontend-ui`
 - `web/e2e/` 또는 `web/playwright.config.ts` 또는 `web/src/__tests__/` → `verify-e2e-tests`
 - `backend/**/admin/` 또는 `**/ops/` 또는 `**/settlement/*Controller*` → `verify-admin-auth`
+- `backend/**/auth/` 또는 `web/src/app/login/` 또는 `web/src/app/signup/` 또는 `web/src/app/forgot-password/` → `verify-auth-system`
+- `backend/**/notification/` 또는 `web/src/app/notifications/` 또는 `web/src/components/notification-bell.tsx` → `verify-notification-system`
 
 ### Step 3: 결과 집계
 

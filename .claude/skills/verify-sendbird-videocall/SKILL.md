@@ -37,6 +37,14 @@ description: Sendbird 화상통화 파이프라인 검증. 통화 관련 코드 
 | `web/src/components/call-notification.tsx` | 수신 전화 알림 다이얼로그 |
 | `web/src/components/counselor-auth.tsx` | RequireCounselor 가드 |
 | `web/src/components/session-timer.tsx` | 상담 타이머 |
+| `backend/src/main/java/com/cheonjiyeon/api/chat/ChatController.java` | 채팅 상담 REST 엔드포인트 |
+| `backend/src/main/java/com/cheonjiyeon/api/chat/ChatService.java` | 채팅 상담 비즈니스 로직 |
+| `backend/src/main/java/com/cheonjiyeon/api/chat/ChatMessageEntity.java` | 채팅 메시지 JPA 엔티티 |
+| `web/src/app/consultation/chat/[sessionId]/page.tsx` | 채팅 상담 페이지 (카카오톡 스타일 UI) |
+| `web/src/app/consultation/[sessionId]/waiting/page.tsx` | 상담 대기실 페이지 |
+| `web/src/app/consultation/[sessionId]/summary/page.tsx` | 상담 후 요약 페이지 |
+| `web/src/app/consultation/components/connection-monitor.tsx` | 연결 안정성 모니터 |
+| `web/src/app/consultation/components/quality-indicator.tsx` | 통화 품질 인디케이터 |
 | `backend/src/main/resources/application.yml` | Sendbird 설정 (enabled, app-id, api-token) |
 
 ## Workflow
@@ -126,6 +134,37 @@ grep -n 'SendBirdCall.init\|SendBirdCall.authenticate\|connectWebSocket' web/src
 **PASS:** 양쪽 모두 init → authenticate → connectWebSocket 순서
 **FAIL:** 초기화 순서 불일치
 **수정:** 올바른 순서로 수정
+
+### Step 7: 채팅 상담 API 매칭
+
+**도구:** Grep
+
+채팅 상담 백엔드 엔드포인트 확인:
+```bash
+grep -n '@PostMapping\|@GetMapping' backend/src/main/java/com/cheonjiyeon/api/chat/ChatController.java
+```
+
+프론트엔드 채팅 API 호출 확인:
+```bash
+grep -n '/api/v1/chats' web/src/app/consultation/chat/\[sessionId\]/page.tsx
+```
+
+**PASS:** 채팅 메시지 전송/조회/종료 엔드포인트가 매칭됨
+**FAIL:** 프론트엔드에서 호출하는 API 경로가 백엔드에 존재하지 않음
+**수정:** 불일치하는 엔드포인트 수정
+
+### Step 8: 상담 유형 (video/chat) 분기 확인
+
+**도구:** Grep
+
+```bash
+grep -n 'consultationType\|CHAT\|VIDEO' backend/src/main/java/com/cheonjiyeon/api/booking/BookingEntity.java
+grep -n 'consultationType\|chat\|video' web/src/app/counselors/\[id\]/CounselorDetailClient.tsx
+```
+
+**PASS:** BookingEntity에 consultationType 필드 존재, 프론트엔드에서 상담 유형 선택 UI 존재
+**FAIL:** 상담 유형 분기 누락
+**수정:** 누락된 분기 로직 추가
 
 ## Output Format
 

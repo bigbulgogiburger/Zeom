@@ -29,6 +29,18 @@ public class DisputeEntity {
     @Column(columnDefinition = "TEXT")
     private String resolution;
 
+    @Column(name = "resolution_type", length = 50)
+    private String resolutionType;
+
+    @Column(name = "resolution_note", columnDefinition = "TEXT")
+    private String resolutionNote;
+
+    @Column(name = "resolved_by")
+    private Long resolvedBy;
+
+    @Column(name = "resolved_at")
+    private LocalDateTime resolvedAt;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -60,6 +72,14 @@ public class DisputeEntity {
     public void setStatus(String status) { this.status = status; }
     public String getResolution() { return resolution; }
     public void setResolution(String resolution) { this.resolution = resolution; }
+    public String getResolutionType() { return resolutionType; }
+    public void setResolutionType(String resolutionType) { this.resolutionType = resolutionType; }
+    public String getResolutionNote() { return resolutionNote; }
+    public void setResolutionNote(String resolutionNote) { this.resolutionNote = resolutionNote; }
+    public Long getResolvedBy() { return resolvedBy; }
+    public void setResolvedBy(Long resolvedBy) { this.resolvedBy = resolvedBy; }
+    public LocalDateTime getResolvedAt() { return resolvedAt; }
+    public void setResolvedAt(LocalDateTime resolvedAt) { this.resolvedAt = resolvedAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 }
