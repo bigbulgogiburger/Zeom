@@ -15,6 +15,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -160,16 +161,56 @@ public class BookingService {
             throw new ApiException(409, "이미 취소된 예약입니다.");
         }
 
+        if ("PAID".equals(booking.getStatus())) {
+            throw new ApiException(400, "결제 완료된 예약은 환불 요청을 이용해주세요.");
+        }
+
+        // Determine earliest slot start time
+        LocalDateTime earliestStart = getEarliestSlotStart(booking);
+
+        // Apply cancellation policy based on time until earliest slot
+        String cancelType;
+        int refundedCredits = 0;
+        int originalCredits = booking.getCreditsUsed();
+
+        if (earliestStart != null) {
+            long hoursUntilStart = Duration.between(LocalDateTime.now(), earliestStart).toHours();
+
+            if (hoursUntilStart < 1) {
+                throw new ApiException(400, "상담 시작 1시간 전까지만 취소 가능합니다.");
+            } else if (hoursUntilStart >= 24) {
+                cancelType = "FREE_CANCEL";
+                refundedCredits = originalCredits;
+            } else {
+                cancelType = "PARTIAL_CANCEL";
+                refundedCredits = originalCredits / 2;
+            }
+        } else {
+            // No slot time info — default to free cancel
+            cancelType = "FREE_CANCEL";
+            refundedCredits = originalCredits;
+        }
+
         booking.setStatus("CANCELED");
 
         if (reason != null && !reason.isBlank()) {
             booking.setCancelReason(reason);
         }
 
-        // Release reserved credits
-        if (booking.getCreditsUsed() > 0) {
+        // Handle credit refund based on policy
+        if (originalCredits > 0) {
+            // Release all reserved credits first
             creditService.releaseCredits(booking.getId());
-            booking.setCreditsUsed(0);
+
+            if ("PARTIAL_CANCEL".equals(cancelType)) {
+                // Re-reserve the penalty portion (credits NOT refunded)
+                int penaltyCredits = originalCredits - refundedCredits;
+                if (penaltyCredits > 0) {
+                    creditService.reserveCredits(user.getId(), booking.getId(), penaltyCredits);
+                }
+            }
+
+            booking.setCreditsUsed(originalCredits - refundedCredits);
         }
 
         // Release all associated slots
@@ -187,7 +228,20 @@ public class BookingService {
 
         BookingEntity saved = bookingRepository.save(booking);
         auditLogService.log(user.getId(), "BOOKING_CANCELED", "BOOKING", saved.getId());
-        return toResponse(saved);
+        return toResponse(saved, cancelType, refundedCredits);
+    }
+
+    private LocalDateTime getEarliestSlotStart(BookingEntity booking) {
+        List<BookingSlotEntity> bookingSlots = booking.getBookingSlots();
+        if (bookingSlots != null && !bookingSlots.isEmpty()) {
+            return bookingSlots.stream()
+                    .map(bs -> bs.getSlot().getStartAt())
+                    .min(Comparator.naturalOrder())
+                    .orElse(null);
+        } else if (booking.getSlot() != null) {
+            return booking.getSlot().getStartAt();
+        }
+        return null;
     }
 
     @Transactional
@@ -331,6 +385,10 @@ public class BookingService {
     }
 
     private BookingDtos.BookingResponse toResponse(BookingEntity booking) {
+        return toResponse(booking, null, null);
+    }
+
+    private BookingDtos.BookingResponse toResponse(BookingEntity booking, String cancelType, Integer refundedCredits) {
         List<BookingSlotEntity> bookingSlots = booking.getBookingSlots();
         List<BookingDtos.SlotInfo> slotInfos = new ArrayList<>();
 
@@ -367,7 +425,9 @@ public class BookingService {
                 booking.getCreditsUsed(),
                 booking.getCancelReason(),
                 booking.getPaymentRetryCount(),
-                booking.getConsultationType()
+                booking.getConsultationType(),
+                cancelType,
+                refundedCredits
         );
     }
 }

@@ -69,6 +69,15 @@ sms:
     user-id: ${ALIGO_USER_ID:}
     sender: ${ALIGO_SENDER:010-0000-0000}
 
+oauth:
+  provider: ${OAUTH_PROVIDER:fake}
+  kakao:
+    client-id: ${OAUTH_KAKAO_CLIENT_ID:}
+    client-secret: ${OAUTH_KAKAO_CLIENT_SECRET:}
+  naver:
+    client-id: ${OAUTH_NAVER_CLIENT_ID:}
+    client-secret: ${OAUTH_NAVER_CLIENT_SECRET:}
+
 portone:
   enabled: ${PORTONE_ENABLED:false}
   api-key: ${PORTONE_API_KEY:}
@@ -98,6 +107,9 @@ scheduler:
   payment-retry-cron: ${SCHEDULER_PAYMENT_RETRY_CRON:0 */5 * * * ?}
   cache-refresh-cron: ${SCHEDULER_CACHE_REFRESH_CRON:0 0 */1 * * ?}
   session-auto-terminate-cron: ${SCHEDULER_SESSION_AUTO_TERMINATE_CRON:0 */5 * * * ?}
+
+app:
+  frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}

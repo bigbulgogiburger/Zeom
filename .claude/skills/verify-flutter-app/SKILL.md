@@ -174,6 +174,24 @@ grep -n 'async\|export' web/src/components/api-client.ts | grep -v '//' | head -
 **FAIL:** React에 있으나 Flutter에 없는 API 메서드 (또는 그 반대)
 **수정:** 누락된 API 메서드 추가
 
+### Step 8: Flutter ↔ Backend API 응답 필드명 동기화
+
+**도구:** Grep
+
+크레딧 잔액 필드 — Backend는 `totalUnits/usedUnits/remainingUnits` 반환:
+```bash
+grep -n "remainingUnits\|remaining\|usedUnits\|used\|balance.*credits\|credits.*balance" app_flutter/lib/features/wallet/wallet_screen.dart app_flutter/lib/features/credit/credit_buy_screen.dart
+```
+
+상품 분(minutes) 필드 — Backend는 `minutes` 반환:
+```bash
+grep -n "durationMinutes\|minutes" app_flutter/lib/features/wallet/cash_buy_screen.dart app_flutter/lib/features/credit/credit_buy_screen.dart
+```
+
+**PASS:** `remainingUnits`를 우선 사용하고 fallback(`remaining`, `remainingCredits`) 존재, `minutes`를 우선 사용하고 fallback(`durationMinutes`) 존재
+**FAIL:** 이전 필드명(`remaining`, `balance`, `durationMinutes`)만 단독 사용
+**수정:** Backend API 응답 필드(`remainingUnits`, `minutes`)를 우선 참조하고 호환성 fallback 추가
+
 ## Output Format
 
 | 검사 | 결과 | 상세 |
@@ -185,6 +203,7 @@ grep -n 'async\|export' web/src/components/api-client.ts | grep -v '//' | head -
 | 디자인 토큰 일관성 | PASS/FAIL | 불일치 색상: ... |
 | Riverpod 패턴 | PASS/FAIL | 패턴 위반: ... |
 | API 클라이언트 매칭 | PASS/FAIL | 누락 메서드: ... |
+| API 필드명 동기화 | PASS/FAIL | 불일치 필드: ... |
 
 ## Exceptions
 

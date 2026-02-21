@@ -93,6 +93,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     required String name,
     String? phone,
+    String? referralCode,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -101,8 +102,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
         password: password,
         name: name,
         phone: phone,
+        referralCode: referralCode,
       );
       // Fetch user info after signup
+      final user = await _authService.getCurrentUser();
+      state = state.copyWith(
+        isAuthenticated: true,
+        isLoading: false,
+        user: user,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> oauthLogin({
+    required String provider,
+    required String code,
+    required String redirectUri,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _authService.oauthLogin(
+        provider: provider,
+        code: code,
+        redirectUri: redirectUri,
+      );
       final user = await _authService.getCurrentUser();
       state = state.copyWith(
         isAuthenticated: true,

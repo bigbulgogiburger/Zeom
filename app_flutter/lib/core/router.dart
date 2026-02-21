@@ -16,6 +16,11 @@ import '../features/consultation/review_screen.dart';
 import '../features/credit/credit_buy_screen.dart';
 import '../features/refund/refund_list_screen.dart';
 import '../features/refund/refund_request_screen.dart';
+import '../features/dispute/dispute_list_screen.dart';
+import '../features/dispute/dispute_detail_screen.dart';
+import '../features/dispute/dispute_create_screen.dart';
+import '../features/fortune/fortune_screen.dart';
+import '../features/auth/onboarding_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -167,6 +172,32 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/refund/request',
         builder: (context, state) => const RefundRequestScreen(),
+      ),
+      // Dispute routes
+      GoRoute(
+        path: '/dispute/list',
+        builder: (context, state) => const DisputeListScreen(),
+      ),
+      GoRoute(
+        path: '/dispute/create',
+        builder: (context, state) => const DisputeCreateScreen(),
+      ),
+      GoRoute(
+        path: '/dispute/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return DisputeDetailScreen(disputeId: id);
+        },
+      ),
+      // Fortune routes
+      GoRoute(
+        path: '/fortune',
+        builder: (context, state) => const FortuneScreen(),
+      ),
+      // Onboarding route
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

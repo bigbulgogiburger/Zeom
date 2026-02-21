@@ -1,11 +1,15 @@
 package com.cheonjiyeon.api;
 
+import com.cheonjiyeon.api.counselor.SlotEntity;
+import com.cheonjiyeon.api.counselor.SlotRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -16,6 +20,9 @@ class Step2ApiIntegrationTest {
 
     @Autowired
     MockMvc mvc;
+
+    @Autowired
+    SlotRepository slotRepository;
 
     @Test
     void signup_login_me_flow() throws Exception {
@@ -56,6 +63,14 @@ class Step2ApiIntegrationTest {
 
     @Test
     void booking_create_cancel_and_my_bookings() throws Exception {
+        // Move all slots to far future so cancellation policy allows free cancel
+        for (SlotEntity slot : slotRepository.findAll()) {
+            LocalDateTime futureStart = LocalDateTime.now().plusHours(48);
+            slot.setStartAt(futureStart);
+            slot.setEndAt(futureStart.plusMinutes(30));
+            slotRepository.save(slot);
+        }
+
         String bookingEmail = "booking_" + System.nanoTime() + "@zeom.com";
         String token = mvc.perform(post("/api/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)

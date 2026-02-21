@@ -58,12 +58,12 @@ List<Map<String, String>> _groupConsecutiveSlots(
   final now = DateTime.now().millisecondsSinceEpoch;
   final hoursUntilStart = (earliestStart - now) / (1000 * 60 * 60);
 
-  if (hoursUntilStart >= 24) {
+  if (hoursUntilStart < 1) {
+    return (refundRate: 0, message: '1시간 이내 취소: 취소 불가');
+  } else if (hoursUntilStart >= 24) {
     return (refundRate: 100, message: '24시간 이전 취소: 전액 환불');
-  } else if (hoursUntilStart >= 12) {
-    return (refundRate: 50, message: '12~24시간 전 취소: 50% 환불');
   } else {
-    return (refundRate: 0, message: '12시간 이내 취소: 환불 불가');
+    return (refundRate: 50, message: '1~24시간 전 취소: 50% 환불');
   }
 }
 
@@ -625,6 +625,8 @@ class _BookingListScreenState extends ConsumerState<BookingListScreen> {
     final counselorName = booking['counselorName'] as String? ?? '상담사';
     final status = booking['status'] as String? ?? '';
     final cancelReason = booking['cancelReason'] as String?;
+    final cancelType = booking['cancelType'] as String?;
+    final refundedCredits = booking['refundedCredits'] as int?;
     final paymentRetryCount = booking['paymentRetryCount'] as int? ?? 0;
     final consultationType = booking['consultationType'] as String?;
     final slots = _normalizeSlots(booking);
@@ -738,15 +740,51 @@ class _BookingListScreenState extends ConsumerState<BookingListScreen> {
               ),
             ],
 
-            // Cancel reason
-            if (cancelReason != null &&
-                (status == 'CANCELED' || status == 'CANCELLED')) ...[
+            // Cancel info
+            if ((status == 'CANCELED' || status == 'CANCELLED')) ...[
               const SizedBox(height: 8),
-              Text(
-                '취소 사유: $cancelReason',
-                style:
-                    GoogleFonts.notoSans(fontSize: 12, color: AppColors.textSecondary),
-              ),
+              if (cancelType != null)
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: cancelType == 'FREE_CANCEL'
+                            ? AppColors.success.withOpacity(0.1)
+                            : AppColors.gold.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        cancelType == 'FREE_CANCEL' ? '전액 환불' : '부분 환불',
+                        style: GoogleFonts.notoSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: cancelType == 'FREE_CANCEL'
+                              ? AppColors.success
+                              : AppColors.gold,
+                        ),
+                      ),
+                    ),
+                    if (refundedCredits != null && refundedCredits > 0) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        '환불 $refundedCredits회',
+                        style: GoogleFonts.notoSans(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              if (cancelReason != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  '취소 사유: $cancelReason',
+                  style:
+                      GoogleFonts.notoSans(fontSize: 12, color: AppColors.textSecondary),
+                ),
+              ],
             ],
 
             // Payment failed section

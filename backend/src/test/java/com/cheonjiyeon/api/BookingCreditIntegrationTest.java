@@ -1,5 +1,7 @@
 package com.cheonjiyeon.api;
 
+import com.cheonjiyeon.api.counselor.SlotEntity;
+import com.cheonjiyeon.api.counselor.SlotRepository;
 import com.cheonjiyeon.api.credit.CreditEntity;
 import com.cheonjiyeon.api.credit.CreditRepository;
 import com.cheonjiyeon.api.credit.CreditUsageLogRepository;
@@ -30,6 +32,7 @@ class BookingCreditIntegrationTest {
     @Autowired CreditRepository creditRepository;
     @Autowired CreditUsageLogRepository usageLogRepository;
     @Autowired WalletRepository walletRepository;
+    @Autowired SlotRepository slotRepository;
 
     private static final int[][] SLOT_CANDIDATES = {
             {1, 4}, {1, 5}, {1, 6}, {1, 7}, {1, 8}, {1, 9}, {1, 10}, {1, 11}, {1, 12}, {1, 13},
@@ -75,6 +78,10 @@ class BookingCreditIntegrationTest {
         String token = signupAndGetToken("bc_cancel_" + System.nanoTime() + "@zeom.com");
         Long userId = getUserId(token);
 
+        // Move slots 26,27 to 48h in the future so free cancel is allowed
+        moveSlotsToFuture(26L, 48);
+        moveSlotsToFuture(27L, 48);
+
         // Grant 2 credits
         grantCredits(userId, 2);
 
@@ -95,12 +102,14 @@ class BookingCreditIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.remainingUnits").value(0));
 
-        // Cancel booking
+        // Cancel booking (48h away = FREE_CANCEL, 100% refund)
         mvc.perform(post("/api/v1/bookings/" + bookingId + "/cancel")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CANCELED"))
-                .andExpect(jsonPath("$.creditsUsed").value(0));
+                .andExpect(jsonPath("$.creditsUsed").value(0))
+                .andExpect(jsonPath("$.cancelType").value("FREE_CANCEL"))
+                .andExpect(jsonPath("$.refundedCredits").value(2));
 
         // Verify credits restored
         mvc.perform(get("/api/v1/credits/my")
@@ -235,5 +244,13 @@ class BookingCreditIntegrationTest {
         credit.setRemainingUnits(units);
         credit.setPurchasedAt(LocalDateTime.now());
         creditRepository.save(credit);
+    }
+
+    private void moveSlotsToFuture(Long slotId, int hoursFromNow) {
+        SlotEntity slot = slotRepository.findById(slotId).orElseThrow();
+        LocalDateTime newStart = LocalDateTime.now().plusHours(hoursFromNow);
+        slot.setStartAt(newStart);
+        slot.setEndAt(newStart.plusMinutes(30));
+        slotRepository.save(slot);
     }
 }

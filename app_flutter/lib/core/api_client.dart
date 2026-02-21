@@ -136,6 +136,13 @@ class ApiClient {
     return await _dio.get('/api/v1/auth/me');
   }
 
+  Future<Response> registerPushToken(String token) async {
+    return await _dio.post('/api/v1/auth/push-token', data: {
+      'token': token,
+      'platform': Platform.operatingSystem,
+    });
+  }
+
   // ==================== Counselor APIs ====================
   Future<Response> getCounselors() async {
     return await _dio.get('/api/v1/counselors');
@@ -245,11 +252,11 @@ class ApiClient {
 
   // ==================== Consultation APIs ====================
   Future<Response> getConsultationRoom(int bookingId) async {
-    return await _dio.get('/api/v1/consultations/$bookingId');
+    return await _dio.get('/api/v1/sessions/$bookingId');
   }
 
   Future<Response> getConsultationHistory() async {
-    return await _dio.get('/api/v1/consultations/history');
+    return await _dio.get('/api/v1/sessions/history');
   }
 
   Future<Response> submitReview({
@@ -257,7 +264,7 @@ class ApiClient {
     required int rating,
     required String comment,
   }) async {
-    return await _dio.post('/api/v1/consultations/$bookingId/review', data: {
+    return await _dio.post('/api/v1/reservations/$bookingId/reviews', data: {
       'rating': rating,
       'comment': comment,
     });
@@ -301,6 +308,38 @@ class ApiClient {
     return await _dio.post('/api/v1/sessions/$reservationId/token');
   }
 
+  // ==================== Dispute APIs ====================
+  Future<Response> getMyDisputes({int page = 0, int size = 10}) async {
+    return await _dio.get('/api/v1/disputes/me', queryParameters: {
+      'page': page,
+      'size': size,
+    });
+  }
+
+  Future<Response> getDisputeDetail(int disputeId) async {
+    return await _dio.get('/api/v1/disputes/$disputeId');
+  }
+
+  Future<Response> createDispute({
+    required int reservationId,
+    required String category,
+    required String description,
+  }) async {
+    return await _dio.post('/api/v1/disputes', data: {
+      'reservationId': reservationId,
+      'category': category,
+      'description': description,
+    });
+  }
+
+  // ==================== Receipt APIs ====================
+  Future<Response<List<int>>> getTransactionReceiptPdf(int transactionId) async {
+    return await _dio.get<List<int>>(
+      '/api/v1/cash/transactions/$transactionId/receipt',
+      options: Options(responseType: ResponseType.bytes),
+    );
+  }
+
   // ==================== Settlement APIs ====================
   Future<Response> getSettlementBySession(int sessionId) async {
     return await _dio.get('/api/v1/settlements/session/$sessionId');
@@ -308,5 +347,14 @@ class ApiClient {
 
   Future<Response> getMySettlements() async {
     return await _dio.get('/api/v1/settlements/my');
+  }
+
+  // ==================== Fortune APIs ====================
+  Future<Response> getTodayFortune() async {
+    return await _dio.get('/api/v1/fortune/today');
+  }
+
+  Future<Response> getFortuneSummary() async {
+    return await _dio.get('/api/v1/fortune/summary');
   }
 }

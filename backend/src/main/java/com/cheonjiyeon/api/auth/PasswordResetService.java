@@ -6,6 +6,7 @@ import com.cheonjiyeon.api.common.ApiException;
 import com.cheonjiyeon.api.notification.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,9 @@ import java.util.UUID;
 public class PasswordResetService {
     private static final Logger log = LoggerFactory.getLogger(PasswordResetService.class);
     private static final int TOKEN_EXPIRY_MINUTES = 30;
+
+    @Value("${app.frontend-base-url:http://localhost:3000}")
+    private String frontendBaseUrl;
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
@@ -62,7 +66,7 @@ public class PasswordResetService {
         tokenEntity.setUsed(false);
         tokenRepository.save(tokenEntity);
 
-        String resetLink = "http://localhost:3000/reset-password?token=" + rawToken;
+        String resetLink = frontendBaseUrl + "/reset-password?token=" + rawToken;
         String htmlBody = """
                 <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
                     <h2 style="color: #C9A227;">천지연꽃신당 비밀번호 재설정</h2>

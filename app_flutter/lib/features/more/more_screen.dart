@@ -102,6 +102,14 @@ class MoreScreen extends ConsumerWidget {
           ),
           _buildMenuItem(
             context,
+            icon: Icons.gavel,
+            title: '분쟁 내역',
+            onTap: () {
+              context.push('/dispute/list');
+            },
+          ),
+          _buildMenuItem(
+            context,
             icon: Icons.favorite_outline,
             title: '찜한 상담사',
             onTap: () {

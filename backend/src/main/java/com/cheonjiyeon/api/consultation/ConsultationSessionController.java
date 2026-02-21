@@ -141,7 +141,9 @@ public class ConsultationSessionController {
                 booking.getCreditsUsed(),
                 booking.getCancelReason(),
                 booking.getPaymentRetryCount(),
-                booking.getConsultationType()
+                booking.getConsultationType(),
+                null,
+                null
         );
     }
 }

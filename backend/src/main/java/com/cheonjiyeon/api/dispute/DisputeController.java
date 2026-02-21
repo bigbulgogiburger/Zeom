@@ -29,4 +29,12 @@ public class DisputeController {
     ) {
         return disputeService.getMyDisputes(authHeader, page, size);
     }
+
+    @GetMapping("/{id}")
+    public DisputeDtos.DisputeResponse getDisputeById(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id
+    ) {
+        return disputeService.getDisputeById(authHeader, id);
+    }
 }

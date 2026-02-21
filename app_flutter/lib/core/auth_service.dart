@@ -11,6 +11,7 @@ class AuthService {
     required String password,
     required String name,
     String? phone,
+    String? referralCode,
   }) async {
     try {
       final response = await _apiClient.dio.post(
@@ -29,6 +30,18 @@ class AuthService {
           accessToken: data['accessToken'],
           refreshToken: data['refreshToken'],
         );
+
+        // Apply referral code after signup if provided
+        if (referralCode != null && referralCode.isNotEmpty) {
+          try {
+            await _apiClient.dio.post('/api/v1/referral/apply', data: {
+              'code': referralCode,
+            });
+          } catch (_) {
+            // Referral apply failure should not block signup
+          }
+        }
+
         return data;
       }
       throw Exception('회원가입 실패');
@@ -68,6 +81,39 @@ class AuthService {
         throw Exception('이메일 또는 비밀번호가 일치하지 않습니다');
       }
       throw Exception('로그인 실패: ${e.message}');
+    }
+  }
+
+  Future<Map<String, dynamic>> oauthLogin({
+    required String provider,
+    required String code,
+    required String redirectUri,
+  }) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/api/v1/auth/oauth/login',
+        data: {
+          'provider': provider,
+          'code': code,
+          'redirectUri': redirectUri,
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data as Map<String, dynamic>;
+        await _apiClient.saveTokens(
+          accessToken: data['accessToken'],
+          refreshToken: data['refreshToken'],
+        );
+        return data;
+      }
+      throw Exception('소셜 로그인 실패');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        final data = e.response?.data;
+        throw Exception(data?['message'] ?? '잘못된 요청입니다');
+      }
+      throw Exception('소셜 로그인 실패: ${e.message}');
     }
   }
 

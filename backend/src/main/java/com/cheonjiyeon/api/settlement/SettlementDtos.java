@@ -44,7 +44,9 @@ public class SettlementDtos {
             BigDecimal commissionRate,
             String status,
             LocalDateTime confirmedAt,
-            LocalDateTime paidAt
+            LocalDateTime paidAt,
+            LocalDateTime requestedAt,
+            String transferNote
     ) {
         public static CounselorSettlementSummary from(CounselorSettlementEntity e) {
             return new CounselorSettlementSummary(
@@ -52,7 +54,8 @@ public class SettlementDtos {
                     e.getTotalSessions(), e.getTotalDurationMin(),
                     e.getGrossAmount(), e.getCommissionAmount(), e.getNetAmount(),
                     e.getCommissionRate(), e.getStatus(),
-                    e.getConfirmedAt(), e.getPaidAt()
+                    e.getConfirmedAt(), e.getPaidAt(),
+                    e.getRequestedAt(), e.getTransferNote()
             );
         }
     }
@@ -65,4 +68,8 @@ public class SettlementDtos {
     public record CustomerSettlementListResponse(List<SettlementResponse> settlements) {}
 
     public record CounselorSettlementListResponse(List<CounselorSettlementSummary> settlements) {}
+
+    public record WithdrawalResponse(String message, int requestedCount, long totalRequestedAmount) {}
+
+    public record PaySettlementRequest(String transferNote) {}
 }

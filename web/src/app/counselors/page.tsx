@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '../../components/analytics';
 
 type Counselor = { id: number; name: string; specialty: string; intro: string };
 
@@ -156,7 +157,7 @@ export default function CounselorsPage() {
         {SPECIALTY_FILTERS.map((f) => (
           <button
             key={f.key}
-            onClick={() => setActiveFilter(f.key)}
+            onClick={() => { setActiveFilter(f.key); trackEvent('search_counselor', { filter: f.key }); }}
             className={cn(
               'rounded-full px-6 py-2.5 text-sm font-medium font-heading transition-all duration-300',
               activeFilter === f.key

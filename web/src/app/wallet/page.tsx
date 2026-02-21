@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getWallet, getWalletTransactions, exportTransactionsCsv, getTransactionReceiptHtml, getCreditBalance } from '../../components/api-client';
+import { getWallet, getWalletTransactions, exportTransactionsCsv, getTransactionReceiptPdf, getCreditBalance } from '../../components/api-client';
 import { RequireLogin } from '../../components/route-guard';
 import { Card, EmptyState, InlineError, PageTitle, StatusBadge } from '../../components/ui';
 
@@ -175,11 +175,11 @@ export default function WalletPage() {
 
   async function handleReceiptDownload(txId: number) {
     try {
-      const blob = await getTransactionReceiptHtml(txId);
+      const blob = await getTransactionReceiptPdf(txId);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `receipt-${txId}.html`;
+      a.download = `receipt_${txId}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();

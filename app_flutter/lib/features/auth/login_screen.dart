@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../shared/theme.dart';
 import 'auth_provider.dart';
 
@@ -48,14 +49,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  void _handleSocialLogin(String provider) {
-    // Placeholder for social login - will be implemented with actual OAuth
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$provider 로그인은 준비 중입니다'),
-        backgroundColor: AppColors.textSecondary,
-      ),
-    );
+  Future<void> _handleSocialLogin(String provider) async {
+    // OAuth flow: open provider's auth URL in external browser
+    // The backend returns an auth URL for the provider
+    // For now, since OAuth backend may not be ready, show appropriate message
+    try {
+      final providerKey = provider == '카카오' ? 'kakao' : 'naver';
+      // TODO: Replace with actual OAuth client IDs and auth URLs when backend is ready
+      final authUrls = {
+        'kakao': 'https://kauth.kakao.com/oauth/authorize',
+        'naver': 'https://nid.naver.com/oauth2.0/authorize',
+      };
+
+      final authUrl = authUrls[providerKey];
+      if (authUrl != null) {
+        final uri = Uri.parse(authUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$provider 로그인 페이지를 열 수 없습니다'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$provider 로그인 중 오류가 발생했습니다'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   void _handleForgotPassword() {

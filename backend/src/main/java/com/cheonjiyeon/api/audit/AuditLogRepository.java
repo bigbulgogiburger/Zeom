@@ -12,4 +12,5 @@ public interface AuditLogRepository extends JpaRepository<AuditLogEntity, Long> 
     List<AuditLogEntity> findTop50ByActionOrderByIdDesc(String action);
     List<AuditLogEntity> findTop50ByCreatedAtBetweenOrderByIdDesc(LocalDateTime from, LocalDateTime to);
     List<AuditLogEntity> findTop50ByActionAndCreatedAtBetweenOrderByIdDesc(String action, LocalDateTime from, LocalDateTime to);
+    long deleteByCreatedAtBefore(LocalDateTime cutoff);
 }

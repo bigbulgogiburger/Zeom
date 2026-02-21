@@ -84,9 +84,11 @@ public class SettlementController {
     @PostMapping("/api/v1/admin/settlements/{id}/pay")
     public SettlementDtos.CounselorSettlementSummary paySettlement(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @RequestBody(required = false) SettlementDtos.PaySettlementRequest request) {
         var admin = authService.requireAdmin(authHeader);
-        return settlementService.paySettlement(admin.getId(), id);
+        String transferNote = request != null ? request.transferNote() : null;
+        return settlementService.paySettlement(admin.getId(), id, transferNote);
     }
 
     private UserEntity resolveUser(String authHeader) {

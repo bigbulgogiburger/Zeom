@@ -19,6 +19,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _referralCodeController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -40,6 +41,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _referralCodeController.dispose();
     super.dispose();
   }
 
@@ -75,6 +77,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           phone: _phoneController.text.trim().isEmpty
               ? null
               : _phoneController.text.trim(),
+          referralCode: _referralCodeController.text.trim().isEmpty
+              ? null
+              : _referralCodeController.text.trim(),
         );
 
     if (mounted) {
@@ -390,6 +395,16 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             const SizedBox(width: 12),
             _buildGenderChip('none', '선택안함'),
           ],
+        ),
+        const SizedBox(height: 24),
+        // Referral code (optional)
+        TextFormField(
+          controller: _referralCodeController,
+          decoration: const InputDecoration(
+            labelText: '추천인 코드 (선택)',
+            hintText: '추천인 코드가 있다면 입력해주세요',
+            prefixIcon: Icon(Icons.card_giftcard_outlined),
+          ),
         ),
         const SizedBox(height: 32),
         // Navigation buttons

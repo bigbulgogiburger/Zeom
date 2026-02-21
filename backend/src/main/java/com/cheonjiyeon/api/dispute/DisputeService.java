@@ -47,6 +47,19 @@ public class DisputeService {
         return disputeRepository.save(dispute);
     }
 
+    public DisputeDtos.DisputeResponse getDisputeById(String authHeader, Long id) {
+        UserEntity user = resolveUser(authHeader);
+
+        DisputeEntity dispute = disputeRepository.findById(id)
+                .orElseThrow(() -> new ApiException(404, "분쟁을 찾을 수 없습니다."));
+
+        if (!dispute.getUserId().equals(user.getId())) {
+            throw new ApiException(403, "본인의 분쟁만 조회할 수 있습니다.");
+        }
+
+        return DisputeDtos.DisputeResponse.from(dispute);
+    }
+
     public DisputeDtos.DisputeListResponse getMyDisputes(String authHeader, int page, int size) {
         UserEntity user = resolveUser(authHeader);
 

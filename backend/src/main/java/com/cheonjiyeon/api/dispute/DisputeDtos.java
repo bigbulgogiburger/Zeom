@@ -21,6 +21,9 @@ public class DisputeDtos {
             String description,
             String status,
             String resolution,
+            String resolutionType,
+            String resolutionNote,
+            LocalDateTime resolvedAt,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
@@ -33,6 +36,9 @@ public class DisputeDtos {
                     dispute.getDescription(),
                     dispute.getStatus(),
                     dispute.getResolution(),
+                    dispute.getResolutionType(),
+                    dispute.getResolutionNote(),
+                    dispute.getResolvedAt(),
                     dispute.getCreatedAt(),
                     dispute.getUpdatedAt()
             );

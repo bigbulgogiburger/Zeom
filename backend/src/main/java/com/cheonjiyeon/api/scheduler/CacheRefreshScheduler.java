@@ -18,22 +18,29 @@ public class CacheRefreshScheduler {
         this.cacheManager = cacheManager;
     }
 
+    private static final String[] CACHE_NAMES = {
+            "counselors", "products", "counselor-reviews", "counselor-ratings"
+    };
+
     /**
-     * Cache refresh scheduler
-     * Runs every hour by default
-     * Evicts or refreshes specific caches periodically
+     * Cache refresh scheduler.
+     * Runs every hour by default.
+     * Evicts specific caches periodically.
      */
     @Scheduled(cron = "${scheduler.cache-refresh-cron:0 0 */1 * * ?}")
     public void refreshCaches() {
         log.debug("Cache refresh scheduler triggered");
 
-        // TODO: Implementation pending
-        // 1. Identify caches to refresh (e.g. counselor list, popular counselors)
-        // 2. Evict or refresh caches
-        // 3. Log statistics
+        int cleared = 0;
+        for (String cacheName : CACHE_NAMES) {
+            var cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                cache.clear();
+                cleared++;
+            }
+        }
 
-        // Example:
-        // cacheManager.getCache("counselors").clear();
-        // cacheManager.getCache("popular-counselors").clear();
+        log.info("Cache refresh completed: cleared {}/{} caches at {}",
+                cleared, CACHE_NAMES.length, java.time.LocalDateTime.now());
     }
 }

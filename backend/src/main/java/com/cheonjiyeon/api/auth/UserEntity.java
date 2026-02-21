@@ -15,7 +15,7 @@ public class UserEntity {
     @Column(nullable = false, unique = true, length = 120)
     private String email;
 
-    @Column(nullable = false, length = 200)
+    @Column(length = 200)
     private String passwordHash;
 
     @Column(nullable = false, length = 60)
@@ -63,6 +63,12 @@ public class UserEntity {
     @Column(name = "deletion_requested_at")
     private LocalDateTime deletionRequestedAt;
 
+    @Column(name = "oauth_provider", length = 20)
+    private String oauthProvider;
+
+    @Column(name = "oauth_id", length = 255)
+    private String oauthId;
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
@@ -103,4 +109,8 @@ public class UserEntity {
     public void setSuspendedReason(String suspendedReason) { this.suspendedReason = suspendedReason; }
     public LocalDateTime getDeletionRequestedAt() { return deletionRequestedAt; }
     public void setDeletionRequestedAt(LocalDateTime deletionRequestedAt) { this.deletionRequestedAt = deletionRequestedAt; }
+    public String getOauthProvider() { return oauthProvider; }
+    public void setOauthProvider(String oauthProvider) { this.oauthProvider = oauthProvider; }
+    public String getOauthId() { return oauthId; }
+    public void setOauthId(String oauthId) { this.oauthId = oauthId; }
 }

@@ -66,6 +66,20 @@ export async function apiFetch(path: string, init: RequestInit = {}, retry = tru
   return res;
 }
 
+// OAuth login
+export async function oauthLogin(provider: string, code: string, redirectUri: string) {
+  const res = await fetch(`${API_BASE}/api/v1/auth/oauth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider, code, redirectUri }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message || '소셜 로그인에 실패했습니다.');
+  }
+  return res.json();
+}
+
 // Wallet API methods
 export async function getWallet() {
   const res = await apiFetch('/api/v1/wallet', { cache: 'no-store' });
@@ -94,6 +108,12 @@ export async function getTransactionReceipt(txId: number) {
 export async function getTransactionReceiptHtml(txId: number) {
   const res = await apiFetch(`/api/v1/cash/transactions/${txId}/receipt/html`, { cache: 'no-store' });
   if (!res.ok) throw new Error('영수증을 불러올 수 없습니다.');
+  return res.blob();
+}
+
+export async function getTransactionReceiptPdf(txId: number) {
+  const res = await apiFetch(`/api/v1/receipts/transactions/${txId}/pdf`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('영수증 PDF를 불러올 수 없습니다.');
   return res.blob();
 }
 

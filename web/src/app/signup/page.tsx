@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { SocialLoginButtons } from '../../components/social-login-buttons';
+import { trackEvent } from '../../components/analytics';
 
 const YEARS = Array.from({ length: 71 }, (_, i) => 2010 - i);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -117,39 +119,6 @@ export default function SignupPage() {
   const confirmError = confirmPassword && !confirmValid ? t('validation.passwordMismatch') : '';
   const nameError = name && !nameValid ? t('validation.nameMin') : '';
 
-  // Social login
-  const [socialLoading, setSocialLoading] = useState<string | null>(null);
-
-  async function handleSocialLogin(provider: 'kakao' | 'naver') {
-    setSocialLoading(provider);
-    setError('');
-    try {
-      const mockToken = `mock_${provider}_token_${Date.now()}`;
-      const res = await fetch(`${API_BASE}/api/v1/auth/oauth/${provider}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          accessToken: mockToken,
-          deviceId: 'web-main',
-          deviceName: navigator.userAgent.slice(0, 120),
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setError(json.message ?? t('socialLoginFailed'));
-        return;
-      }
-      setTokens(json.accessToken, json.refreshToken);
-      await refreshMe();
-      toast(t('signupSuccess'), 'success');
-      router.push('/counselors');
-    } catch {
-      setError(t('serverError'));
-    } finally {
-      setSocialLoading(null);
-    }
-  }
-
   // Step 3 validation
   const requiredTermsAgreed = termsAgreed && privacyAgreed;
   const allAgreed = termsAgreed && privacyAgreed && marketingAgreed;
@@ -199,6 +168,7 @@ export default function SignupPage() {
       }
       setTokens(json.accessToken, json.refreshToken);
       await refreshMe();
+      trackEvent('sign_up', { method: 'email' });
       toast(t('signupSuccessVerify'), 'success');
       router.push('/counselors');
     } catch {
@@ -520,33 +490,7 @@ export default function SignupPage() {
           )}
 
           {/* Social Login */}
-          <div className="mt-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-px bg-[rgba(201,162,39,0.15)]" />
-              <span className="text-xs text-[#a49484]">{tc('or')}</span>
-              <div className="flex-1 h-px bg-[rgba(201,162,39,0.15)]" />
-            </div>
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => handleSocialLogin('kakao')}
-                disabled={socialLoading !== null}
-                className="w-full min-h-[44px] rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-opacity disabled:opacity-50"
-                style={{ backgroundColor: '#FEE500', color: '#191919' }}
-              >
-                {socialLoading === 'kakao' ? t('kakaoLoading') : t('kakaoSignup')}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSocialLogin('naver')}
-                disabled={socialLoading !== null}
-                className="w-full min-h-[44px] rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-opacity disabled:opacity-50"
-                style={{ backgroundColor: '#03C75A', color: '#ffffff' }}
-              >
-                {socialLoading === 'naver' ? t('naverLoading') : t('naverSignup')}
-              </button>
-            </div>
-          </div>
+          <SocialLoginButtons mode="signup" />
         </div>
 
         <div className="text-center mt-8 text-sm text-[#a49484]">

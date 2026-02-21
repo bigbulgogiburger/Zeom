@@ -17,11 +17,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<Map<String, dynamic>> _counselors = [];
   bool _isLoading = false;
   String? _error;
+  Map<String, dynamic>? _fortune;
+  bool _fortuneLoading = true;
+  bool _fortuneExpanded = false;
 
   @override
   void initState() {
     super.initState();
     _loadCounselors();
+    _loadFortune();
+  }
+
+  Future<void> _loadFortune() async {
+    setState(() => _fortuneLoading = true);
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.getTodayFortune();
+      if (response.statusCode == 200) {
+        setState(() {
+          _fortune = response.data as Map<String, dynamic>;
+          _fortuneLoading = false;
+        });
+        return;
+      }
+    } catch (_) {}
+    // Fallback to mock data
+    setState(() {
+      _fortune = {
+        'overallScore': 78,
+        'summary': '새로운 만남과 기회가 찾아오는 날입니다. 긍정적인 에너지를 유지하세요.',
+        'categories': [
+          {'label': '총운', 'score': 78},
+          {'label': '재물', 'score': 65},
+          {'label': '애정', 'score': 82},
+          {'label': '건강', 'score': 71},
+        ],
+      };
+      _fortuneLoading = false;
+    });
   }
 
   Future<void> _loadCounselors() async {
@@ -102,6 +135,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       children: [
                         // Hero banner with CTA buttons
                         _buildHeroSection(context),
+                        // Today's fortune card
+                        _buildFortuneCard(context),
                         // Value propositions
                         _buildValuePropsSection(context),
                         // How it works - 4 steps
@@ -216,6 +251,229 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Color _getScoreColor(int score) {
+    if (score >= 80) return AppColors.gold;
+    if (score >= 60) return const Color(0xFFB08D1F);
+    if (score >= 40) return const Color(0xFF8B6914);
+    return AppColors.darkRed;
+  }
+
+  Widget _buildFortuneCard(BuildContext context) {
+    if (_fortuneLoading) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AppColors.border.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: 120,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AppColors.border.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_fortune == null) return const SizedBox.shrink();
+
+    final score = _fortune!['overallScore'] as int;
+    final summary = _fortune!['summary'] as String;
+    final categories = (_fortune!['categories'] as List?)
+        ?.map((e) => Map<String, dynamic>.from(e as Map))
+        .toList() ?? [];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Card(
+        elevation: 3,
+        child: InkWell(
+          onTap: () => setState(() => _fortuneExpanded = !_fortuneExpanded),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Header row
+                Row(
+                  children: [
+                    const Text('\uD83D\uDD2E', style: TextStyle(fontSize: 28)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '오늘의 운세',
+                            style: GoogleFonts.notoSerif(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.gold,
+                            ),
+                          ),
+                          Text(
+                            '${DateTime.now().month}월 ${DateTime.now().day}일',
+                            style: GoogleFonts.notoSans(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [AppColors.gold, Color(0xFFD4A843)],
+                      ).createShader(bounds),
+                      child: Text(
+                        '$score',
+                        style: GoogleFonts.notoSerif(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      ' / 100',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      _fortuneExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: AppColors.textSecondary,
+                      size: 20,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  summary,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+
+                // Expanded: category scores + CTA
+                if (_fortuneExpanded) ...[
+                  const Divider(height: 24),
+                  ...categories.map((cat) {
+                    final catScore = cat['score'] as int;
+                    final label = cat['label'] as String;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 36,
+                            child: Text(
+                              label,
+                              style: GoogleFonts.notoSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: catScore / 100,
+                                minHeight: 8,
+                                backgroundColor: AppColors.gold.withOpacity(0.1),
+                                valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor(catScore)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: 28,
+                            child: Text(
+                              '$catScore',
+                              style: GoogleFonts.notoSerif(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.gold,
+                              ),
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () => context.push('/fortune'),
+                        child: Text(
+                          '자세히 보기',
+                          style: GoogleFonts.notoSerif(
+                            color: AppColors.gold,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      ElevatedButton(
+                        onPressed: () => context.push('/counselors'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          foregroundColor: AppColors.inkBlack,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          '상담 받기',
+                          style: GoogleFonts.notoSerif(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

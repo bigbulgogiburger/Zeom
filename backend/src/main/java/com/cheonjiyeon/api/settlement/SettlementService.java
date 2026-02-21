@@ -5,6 +5,7 @@ import com.cheonjiyeon.api.booking.BookingEntity;
 import com.cheonjiyeon.api.booking.BookingRepository;
 import com.cheonjiyeon.api.common.ApiException;
 import com.cheonjiyeon.api.consultation.ConsultationSessionEntity;
+import com.cheonjiyeon.api.counselor.CounselorBankAccountRepository;
 import com.cheonjiyeon.api.credit.CreditEntity;
 import com.cheonjiyeon.api.credit.CreditRepository;
 import com.cheonjiyeon.api.credit.CreditUsageLogEntity;
@@ -28,11 +29,14 @@ public class SettlementService {
     private static final double COMMISSION_FRACTION = 0.20;
     private static final int NETWORK_MIN_THRESHOLD_SEC = 600; // 10분
 
+    private static final long MIN_WITHDRAWAL_AMOUNT = 10_000L;
+
     private final SettlementTransactionRepository settlementTransactionRepository;
     private final CounselorSettlementRepository counselorSettlementRepository;
     private final CreditUsageLogRepository usageLogRepository;
     private final CreditRepository creditRepository;
     private final BookingRepository bookingRepository;
+    private final CounselorBankAccountRepository bankAccountRepository;
     private final AuditLogService auditLogService;
 
     public SettlementService(
@@ -41,6 +45,7 @@ public class SettlementService {
             CreditUsageLogRepository usageLogRepository,
             CreditRepository creditRepository,
             BookingRepository bookingRepository,
+            CounselorBankAccountRepository bankAccountRepository,
             AuditLogService auditLogService
     ) {
         this.settlementTransactionRepository = settlementTransactionRepository;
@@ -48,6 +53,7 @@ public class SettlementService {
         this.usageLogRepository = usageLogRepository;
         this.creditRepository = creditRepository;
         this.bookingRepository = bookingRepository;
+        this.bankAccountRepository = bankAccountRepository;
         this.auditLogService = auditLogService;
     }
 
@@ -115,8 +121,17 @@ public class SettlementService {
         for (CreditUsageLogEntity log : usageLogs) {
             log.setActualMinutes(actualMinutes);
 
-            // Skip already-consumed credits (consumed during live session)
+            // For full refund cases (NETWORK_SHORT, ADMIN_REFUND), also reverse already-consumed credits
             if ("CONSUMED".equals(log.getStatus())) {
+                if (creditsConsumed == 0) {
+                    // Full refund: reverse the consumed credit
+                    log.setStatus("RELEASED");
+                    log.setRefundedUnits(log.getUnitsUsed());
+                    CreditEntity credit = creditRepository.findById(log.getCreditId())
+                            .orElseThrow(() -> new ApiException(404, "상담권을 찾을 수 없습니다."));
+                    credit.setRemainingUnits(credit.getRemainingUnits() + log.getUnitsUsed());
+                    creditRepository.save(credit);
+                }
                 usageLogRepository.save(log);
                 continue;
             }
@@ -286,7 +301,7 @@ public class SettlementService {
     }
 
     @Transactional
-    public SettlementDtos.CounselorSettlementSummary paySettlement(Long adminUserId, Long settlementId) {
+    public SettlementDtos.CounselorSettlementSummary paySettlement(Long adminUserId, Long settlementId, String transferNote) {
         CounselorSettlementEntity settlement = counselorSettlementRepository.findById(settlementId)
                 .orElseThrow(() -> new ApiException(404, "정산 내역을 찾을 수 없습니다."));
 
@@ -296,9 +311,50 @@ public class SettlementService {
 
         settlement.setStatus("PAID");
         settlement.setPaidAt(LocalDateTime.now());
+        if (transferNote != null && !transferNote.isBlank()) {
+            settlement.setTransferNote(transferNote);
+        }
         CounselorSettlementEntity saved = counselorSettlementRepository.save(settlement);
         auditLogService.log(adminUserId, "SETTLEMENT_PAID", "SETTLEMENT", settlementId);
         return SettlementDtos.CounselorSettlementSummary.from(saved);
+    }
+
+    // --- 상담사 출금 요청 ---
+
+    @Transactional
+    public SettlementDtos.WithdrawalResponse requestWithdrawal(Long counselorId) {
+        // 은행 계좌 등록 여부 체크
+        if (bankAccountRepository.findByCounselorIdAndIsPrimary(counselorId, true).isEmpty()) {
+            throw new ApiException(400, "정산 계좌가 등록되지 않았습니다. 계좌를 먼저 등록해주세요.");
+        }
+
+        // PENDING 상태의 정산 건 조회
+        List<CounselorSettlementEntity> pendingSettlements =
+                counselorSettlementRepository.findByCounselorIdAndStatus(counselorId, "PENDING");
+
+        if (pendingSettlements.isEmpty()) {
+            throw new ApiException(400, "출금 요청할 정산 건이 없습니다.");
+        }
+
+        // 최소 출금 금액 체크
+        long totalAmount = pendingSettlements.stream().mapToLong(CounselorSettlementEntity::getNetAmount).sum();
+        if (totalAmount < MIN_WITHDRAWAL_AMOUNT) {
+            throw new ApiException(400, "최소 출금 금액은 " + String.format("%,d", MIN_WITHDRAWAL_AMOUNT) + "원입니다. 현재 정산 가능 금액: " + String.format("%,d", totalAmount) + "원");
+        }
+
+        // PENDING → REQUESTED 전환
+        LocalDateTime now = LocalDateTime.now();
+        for (CounselorSettlementEntity settlement : pendingSettlements) {
+            settlement.setStatus("REQUESTED");
+            settlement.setRequestedAt(now);
+            counselorSettlementRepository.save(settlement);
+        }
+
+        return new SettlementDtos.WithdrawalResponse(
+                "출금 요청이 완료되었습니다. 관리자 확인 후 지급됩니다.",
+                pendingSettlements.size(),
+                totalAmount
+        );
     }
 
     @Transactional(readOnly = true)

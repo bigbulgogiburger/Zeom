@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Card } from '../components/ui';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import FortuneCard from '@/components/fortune-card';
 
 type Counselor = { id: number; name: string; specialty: string; intro: string };
 
@@ -223,6 +224,11 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
         >
           ↓ 스크롤하여 더 알아보기
         </div>
+      </section>
+
+      {/* Fortune Card */}
+      <section className="py-12 px-6 bg-background">
+        <FortuneCard />
       </section>
 
       {/* Section 2 -- 가치 제안 (Value Proposition) */}

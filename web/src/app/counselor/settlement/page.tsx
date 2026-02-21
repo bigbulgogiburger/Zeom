@@ -378,21 +378,58 @@ export default function CounselorSettlementPage() {
       )}
 
       {/* Withdraw request */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <ActionButton
-          loading={requesting}
-          onClick={() => setConfirmOpen(true)}
-        >
-          출금 요청
-        </ActionButton>
-        <InlineError message={error} />
-        <InlineSuccess message={successMsg} />
-      </div>
+      {(() => {
+        const pendingSettlements = settlements.filter((s) => s.status === 'PENDING');
+        const pendingAmount = pendingSettlements.reduce((sum, s) => sum + s.netAmount, 0);
+        const hasBankAccount = !!bankAccount;
+        const canWithdraw = hasBankAccount && pendingAmount >= 10000;
+
+        return (
+          <Card>
+            <h3 className="text-lg font-heading font-bold text-[#C9A227] mb-4">
+              출금 요청
+            </h3>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-6 flex-wrap">
+                <div>
+                  <div className="text-sm text-[var(--color-text-muted-card)] mb-1">출금 가능 금액</div>
+                  <div className="text-xl font-bold font-heading">{formatAmount(pendingAmount)}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-[var(--color-text-muted-card)] mb-1">대기 건수</div>
+                  <div className="text-xl font-bold font-heading">{pendingSettlements.length}건</div>
+                </div>
+              </div>
+              {!hasBankAccount && !bankAccountLoading && (
+                <div className="text-sm text-[#8B0000]">
+                  정산 계좌가 등록되지 않았습니다. 위에서 계좌를 먼저 등록해주세요.
+                </div>
+              )}
+              {hasBankAccount && pendingAmount > 0 && pendingAmount < 10000 && (
+                <div className="text-sm text-[var(--color-text-muted-card)]">
+                  최소 출금 금액은 10,000원입니다.
+                </div>
+              )}
+              <div className="flex items-center gap-4 flex-wrap">
+                <ActionButton
+                  loading={requesting}
+                  onClick={() => setConfirmOpen(true)}
+                  disabled={!canWithdraw}
+                >
+                  출금 요청
+                </ActionButton>
+                <InlineError message={error} />
+                <InlineSuccess message={successMsg} />
+              </div>
+            </div>
+          </Card>
+        );
+      })()}
 
       <ConfirmDialog
         open={confirmOpen}
         title="출금 요청"
-        message="정산 가능한 금액을 출금 요청하시겠습니까? 요청 후 관리자 승인을 거쳐 지급됩니다."
+        message={`정산 가능한 금액(${formatAmount(settlements.filter((s) => s.status === 'PENDING').reduce((sum, s) => sum + s.netAmount, 0))})을 출금 요청하시겠습니까? 요청 후 관리자 승인을 거쳐 지급됩니다.`}
         confirmLabel="요청하기"
         cancelLabel="취소"
         onConfirm={handleWithdrawRequest}

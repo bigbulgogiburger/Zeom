@@ -47,6 +47,11 @@ public class CounselorSettlementEntity {
 
     private LocalDateTime paidAt;
 
+    private LocalDateTime requestedAt;
+
+    @Column(length = 500)
+    private String transferNote;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -84,5 +89,9 @@ public class CounselorSettlementEntity {
     public void setConfirmedAt(LocalDateTime confirmedAt) { this.confirmedAt = confirmedAt; }
     public LocalDateTime getPaidAt() { return paidAt; }
     public void setPaidAt(LocalDateTime paidAt) { this.paidAt = paidAt; }
+    public LocalDateTime getRequestedAt() { return requestedAt; }
+    public void setRequestedAt(LocalDateTime requestedAt) { this.requestedAt = requestedAt; }
+    public String getTransferNote() { return transferNote; }
+    public void setTransferNote(String transferNote) { this.transferNote = transferNote; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

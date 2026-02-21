@@ -10,6 +10,8 @@ import { ErrorBoundary } from '../components/error-boundary';
 import { GlobalErrorHandler } from '../components/global-error-handler';
 import AppHeader from '../components/app-header';
 import { ToastProvider } from '../components/toast';
+import { WebsiteJsonLd, ServiceJsonLd } from '../components/json-ld';
+import { AnalyticsProvider } from '../components/analytics-provider';
 
 const notoSerifKr = Noto_Serif_KR({
   subsets: ['latin'],
@@ -88,6 +90,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </Script>
           </>
         )}
+        <WebsiteJsonLd />
+        <ServiceJsonLd />
         <NextIntlClientProvider messages={messages} locale={locale}>
           <ErrorBoundary>
             <GlobalErrorHandler />
@@ -96,6 +100,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <SessionExpiryGuard />
                 <AppHeader />
                 {children}
+                <AnalyticsProvider />
               </ToastProvider>
             </AuthProvider>
           </ErrorBoundary>

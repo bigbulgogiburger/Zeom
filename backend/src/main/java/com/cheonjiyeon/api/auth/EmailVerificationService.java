@@ -5,6 +5,7 @@ import com.cheonjiyeon.api.common.ApiException;
 import com.cheonjiyeon.api.notification.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,9 @@ import java.util.UUID;
 public class EmailVerificationService {
     private static final Logger log = LoggerFactory.getLogger(EmailVerificationService.class);
     private static final int RESEND_COOLDOWN_SECONDS = 60;
+
+    @Value("${app.frontend-base-url:http://localhost:3000}")
+    private String frontendBaseUrl;
 
     private final UserRepository userRepository;
     private final EmailService emailService;
@@ -44,7 +48,7 @@ public class EmailVerificationService {
         user.setEmailVerificationSentAt(LocalDateTime.now());
         userRepository.save(user);
 
-        String verifyLink = "http://localhost:3000/verify-email?token=" + rawToken;
+        String verifyLink = frontendBaseUrl + "/verify-email?token=" + rawToken;
         String htmlBody = """
                 <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
                     <h2 style="color: #C9A227;">천지연꽃신당 이메일 인증</h2>

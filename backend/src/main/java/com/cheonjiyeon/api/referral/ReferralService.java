@@ -1,9 +1,11 @@
 package com.cheonjiyeon.api.referral;
 
+import com.cheonjiyeon.api.audit.AuditLogService;
 import com.cheonjiyeon.api.auth.TokenStore;
 import com.cheonjiyeon.api.auth.UserEntity;
 import com.cheonjiyeon.api.auth.UserRepository;
 import com.cheonjiyeon.api.common.ApiException;
+import com.cheonjiyeon.api.wallet.WalletService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,17 +19,23 @@ public class ReferralService {
     private final ReferralRewardRepository referralRewardRepository;
     private final TokenStore tokenStore;
     private final UserRepository userRepository;
+    private final WalletService walletService;
+    private final AuditLogService auditLogService;
 
     public ReferralService(
             ReferralCodeRepository referralCodeRepository,
             ReferralRewardRepository referralRewardRepository,
             TokenStore tokenStore,
-            UserRepository userRepository
+            UserRepository userRepository,
+            WalletService walletService,
+            AuditLogService auditLogService
     ) {
         this.referralCodeRepository = referralCodeRepository;
         this.referralRewardRepository = referralRewardRepository;
         this.tokenStore = tokenStore;
         this.userRepository = userRepository;
+        this.walletService = walletService;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -72,10 +80,17 @@ public class ReferralService {
         reward.setRewardAmount(2000L);
         referralRewardRepository.save(reward);
 
+        // Credit referrer's wallet
+        walletService.charge(referralCode.getUserId(), 2000L, "REFERRAL", reward.getId());
+        reward.setReferrerRewarded(true);
+        referralRewardRepository.save(reward);
+
+        auditLogService.log(referralCode.getUserId(), "REFERRAL_REWARD_PAID", "REFERRAL_REWARD", reward.getId());
+
         return Map.of(
                 "applied", true,
                 "rewardAmount", 2000L,
-                "message", "추천 코드가 적용되었습니다. 보상이 곧 지급됩니다."
+                "message", "추천 코드가 적용되었습니다. 보상이 지급되었습니다."
         );
     }
 

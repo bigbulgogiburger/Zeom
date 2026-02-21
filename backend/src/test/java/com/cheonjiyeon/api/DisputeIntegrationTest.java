@@ -149,6 +149,91 @@ class DisputeIntegrationTest {
     }
 
     @Test
+    void get_dispute_by_id() throws Exception {
+        String token = signupAndGetToken("get_dispute_" + System.nanoTime() + "@zeom.com");
+        String bookingId = createBookingAndConfirmPayment(token);
+
+        // Create dispute
+        String response = mvc.perform(post("/api/v1/disputes")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reservationId\":" + bookingId + ",\"category\":\"SERVICE_ISSUE\",\"description\":\"상세 조회 테스트\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        String disputeId = response.replaceAll(".*\"id\":([0-9]+).*", "$1");
+
+        // Get by id
+        mvc.perform(get("/api/v1/disputes/" + disputeId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(Long.parseLong(disputeId)))
+                .andExpect(jsonPath("$.category").value("SERVICE_ISSUE"))
+                .andExpect(jsonPath("$.description").value("상세 조회 테스트"))
+                .andExpect(jsonPath("$.status").value("OPEN"));
+    }
+
+    @Test
+    void get_dispute_by_id_requires_auth() throws Exception {
+        mvc.perform(get("/api/v1/disputes/1"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void get_dispute_by_id_forbidden_for_other_user() throws Exception {
+        String token1 = signupAndGetToken("owner_dispute_" + System.nanoTime() + "@zeom.com");
+        String bookingId = createBookingAndConfirmPayment(token1);
+
+        // Create dispute as user 1
+        String response = mvc.perform(post("/api/v1/disputes")
+                        .header("Authorization", "Bearer " + token1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reservationId\":" + bookingId + ",\"category\":\"SERVICE_ISSUE\",\"description\":\"다른 사용자 접근 테스트\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        String disputeId = response.replaceAll(".*\"id\":([0-9]+).*", "$1");
+
+        // Try to access as user 2
+        String token2 = signupAndGetToken("other_dispute_" + System.nanoTime() + "@zeom.com");
+        mvc.perform(get("/api/v1/disputes/" + disputeId)
+                        .header("Authorization", "Bearer " + token2))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void get_dispute_by_id_not_found() throws Exception {
+        String token = signupAndGetToken("notfound_dispute_" + System.nanoTime() + "@zeom.com");
+
+        mvc.perform(get("/api/v1/disputes/99999")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void get_dispute_includes_resolution_fields() throws Exception {
+        String token = signupAndGetToken("res_fields_" + System.nanoTime() + "@zeom.com");
+        String bookingId = createBookingAndConfirmPayment(token);
+
+        // Create dispute
+        String response = mvc.perform(post("/api/v1/disputes")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reservationId\":" + bookingId + ",\"category\":\"SERVICE_ISSUE\",\"description\":\"해결 필드 테스트\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        String disputeId = response.replaceAll(".*\"id\":([0-9]+).*", "$1");
+
+        // Get by id should include resolution fields (null for OPEN disputes)
+        mvc.perform(get("/api/v1/disputes/" + disputeId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resolutionType").doesNotExist())
+                .andExpect(jsonPath("$.resolvedAt").doesNotExist());
+    }
+
+    @Test
     void get_my_disputes_pagination() throws Exception {
         String token = signupAndGetToken("pag_disputes_" + System.nanoTime() + "@zeom.com");
         String bookingId = createBookingAndConfirmPayment(token);

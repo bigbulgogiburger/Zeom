@@ -46,6 +46,8 @@ public class BookingDtos {
             int creditsUsed,
             String cancelReason,
             int paymentRetryCount,
-            String consultationType
+            String consultationType,
+            String cancelType,
+            Integer refundedCredits
     ) {}
 }

@@ -9,6 +9,7 @@ import { ActionButton, Card, EmptyState } from '../../../components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '../../../components/analytics';
 
 type Slot = { id: number; startAt: string; endAt: string };
 type CounselorDetail = { id: number; name: string; specialty: string; intro: string; slots: Slot[]; supportedConsultationTypes?: string };
@@ -107,7 +108,10 @@ export default function CounselorDetailClient({ id }: { id: string }) {
         if (!r.ok) throw new Error('fetch failed');
         return r.json();
       })
-      .then(setCounselor)
+      .then((data) => {
+        setCounselor(data);
+        trackEvent('view_counselor', { counselor_id: id, counselor_name: data.name, specialty: data.specialty });
+      })
       .catch(() => setLoadError('상담사 정보를 불러오지 못했습니다.'));
   }, [id]);
 

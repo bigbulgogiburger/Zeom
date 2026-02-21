@@ -14,4 +14,6 @@ public interface CounselorSettlementRepository extends JpaRepository<CounselorSe
     List<CounselorSettlementEntity> findByCounselorIdOrderByPeriodStartDesc(Long counselorId);
     Page<CounselorSettlementEntity> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
     Page<CounselorSettlementEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    List<CounselorSettlementEntity> findByCounselorIdAndStatus(Long counselorId, String status);
+    long countByStatus(String status);
 }

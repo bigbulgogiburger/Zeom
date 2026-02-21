@@ -1,7 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 import '../../core/api_client.dart';
 import '../../shared/theme.dart';
 
@@ -370,7 +375,7 @@ class WalletScreen extends ConsumerWidget {
   }
 }
 
-class _TransactionItem extends StatelessWidget {
+class _TransactionItem extends ConsumerWidget {
   final Map<String, dynamic> transaction;
 
   const _TransactionItem({required this.transaction});
@@ -419,13 +424,32 @@ class _TransactionItem extends StatelessWidget {
     }
   }
 
+  Future<void> _downloadReceipt(BuildContext context, WidgetRef ref, int txId) async {
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.getTransactionReceiptPdf(txId);
+      final bytes = Uint8List.fromList(response.data!);
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/receipt_$txId.pdf');
+      await file.writeAsBytes(bytes);
+      await OpenFilex.open(file.path);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('영수증을 다운로드할 수 없습니다')),
+        );
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final type = (transaction['type'] ?? '') as String;
     final amount = transaction['amount'] ?? 0;
     final balanceAfter = transaction['balanceAfter'];
     final refType = transaction['refType'];
     final refId = transaction['refId'];
+    final txId = transaction['id'];
     final createdAt = transaction['createdAt']?.toString();
     final isPositive = type == 'CHARGE' || type == 'REFUND';
     final color = _getTypeColor(type);
@@ -527,6 +551,27 @@ class _TransactionItem extends StatelessWidget {
                     style: GoogleFonts.notoSans(
                       fontSize: 11,
                       color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+                if (txId != null) ...[
+                  const SizedBox(height: 4),
+                  GestureDetector(
+                    onTap: () => _downloadReceipt(context, ref, txId as int),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.receipt_outlined, size: 12, color: AppColors.gold),
+                        const SizedBox(width: 2),
+                        Text(
+                          '영수증',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 11,
+                            color: AppColors.gold,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

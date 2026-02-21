@@ -61,6 +61,8 @@ description: 결제/지갑/크레딧 시스템 무결성 검증. 결제 관련 �
 | `backend/src/main/java/com/cheonjiyeon/api/settlement/SettlementPdfService.java` | 정산 PDF 생성 서비스 |
 | `backend/src/main/java/com/cheonjiyeon/api/scheduler/SettlementBatchScheduler.java` | 정산 배치 스케줄러 |
 | `backend/src/main/java/com/cheonjiyeon/api/cash/CashTransactionController.java` | 캐시 거래 REST 엔드포인트 |
+| `backend/src/main/java/com/cheonjiyeon/api/cash/CashChargeController.java` | 캐시 충전 엔드포인트 (TEST 모드 포함) |
+| `web/src/app/credits/page.tsx` | 크레딧 목록/개요 페이지 |
 | `backend/src/main/java/com/cheonjiyeon/api/cash/ReceiptService.java` | 영수증 HTML 생성 서비스 |
 | `backend/src/main/java/com/cheonjiyeon/api/coupon/CouponEntity.java` | 쿠폰 엔티티 |
 | `backend/src/main/java/com/cheonjiyeon/api/coupon/CouponUsageEntity.java` | 쿠폰 사용 엔티티 |
@@ -146,6 +148,54 @@ grep -n '@PostMapping\|@GetMapping' backend/src/main/java/com/cheonjiyeon/api/po
 **FAIL:** 엔드포인트 불일치
 **수정:** 불일치 수정
 
+### Step 7: TEST 모드 캐시 충전 검증
+
+**도구:** Grep
+
+```bash
+grep -n 'TEST\|paymentMethod\|amount.*<=.*0' backend/src/main/java/com/cheonjiyeon/api/cash/CashChargeController.java
+```
+
+**PASS:** 금액 검증 (`amount <= 0` 거부) 존재, paymentMethod 파라미터 수신
+**FAIL:** 금액 검증 없이 충전 허용
+**수정:** 금액 유효성 검사 추가
+
+### Step 8: 프론트엔드 API 응답 필드 매핑 검증
+
+**도구:** Grep
+
+크레딧 잔액 필드:
+```bash
+grep -n 'remainingCredits\|remainingUnits\|totalCredits\|totalUnits\|usedCredits\|usedUnits' web/src/components/api-client.ts
+```
+
+상품 필드:
+```bash
+grep -n 'getCashProducts\|data\.products\|\.filter.*active' web/src/components/api-client.ts web/src/app/cash/buy/page.tsx web/src/app/credits/buy/page.tsx
+```
+
+**PASS:** `getCreditBalance()`가 `remainingUnits` → `remainingCredits` 변환, `getCashProducts()`가 `data.products`로 array unwrap, `.filter(p => p.active)` 미사용
+**FAIL:** API 응답 필드를 변환 없이 직접 사용하거나, `.filter(p => p.active)` 사용 (DTO에 active 필드 없음)
+**수정:** api-client.ts에서 필드명 변환 또는 불필요한 필터 제거
+
+### Step 9: Flutter ↔ Web API 필드 매핑 동기화
+
+**도구:** Grep
+
+Flutter 크레딧 필드:
+```bash
+grep -n 'remainingUnits\|remainingCredits\|remaining\|usedUnits\|used' app_flutter/lib/features/wallet/wallet_screen.dart app_flutter/lib/features/credit/credit_buy_screen.dart
+```
+
+Flutter 상품 필드:
+```bash
+grep -n "minutes\|durationMinutes" app_flutter/lib/features/wallet/cash_buy_screen.dart app_flutter/lib/features/credit/credit_buy_screen.dart
+```
+
+**PASS:** Flutter에서 `remainingUnits`를 우선 사용하고 fallback 존재, `minutes`를 우선 사용하고 `durationMinutes` fallback
+**FAIL:** 이전 필드명(`remaining`, `durationMinutes`)만 사용
+**수정:** Backend API 응답 기준 필드명으로 수정하고 fallback 추가
+
 ## Output Format
 
 | 검사 | 결과 | 상세 |
@@ -156,6 +206,9 @@ grep -n '@PostMapping\|@GetMapping' backend/src/main/java/com/cheonjiyeon/api/po
 | Webhook 멱등성 | PASS/FAIL | 중복 체크: ... |
 | 환불 상태 전이 | PASS/FAIL | 전이 규칙: ... |
 | API 매칭 | PASS/FAIL | 불일치: ... |
+| TEST 모드 충전 | PASS/FAIL | 금액 검증: ... |
+| API 필드 매핑 | PASS/FAIL | 변환 누락: ... |
+| Flutter-Web 필드 동기화 | PASS/FAIL | 불일치 필드: ... |
 
 ## Exceptions
 
