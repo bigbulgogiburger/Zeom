@@ -26,6 +26,7 @@ description: 모든 검증 스킬을 순차적으로 실행하는 통합 검증.
 | 6 | verify-admin-auth | Admin API 엔드포인트 인증/인가 가드 검증 |
 | 7 | verify-auth-system | 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀번호 리셋, 소셜 로그인) |
 | 8 | verify-notification-system | 알림/이메일/SMS 시스템 무결성 검증 |
+| 9 | verify-flutter-app | Flutter 앱 품질 및 React-Flutter UX 동기화 검증 |
 
 ## Workflow
 
@@ -49,6 +50,7 @@ git diff HEAD --name-only
 - `backend/**/admin/` 또는 `**/ops/` 또는 `**/settlement/*Controller*` → `verify-admin-auth`
 - `backend/**/auth/` 또는 `web/src/app/login/` 또는 `web/src/app/signup/` 또는 `web/src/app/forgot-password/` → `verify-auth-system`
 - `backend/**/notification/` 또는 `web/src/app/notifications/` 또는 `web/src/components/notification-bell.tsx` → `verify-notification-system`
+- `app_flutter/lib/**/*.dart` → `verify-flutter-app`
 
 ### Step 3: 결과 집계
 

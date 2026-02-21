@@ -20,6 +20,8 @@ description: 결제/지갑/크레딧 시스템 무결성 검증. 결제 관련 �
 - `web/src/components/wallet-widget.tsx`, `credit-widget.tsx` 변경 시
 - `backend/.../settlement/` 패키지 변경 시
 - `web/src/app/credits/` 페이지 변경 시
+- `app_flutter/lib/features/wallet/`, `credit/` 변경 시
+- `app_flutter/lib/core/api_client.dart` 결제/크레딧 관련 메서드 변경 시
 
 ## Related Files
 
@@ -45,8 +47,12 @@ description: 결제/지갑/크레딧 시스템 무결성 검증. 결제 관련 �
 | `web/src/components/api-client.ts` | 결제 API 메서드 |
 | `web/src/components/wallet-widget.tsx` | 지갑 위젯 |
 | `web/src/components/credit-widget.tsx` | 크레딧 위젯 |
-| `web/src/app/credits/page.tsx` | 크레딧 구매 페이지 |
+| `web/src/app/credits/buy/page.tsx` | 크레딧 구매 페이지 |
 | `web/src/app/credits/history/page.tsx` | 크레딧 이용 내역 페이지 |
+| `app_flutter/lib/features/credit/credit_buy_screen.dart` | Flutter 크레딧 구매 화면 |
+| `app_flutter/lib/features/wallet/wallet_screen.dart` | Flutter 지갑 화면 |
+| `app_flutter/lib/features/wallet/cash_buy_screen.dart` | Flutter 캐시 충전 화면 |
+| `app_flutter/lib/core/api_client.dart` | Flutter API 클라이언트 (결제/크레딧 메서드) |
 | `backend/src/main/java/com/cheonjiyeon/api/settlement/SettlementController.java` | 정산 엔드포인트 |
 | `backend/src/main/java/com/cheonjiyeon/api/settlement/SettlementService.java` | 정산 비즈니스 로직 |
 | `backend/src/main/java/com/cheonjiyeon/api/settlement/CounselorSettlementEntity.java` | 상담사 정산 엔티티 |
