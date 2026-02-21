@@ -4,19 +4,13 @@ import 'package:go_router/go_router.dart';
 import '../../core/api_client.dart';
 import '../../shared/theme.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
-
 final consultationHistoryProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final apiClient = ref.read(apiClientProvider);
-  try {
-    final response = await apiClient.getMySettlements();
-    final data = response.data as Map<String, dynamic>;
-    final settlements = data['settlements'] as List? ?? [];
-    return settlements.cast<Map<String, dynamic>>();
-  } catch (e) {
-    return [];
-  }
+  final response = await apiClient.getMySettlements();
+  final data = response.data as Map<String, dynamic>;
+  final settlements = data['settlements'] as List? ?? [];
+  return settlements.cast<Map<String, dynamic>>();
 });
 
 class ConsultationHistoryScreen extends ConsumerWidget {
@@ -40,7 +34,7 @@ class ConsultationHistoryScreen extends ConsumerWidget {
                   Icon(
                     Icons.history,
                     size: 64,
-                    color: AppColors.textSecondary.withOpacity(0.5),
+                    color: AppColors.textSecondary.withOpacity( 0.5),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -54,15 +48,23 @@ class ConsultationHistoryScreen extends ConsumerWidget {
             );
           }
 
+          // Sort by settledAt descending (most recent first)
+          final sorted = List<Map<String, dynamic>>.from(history)
+            ..sort((a, b) {
+              final aDate = a['settledAt'] as String? ?? '';
+              final bDate = b['settledAt'] as String? ?? '';
+              return bDate.compareTo(aDate);
+            });
+
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(consultationHistoryProvider);
             },
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: history.length,
+              itemCount: sorted.length,
               itemBuilder: (context, index) {
-                final settlement = history[index];
+                final settlement = sorted[index];
                 return _ConsultationHistoryCard(settlement: settlement);
               },
             ),
@@ -102,6 +104,7 @@ class _ConsultationHistoryCard extends StatelessWidget {
     final actualDurationSec = settlement['actualDurationSec'] as int? ?? 0;
     final settlementType = settlement['settlementType'] as String? ?? '';
     final bookingId = settlement['bookingId'] as int?;
+    final counselorId = settlement['counselorId'] as int?;
 
     final durationMin = (actualDurationSec / 60).ceil();
 
@@ -129,7 +132,8 @@ class _ConsultationHistoryCard extends StatelessWidget {
             // Duration
             Row(
               children: [
-                const Icon(Icons.timer, size: 16, color: AppColors.textSecondary),
+                const Icon(Icons.timer,
+                    size: 16, color: AppColors.textSecondary),
                 const SizedBox(width: 8),
                 Text(
                   '$durationMin분',
@@ -168,7 +172,10 @@ class _ConsultationHistoryCard extends StatelessWidget {
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {
-                    context.push('/consultation/$bookingId/review');
+                    context.push(
+                      '/consultation/$bookingId/review',
+                      extra: {'counselorId': counselorId},
+                    );
                   },
                   child: const Text('리뷰 작성하기'),
                 ),
@@ -207,7 +214,7 @@ class _ConsultationHistoryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withOpacity( 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

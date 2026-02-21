@@ -2,11 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api_client.dart';
 import '../../core/auth_service.dart';
 
-// ApiClient provider
-final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
-});
-
 // AuthService provider
 final authServiceProvider = Provider<AuthService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
@@ -54,10 +49,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final isAuth = await _authService.isAuthenticated();
     if (isAuth) {
       final user = await _authService.getCurrentUser();
-      state = state.copyWith(
-        isAuthenticated: true,
-        user: user,
-      );
+      if (user != null) {
+        state = state.copyWith(
+          isAuthenticated: true,
+          user: user,
+        );
+      } else {
+        // Token exists but user fetch failed — token may be expired
+        state = state.copyWith(isAuthenticated: false);
+      }
     }
   }
 
@@ -67,14 +67,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _authService.login(
+      await _authService.login(
         email: email,
         password: password,
       );
+      // Fetch user info after login
+      final user = await _authService.getCurrentUser();
       state = state.copyWith(
         isAuthenticated: true,
         isLoading: false,
-        user: response['user'],
+        user: user,
       );
       return true;
     } catch (e) {
@@ -94,16 +96,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _authService.signup(
+      await _authService.signup(
         email: email,
         password: password,
         name: name,
         phone: phone,
       );
+      // Fetch user info after signup
+      final user = await _authService.getCurrentUser();
       state = state.copyWith(
         isAuthenticated: true,
         isLoading: false,
-        user: response['user'],
+        user: user,
       );
       return true;
     } catch (e) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import * as PortOne from '@portone/browser-sdk/v2';
 import { getCashProducts, preparePayment, confirmPayment, getWallet } from '../../../components/api-client';
 import { RequireLogin } from '../../../components/route-guard';
@@ -56,6 +56,8 @@ function getFailureMessage(errorCode: string | undefined, defaultMsg: string): s
 
 export default function CashBuyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
   const [products, setProducts] = useState<CashProduct[]>([]);
   const [message, setMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -138,7 +140,7 @@ export default function CashBuyPage() {
 
       // Auto redirect after 3 seconds
       setTimeout(() => {
-        router.push('/wallet');
+        router.push(returnTo || '/wallet');
       }, 3000);
 
     } catch (error: any) {
@@ -184,7 +186,7 @@ export default function CashBuyPage() {
                 </div>
               )}
               <div className="text-sm text-[var(--color-text-muted-dark)] mt-4">
-                잠시 후 지갑 페이지로 이동합니다...
+                {returnTo ? '잠시 후 이전 페이지로 이동합니다...' : '잠시 후 지갑 페이지로 이동합니다...'}
               </div>
             </div>
           </div>

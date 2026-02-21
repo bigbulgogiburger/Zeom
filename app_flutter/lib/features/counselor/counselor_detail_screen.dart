@@ -4,63 +4,31 @@ import 'package:go_router/go_router.dart';
 import '../../core/api_client.dart';
 import '../../shared/theme.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
-
-final counselorDetailProvider = FutureProvider.family<Map<String, dynamic>, int>(
+final counselorDetailProvider =
+    FutureProvider.family<Map<String, dynamic>, int>(
   (ref, counselorId) async {
     final apiClient = ref.read(apiClientProvider);
-    try {
-      final response = await apiClient.getCounselorDetail(counselorId);
-      return response.data as Map<String, dynamic>;
-    } catch (e) {
-      // Return mock data if API fails
-      return {
-        'id': counselorId,
-        'name': '이지혜 상담사',
-        'specialty': '타로·사주',
-        'rating': 4.8,
-        'reviewCount': 234,
-        'bio': '20년 경력의 타로 전문 상담사입니다. 연애, 진로, 사업 등 다양한 분야의 고민을 함께 풀어드립니다.',
-        'availableSlots': [
-          '2026-02-16T10:00:00',
-          '2026-02-16T14:00:00',
-          '2026-02-17T11:00:00',
-        ],
-      };
-    }
+    final response = await apiClient.getCounselorDetail(counselorId);
+    return response.data as Map<String, dynamic>;
   },
 );
 
-final counselorReviewsProvider = FutureProvider.family<List<Map<String, dynamic>>, int>(
+final counselorReviewsProvider =
+    FutureProvider.family<Map<String, dynamic>, int>(
   (ref, counselorId) async {
     final apiClient = ref.read(apiClientProvider);
-    try {
-      final response = await apiClient.getCounselorReviews(counselorId);
-      final data = response.data as List;
-      return data.cast<Map<String, dynamic>>();
-    } catch (e) {
-      // Return mock reviews if API fails
-      return [
-        {
-          'id': 1,
-          'userName': '김*민',
-          'rating': 5,
-          'comment': '정확한 상담 감사합니다. 많은 도움이 되었어요.',
-          'createdAt': '2026-02-10',
-        },
-        {
-          'id': 2,
-          'userName': '이*수',
-          'rating': 5,
-          'comment': '따뜻하고 세심한 상담이었습니다.',
-          'createdAt': '2026-02-08',
-        },
-      ];
-    }
+    final response = await apiClient.getCounselorReviews(counselorId);
+    return response.data as Map<String, dynamic>;
   },
 );
 
-class CounselorDetailScreen extends ConsumerWidget {
+final creditBalanceProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.getCreditBalance();
+  return response.data as Map<String, dynamic>;
+});
+
+class CounselorDetailScreen extends ConsumerStatefulWidget {
   final int counselorId;
 
   const CounselorDetailScreen({
@@ -69,9 +37,71 @@ class CounselorDetailScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final detailAsync = ref.watch(counselorDetailProvider(counselorId));
-    final reviewsAsync = ref.watch(counselorReviewsProvider(counselorId));
+  ConsumerState<CounselorDetailScreen> createState() =>
+      _CounselorDetailScreenState();
+}
+
+class _CounselorDetailScreenState
+    extends ConsumerState<CounselorDetailScreen> {
+  final Set<int> _selectedSlotIds = {};
+
+  void _onBookingTap() {
+    final needed = _selectedSlotIds.isNotEmpty ? _selectedSlotIds.length : 1;
+    final creditData = ref.read(creditBalanceProvider).valueOrNull;
+    final remaining = creditData?['remainingUnits'] as int? ?? 0;
+
+    if (creditData != null && remaining < needed) {
+      final deficit = needed - remaining;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('상담권이 부족합니다'),
+          content: Text(
+            '필요: $needed회 / 보유: $remaining회 / 부족: $deficit회',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('취소'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                context.push(
+                  '/credits/buy',
+                  extra: {
+                    'needed': deficit,
+                    'returnTo': '/counselor/${widget.counselorId}',
+                  },
+                );
+              },
+              child: const Text('상담권 구매하기'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final detailData = ref
+        .read(counselorDetailProvider(widget.counselorId))
+        .valueOrNull;
+    context.push(
+      '/booking/create',
+      extra: {
+        'counselorId': widget.counselorId,
+        if (_selectedSlotIds.isNotEmpty)
+          'slotIds': _selectedSlotIds.toList(),
+        if (detailData != null) 'counselorData': detailData,
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final detailAsync = ref.watch(counselorDetailProvider(widget.counselorId));
+    final reviewsAsync =
+        ref.watch(counselorReviewsProvider(widget.counselorId));
 
     return Scaffold(
       appBar: AppBar(
@@ -79,6 +109,19 @@ class CounselorDetailScreen extends ConsumerWidget {
       ),
       body: detailAsync.when(
         data: (counselor) {
+          final slots = (counselor['slots'] as List?)
+                  ?.cast<Map<String, dynamic>>() ??
+              [];
+
+          // Group slots by date
+          final slotsByDate = <String, List<Map<String, dynamic>>>{};
+          for (final slot in slots) {
+            final startAt = DateTime.parse(slot['startAt']);
+            final dateKey =
+                '${startAt.year}-${startAt.month.toString().padLeft(2, '0')}-${startAt.day.toString().padLeft(2, '0')}';
+            slotsByDate.putIfAbsent(dateKey, () => []).add(slot);
+          }
+
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +136,7 @@ class CounselorDetailScreen extends ConsumerWidget {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: AppColors.lotusPink.withOpacity(0.2),
+                          color: AppColors.lotusPink.withOpacity( 0.2),
                           borderRadius: BorderRadius.circular(40),
                         ),
                         child: const Icon(
@@ -109,29 +152,25 @@ class CounselorDetailScreen extends ConsumerWidget {
                           children: [
                             Text(
                               counselor['name'] ?? '상담사',
-                              style: Theme.of(context).textTheme.headlineSmall,
+                              style:
+                                  Theme.of(context).textTheme.headlineSmall,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               counselor['specialty'] ?? '',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(Icons.star, size: 18, color: AppColors.gold),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${counselor['rating'] ?? 0.0}',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '(리뷰 ${counselor['reviewCount'] ?? 0}개)',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
+                            if (counselor['supportedConsultationTypes'] !=
+                                null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                counselor['supportedConsultationTypes'],
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(color: AppColors.gold),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -140,8 +179,9 @@ class CounselorDetailScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 1),
 
-                // Bio
-                if (counselor['bio'] != null)
+                // Intro
+                if (counselor['intro'] != null &&
+                    (counselor['intro'] as String).isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
@@ -153,15 +193,15 @@ class CounselorDetailScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          counselor['bio'],
+                          counselor['intro'],
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
                     ),
                   ),
 
-                // Available slots
-                if (counselor['availableSlots'] != null)
+                // Available slots grouped by date
+                if (slotsByDate.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
@@ -172,30 +212,78 @@ class CounselorDetailScreen extends ConsumerWidget {
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 12),
-                        ...(counselor['availableSlots'] as List).map((slot) {
-                          final dateTime = DateTime.parse(slot);
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ListTile(
-                              leading: const Icon(Icons.schedule, color: AppColors.gold),
-                              title: Text(
-                                '${dateTime.month}월 ${dateTime.day}일 ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}',
+                        ...slotsByDate.entries.map((entry) {
+                          final date = DateTime.parse(entry.key);
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 8, bottom: 8),
+                                child: Text(
+                                  '${date.month}월 ${date.day}일',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelLarge
+                                      ?.copyWith(
+                                          fontWeight: FontWeight.w600),
+                                ),
                               ),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () {
-                                // Navigate to booking flow
-                                context.push(
-                                  '/booking/create',
-                                  extra: {
-                                    'counselorId': counselorId,
-                                    'slotStart': slot,
-                                  },
-                                );
-                              },
-                            ),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children:
+                                    entry.value.map((slot) {
+                                  final slotId = slot['id'] as int;
+                                  final startAt =
+                                      DateTime.parse(slot['startAt']);
+                                  final endAt =
+                                      DateTime.parse(slot['endAt']);
+                                  final isSelected =
+                                      _selectedSlotIds.contains(slotId);
+
+                                  return ChoiceChip(
+                                    label: Text(
+                                      '${startAt.hour}:${startAt.minute.toString().padLeft(2, '0')} - ${endAt.hour}:${endAt.minute.toString().padLeft(2, '0')}',
+                                    ),
+                                    selected: isSelected,
+                                    onSelected: (selected) {
+                                      setState(() {
+                                        if (selected) {
+                                          _selectedSlotIds.add(slotId);
+                                        } else {
+                                          _selectedSlotIds.remove(slotId);
+                                        }
+                                      });
+                                    },
+                                    selectedColor:
+                                        AppColors.gold.withOpacity( 0.3),
+                                    backgroundColor: Colors.white,
+                                    side: BorderSide(
+                                      color: isSelected
+                                          ? AppColors.gold
+                                          : AppColors.border,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
                           );
-                        }).toList(),
+                        }),
                       ],
+                    ),
+                  ),
+
+                if (slots.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    child: Text(
+                      '현재 예약 가능한 시간이 없습니다',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: AppColors.textSecondary),
                     ),
                   ),
 
@@ -212,7 +300,11 @@ class CounselorDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 reviewsAsync.when(
-                  data: (reviews) {
+                  data: (data) {
+                    final reviews =
+                        (data['reviews'] as List?)
+                                ?.cast<Map<String, dynamic>>() ??
+                            [];
                     if (reviews.isEmpty) {
                       return const Padding(
                         padding: EdgeInsets.all(20),
@@ -220,58 +312,87 @@ class CounselorDetailScreen extends ConsumerWidget {
                       );
                     }
                     return Column(
-                      children: reviews.map((review) {
-                        return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      review['userName'] ?? '익명',
-                                      style: Theme.of(context).textTheme.labelLarge,
-                                    ),
-                                    const Spacer(),
-                                    Row(
-                                      children: List.generate(
-                                        review['rating'] ?? 0,
-                                        (i) => const Icon(
-                                          Icons.star,
-                                          size: 14,
-                                          color: AppColors.gold,
+                      children: [
+                        ...reviews.map((review) {
+                          final createdAt = review['createdAt'] != null
+                              ? DateTime.tryParse(
+                                  review['createdAt'].toString())
+                              : null;
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 6),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '사용자 #${review['userId'] ?? ''}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge,
+                                      ),
+                                      const Spacer(),
+                                      Row(
+                                        children: List.generate(
+                                          review['rating'] ?? 0,
+                                          (i) => const Icon(
+                                            Icons.star,
+                                            size: 14,
+                                            color: AppColors.gold,
+                                          ),
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    review['comment'] ?? '',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium,
+                                  ),
+                                  if (createdAt != null) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '${createdAt.year}.${createdAt.month}.${createdAt.day}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall,
                                     ),
                                   ],
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  review['comment'] ?? '',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  review['createdAt'] ?? '',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                        if ((data['totalElements'] as int? ?? 0) >
+                            reviews.length)
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              '총 ${data['totalElements']}개의 리뷰',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
                             ),
                           ),
-                        );
-                      }).toList(),
+                      ],
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (err, stack) => Padding(
                     padding: const EdgeInsets.all(20),
                     child: Text('리뷰를 불러올 수 없습니다: $err'),
                   ),
                 ),
 
-                const SizedBox(height: 80), // Bottom padding for button
+                const SizedBox(height: 80),
               ],
             ),
           );
@@ -284,7 +405,8 @@ class CounselorDetailScreen extends ConsumerWidget {
               Text('오류가 발생했습니다: $err'),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.invalidate(counselorDetailProvider(counselorId)),
+                onPressed: () => ref.invalidate(
+                    counselorDetailProvider(widget.counselorId)),
                 child: const Text('다시 시도'),
               ),
             ],
@@ -294,14 +416,47 @@ class CounselorDetailScreen extends ConsumerWidget {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: ElevatedButton(
-            onPressed: () {
-              context.push(
-                '/booking/create',
-                extra: {'counselorId': counselorId},
-              );
-            },
-            child: const Text('예약하기'),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Credit balance badge
+              ref.watch(creditBalanceProvider).when(
+                    data: (credit) {
+                      final remaining = credit['remainingUnits'] as int? ?? 0;
+                      return Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.gold.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: AppColors.gold.withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          '보유 상담권: $remaining회',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.gold,
+                          ),
+                        ),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  ),
+              ElevatedButton(
+                onPressed: () => _onBookingTap(),
+                child: Text(
+                  _selectedSlotIds.isNotEmpty
+                      ? '예약하기 (${_selectedSlotIds.length}개 선택)'
+                      : '예약하기',
+                ),
+              ),
+            ],
           ),
         ),
       ),

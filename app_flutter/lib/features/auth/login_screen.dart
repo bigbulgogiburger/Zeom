@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../shared/theme.dart';
 import 'auth_provider.dart';
 
@@ -47,6 +48,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _handleSocialLogin(String provider) {
+    // Placeholder for social login - will be implemented with actual OAuth
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$provider 로그인은 준비 중입니다'),
+        backgroundColor: AppColors.textSecondary,
+      ),
+    );
+  }
+
+  void _handleForgotPassword() {
+    // Placeholder for forgot password flow
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('비밀번호 재설정 기능은 준비 중입니다'),
+        backgroundColor: AppColors.textSecondary,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -62,12 +83,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 const SizedBox(height: 60),
                 // Logo/Title
-                Text(
-                  '천지연꽃신당',
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                        color: AppColors.inkBlack,
-                      ),
-                  textAlign: TextAlign.center,
+                ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [AppColors.gold, Color(0xFFD4A843)],
+                  ).createShader(bounds),
+                  child: Text(
+                    '천지연꽃신당',
+                    style: GoogleFonts.notoSerif(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -77,7 +105,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 60),
+                const SizedBox(height: 48),
                 // Email field
                 TextFormField(
                   controller: _emailController,
@@ -145,7 +173,93 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         )
                       : const Text('로그인'),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+                // Divider "또는"
+                Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        color: AppColors.border.withOpacity(0.5),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        '또는',
+                        style: GoogleFonts.notoSans(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: AppColors.border.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Kakao login button
+                SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => _handleSocialLogin('카카오'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFEE500),
+                      foregroundColor: const Color(0xFF191919),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      '카카오로 로그인',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Naver login button
+                SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => _handleSocialLogin('네이버'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF03C75A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      '네이버로 로그인',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Forgot password
+                Center(
+                  child: TextButton(
+                    onPressed: _handleForgotPassword,
+                    child: Text(
+                      '비밀번호를 잊으셨나요?',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 // Sign up link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

@@ -1,5 +1,11 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
+
+final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
 class ApiClient {
   static const String baseUrl = String.fromEnvironment(
@@ -59,14 +65,34 @@ class ApiClient {
 
   Dio get dio => _dio;
 
+  Future<String> _getDeviceId() async {
+    String? deviceId = await _storage.read(key: 'device_id');
+    if (deviceId == null) {
+      deviceId = const Uuid().v4();
+      await _storage.write(key: 'device_id', value: deviceId);
+    }
+    return deviceId;
+  }
+
+  String _getDeviceName() {
+    return '${Platform.operatingSystem} ${Platform.operatingSystemVersion}';
+  }
+
   Future<bool> _refreshToken() async {
     try {
       final refreshToken = await _storage.read(key: 'refresh_token');
       if (refreshToken == null) return false;
 
+      final deviceId = await _getDeviceId();
+      final deviceName = _getDeviceName();
+
       final response = await _dio.post(
         '/api/v1/auth/refresh',
-        data: {'refreshToken': refreshToken},
+        data: {
+          'refreshToken': refreshToken,
+          'deviceId': deviceId,
+          'deviceName': deviceName,
+        },
       );
 
       if (response.statusCode == 200) {
@@ -101,6 +127,15 @@ class ApiClient {
     return await _storage.read(key: 'access_token');
   }
 
+  Future<String?> getRefreshToken() async {
+    return await _storage.read(key: 'refresh_token');
+  }
+
+  // ==================== Auth APIs ====================
+  Future<Response> getMe() async {
+    return await _dio.get('/api/v1/auth/me');
+  }
+
   // ==================== Counselor APIs ====================
   Future<Response> getCounselors() async {
     return await _dio.get('/api/v1/counselors');
@@ -117,13 +152,13 @@ class ApiClient {
   // ==================== Booking APIs ====================
   Future<Response> createBooking({
     required int counselorId,
-    required String slotStart,
-    required String channel,
+    required List<int> slotIds,
+    required String consultationType,
   }) async {
     return await _dio.post('/api/v1/bookings', data: {
       'counselorId': counselorId,
-      'slotStart': slotStart,
-      'channel': channel,
+      'slotIds': slotIds,
+      'consultationType': consultationType,
     });
   }
 
@@ -135,13 +170,48 @@ class ApiClient {
     return await _dio.get('/api/v1/bookings/$bookingId');
   }
 
+  Future<Response> cancelBooking(int bookingId, {String? reason}) async {
+    return await _dio.post(
+      '/api/v1/bookings/$bookingId/cancel',
+      data: reason != null ? {'reason': reason} : null,
+    );
+  }
+
+  Future<Response> rescheduleBooking(int bookingId, {required List<int> newSlotIds}) async {
+    return await _dio.put(
+      '/api/v1/bookings/$bookingId/reschedule',
+      data: {'newSlotIds': newSlotIds},
+    );
+  }
+
+  Future<Response> retryPayment(int bookingId) async {
+    return await _dio.put('/api/v1/bookings/$bookingId/retry-payment');
+  }
+
+  Future<Response> getCounselorSlots(int counselorId) async {
+    return await _dio.get('/api/v1/counselors/$counselorId');
+  }
+
   // ==================== Wallet APIs ====================
   Future<Response> getWallet() async {
     return await _dio.get('/api/v1/wallet');
   }
 
-  Future<Response> getWalletTransactions() async {
-    return await _dio.get('/api/v1/wallet/transactions');
+  Future<Response> getWalletTransactions({
+    int page = 0,
+    int size = 20,
+    String? type,
+    String? from,
+    String? to,
+  }) async {
+    final params = <String, dynamic>{
+      'page': page,
+      'size': size,
+    };
+    if (type != null) params['type'] = type;
+    if (from != null) params['from'] = from;
+    if (to != null) params['to'] = to;
+    return await _dio.get('/api/v1/wallet/transactions', queryParameters: params);
   }
 
   Future<Response> getCashProducts() async {
@@ -149,13 +219,28 @@ class ApiClient {
   }
 
   Future<Response> buyCash({
-    required int productId,
-    required int quantity,
+    required int amount,
+    String paymentMethod = 'CASH',
   }) async {
-    return await _dio.post('/api/v1/wallet/buy-cash', data: {
-      'productId': productId,
-      'quantity': quantity,
+    return await _dio.post('/api/v1/cash/charge', data: {
+      'amount': amount,
+      'paymentMethod': paymentMethod,
     });
+  }
+
+  // ==================== Credit APIs ====================
+  Future<Response> getCreditBalance() async {
+    return await _dio.get('/api/v1/credits/my');
+  }
+
+  Future<Response> purchaseCredit(int productId) async {
+    return await _dio.post('/api/v1/credits/purchase', data: {
+      'productId': productId,
+    });
+  }
+
+  Future<Response> getCreditHistory() async {
+    return await _dio.get('/api/v1/credits/history');
   }
 
   // ==================== Consultation APIs ====================

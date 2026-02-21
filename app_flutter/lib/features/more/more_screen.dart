@@ -70,10 +70,26 @@ class MoreScreen extends ConsumerWidget {
           // Menu items
           _buildMenuItem(
             context,
+            icon: Icons.calendar_today,
+            title: '내 예약',
+            onTap: () {
+              context.push('/bookings');
+            },
+          ),
+          _buildMenuItem(
+            context,
             icon: Icons.history,
             title: '상담 히스토리',
             onTap: () {
               context.push('/consultation/history');
+            },
+          ),
+          _buildMenuItem(
+            context,
+            icon: Icons.account_balance_wallet,
+            title: '내 지갑',
+            onTap: () {
+              context.push('/wallet');
             },
           ),
           _buildMenuItem(
@@ -89,7 +105,7 @@ class MoreScreen extends ConsumerWidget {
             icon: Icons.favorite_outline,
             title: '찜한 상담사',
             onTap: () {
-              // Navigate to favorites (not implemented)
+              // Not implemented yet
             },
           ),
           _buildMenuItem(
@@ -97,7 +113,7 @@ class MoreScreen extends ConsumerWidget {
             icon: Icons.notifications_outlined,
             title: '알림 설정',
             onTap: () {
-              // Navigate to notification settings
+              // Not implemented yet
             },
           ),
           _buildMenuItem(
@@ -105,7 +121,7 @@ class MoreScreen extends ConsumerWidget {
             icon: Icons.help_outline,
             title: '고객센터',
             onTap: () {
-              // Navigate to customer service
+              // Not implemented yet
             },
           ),
           _buildMenuItem(
@@ -113,7 +129,7 @@ class MoreScreen extends ConsumerWidget {
             icon: Icons.settings_outlined,
             title: '설정',
             onTap: () {
-              // Navigate to settings
+              // Not implemented yet
             },
           ),
           const Divider(height: 1),

@@ -4,37 +4,13 @@ import 'package:go_router/go_router.dart';
 import '../../core/api_client.dart';
 import '../../shared/theme.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
-
-final refundsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final refundsProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final apiClient = ref.read(apiClientProvider);
-  try {
-    final response = await apiClient.getMyRefunds();
-    final data = response.data as List;
-    return data.cast<Map<String, dynamic>>();
-  } catch (e) {
-    // Return mock data if API fails
-    return [
-      {
-        'id': 1,
-        'bookingId': 5,
-        'counselorName': '이지혜 상담사',
-        'reason': '개인 사정으로 인한 취소',
-        'status': 'PENDING',
-        'requestedAt': '2026-02-12T10:00:00',
-        'refundAmount': 30000,
-      },
-      {
-        'id': 2,
-        'bookingId': 3,
-        'counselorName': '박미영 상담사',
-        'reason': '상담 시간 변경 필요',
-        'status': 'APPROVED',
-        'requestedAt': '2026-02-08T14:00:00',
-        'refundAmount': 27000,
-      },
-    ];
-  }
+  final response = await apiClient.getMyRefunds();
+  final data = response.data as Map<String, dynamic>;
+  final refunds = data['refunds'] as List? ?? [];
+  return refunds.cast<Map<String, dynamic>>();
 });
 
 class RefundListScreen extends ConsumerWidget {
@@ -64,7 +40,7 @@ class RefundListScreen extends ConsumerWidget {
                   Icon(
                     Icons.receipt_long,
                     size: 64,
-                    color: AppColors.textSecondary.withOpacity(0.5),
+                    color: AppColors.textSecondary.withOpacity( 0.5),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -149,7 +125,10 @@ class _RefundCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final requestedAt = DateTime.parse(refund['requestedAt']);
+    final createdAtStr = refund['createdAt'] as String?;
+    final createdAt =
+        createdAtStr != null ? DateTime.tryParse(createdAtStr) : null;
+    final status = refund['status'] as String? ?? 'PENDING';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -163,23 +142,24 @@ class _RefundCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    refund['counselorName'] ?? '상담사',
+                    '예약 #${refund['reservationId'] ?? ''}',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(refund['status'] ?? 'PENDING').withOpacity(0.1),
+                    color: _getStatusColor(status).withOpacity( 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: _getStatusColor(refund['status'] ?? 'PENDING'),
+                      color: _getStatusColor(status),
                     ),
                   ),
                   child: Text(
-                    _getStatusText(refund['status'] ?? 'PENDING'),
+                    _getStatusText(status),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: _getStatusColor(refund['status'] ?? 'PENDING'),
+                          color: _getStatusColor(status),
                           fontWeight: FontWeight.w600,
                         ),
                   ),
@@ -188,26 +168,38 @@ class _RefundCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '사유: ${refund['reason']}',
+              '사유: ${refund['reason'] ?? ''}',
               style: Theme.of(context).textTheme.bodyMedium,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
+            if (refund['adminNote'] != null &&
+                (refund['adminNote'] as String).isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                '관리자 메모: ${refund['adminNote']}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+              ),
+            ],
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '신청일: ${requestedAt.year}.${requestedAt.month}.${requestedAt.day}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                Text(
-                  '환불액: ${refund['refundAmount']}원',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.darkRed,
-                      ),
-                ),
+                if (createdAt != null)
+                  Text(
+                    '신청일: ${createdAt.year}.${createdAt.month}.${createdAt.day}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                if (refund['amount'] != null)
+                  Text(
+                    '환불액: ${refund['amount']}원',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.darkRed,
+                        ),
+                  ),
               ],
             ),
           ],

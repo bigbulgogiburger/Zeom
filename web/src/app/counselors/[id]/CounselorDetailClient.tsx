@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_BASE } from '../../../components/api';
-import { apiFetch } from '../../../components/api-client';
+import { apiFetch, getCreditBalance } from '../../../components/api-client';
 import { useAuth } from '../../../components/auth-context';
 import { ActionButton, Card, EmptyState } from '../../../components/ui';
 import { Badge } from '@/components/ui/badge';
@@ -97,6 +97,9 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   const [consultationType, setConsultationType] = useState<'VIDEO' | 'CHAT'>('VIDEO');
   const [isFavorited, setIsFavorited] = useState(false);
   const [togglingFavorite, setTogglingFavorite] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [creditShortfall, setCreditShortfall] = useState({ needed: 0, have: 0 });
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/counselors/${id}`, { cache: 'no-store' })
@@ -123,6 +126,17 @@ export default function CounselorDetailClient({ id }: { id: string }) {
       })
       .catch(() => {});
   }, [me, id]);
+
+  // Fetch credit balance when logged in
+  useEffect(() => {
+    if (!me) {
+      setCreditBalance(null);
+      return;
+    }
+    getCreditBalance()
+      .then((data) => setCreditBalance(data.remainingUnits ?? 0))
+      .catch(() => setCreditBalance(null));
+  }, [me]);
 
   const toggleFavorite = useCallback(async () => {
     if (!me || togglingFavorite) return;
@@ -167,6 +181,15 @@ export default function CounselorDetailClient({ id }: { id: string }) {
 
   async function handleBook() {
     if (selectedSlots.length === 0 || !counselor) return;
+
+    // Pre-booking credit check
+    const needed = selectedSlots.length;
+    if (creditBalance !== null && creditBalance < needed) {
+      setCreditShortfall({ needed, have: creditBalance });
+      setShowCreditModal(true);
+      return;
+    }
+
     setBooking(true);
     setBookingError('');
 
@@ -413,6 +436,19 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                 <Badge variant="secondary" className="font-heading font-bold text-sm rounded-full px-4 py-1.5">
                   상담권 {selectedSlots.length}회 사용
                 </Badge>
+                {me && creditBalance !== null && (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'font-heading font-bold text-sm rounded-full px-4 py-1.5',
+                      creditBalance >= selectedSlots.length
+                        ? 'border-emerald-500/30 text-emerald-400'
+                        : 'border-red-500/30 text-red-400'
+                    )}
+                  >
+                    보유 상담권: {creditBalance}회
+                  </Badge>
+                )}
               </div>
             )}
           </div>
@@ -502,6 +538,55 @@ export default function CounselorDetailClient({ id }: { id: string }) {
             >
               예약 확정
             </ActionButton>
+          </div>
+        </div>
+      )}
+
+      {/* Insufficient Credit Modal */}
+      {showCreditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.2)] rounded-2xl p-8 sm:p-10 max-w-[420px] w-full shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="text-4xl mb-4">🎫</div>
+              <h3 className="m-0 font-heading font-bold text-xl text-red-400">
+                상담권이 부족합니다
+              </h3>
+            </div>
+
+            <div className="grid gap-3 text-sm mb-8">
+              <div className="flex justify-between items-center">
+                <span className="text-[#a49484]">필요</span>
+                <span className="font-bold text-[var(--color-text-on-dark)]">{creditShortfall.needed}회</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#a49484]">보유</span>
+                <span className="font-bold text-[var(--color-text-on-dark)]">{creditShortfall.have}회</span>
+              </div>
+              <div className="border-t border-[rgba(201,162,39,0.1)] pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#a49484]">부족</span>
+                  <span className="font-bold text-red-400">{creditShortfall.needed - creditShortfall.have}회</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <ActionButton
+                onClick={() => {
+                  const shortage = creditShortfall.needed - creditShortfall.have;
+                  router.push(`/credits/buy?needed=${shortage}&returnTo=/counselors/${id}`);
+                }}
+                className="w-full"
+              >
+                상담권 구매하기
+              </ActionButton>
+              <button
+                onClick={() => setShowCreditModal(false)}
+                className="w-full rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] font-heading font-bold py-3 bg-transparent hover:bg-[#C9A227]/10 transition-all duration-300"
+              >
+                취소
+              </button>
+            </div>
           </div>
         </div>
       )}

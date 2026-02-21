@@ -46,7 +46,7 @@ class AppTheme {
         foregroundColor: AppColors.hanji,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.notoSerifKr(
+        titleTextStyle: GoogleFonts.notoSerif(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.hanji,
@@ -54,54 +54,54 @@ class AppTheme {
         ),
       ),
       textTheme: TextTheme(
-        // Headings - Noto Serif KR
-        displayLarge: GoogleFonts.notoSerifKr(
+        // Headings - Noto Serif
+        displayLarge: GoogleFonts.notoSerif(
           fontSize: 32,
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
         ),
-        displayMedium: GoogleFonts.notoSerifKr(
+        displayMedium: GoogleFonts.notoSerif(
           fontSize: 28,
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
         ),
-        displaySmall: GoogleFonts.notoSerifKr(
+        displaySmall: GoogleFonts.notoSerif(
           fontSize: 24,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        headlineMedium: GoogleFonts.notoSerifKr(
+        headlineMedium: GoogleFonts.notoSerif(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        headlineSmall: GoogleFonts.notoSerifKr(
+        headlineSmall: GoogleFonts.notoSerif(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        titleLarge: GoogleFonts.notoSerifKr(
+        titleLarge: GoogleFonts.notoSerif(
           fontSize: 18,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
-        // Body - Noto Sans KR
-        bodyLarge: GoogleFonts.notoSansKr(
+        // Body - Noto Sans
+        bodyLarge: GoogleFonts.notoSans(
           fontSize: 16,
           fontWeight: FontWeight.normal,
           color: AppColors.textPrimary,
         ),
-        bodyMedium: GoogleFonts.notoSansKr(
+        bodyMedium: GoogleFonts.notoSans(
           fontSize: 14,
           fontWeight: FontWeight.normal,
           color: AppColors.textPrimary,
         ),
-        bodySmall: GoogleFonts.notoSansKr(
+        bodySmall: GoogleFonts.notoSans(
           fontSize: 12,
           fontWeight: FontWeight.normal,
           color: AppColors.textSecondary,
         ),
-        labelLarge: GoogleFonts.notoSansKr(
+        labelLarge: GoogleFonts.notoSans(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
@@ -115,7 +115,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: GoogleFonts.notoSansKr(
+          textStyle: GoogleFonts.notoSans(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -129,7 +129,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: GoogleFonts.notoSansKr(
+          textStyle: GoogleFonts.notoSans(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -159,11 +159,11 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        labelStyle: GoogleFonts.notoSansKr(
+        labelStyle: GoogleFonts.notoSans(
           fontSize: 14,
           color: AppColors.textSecondary,
         ),
-        hintStyle: GoogleFonts.notoSansKr(
+        hintStyle: GoogleFonts.notoSans(
           fontSize: 14,
           color: AppColors.textSecondary,
         ),
@@ -180,11 +180,11 @@ class AppTheme {
         backgroundColor: Colors.white,
         selectedItemColor: AppColors.inkBlack,
         unselectedItemColor: AppColors.textSecondary,
-        selectedLabelStyle: GoogleFonts.notoSansKr(
+        selectedLabelStyle: GoogleFonts.notoSans(
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
-        unselectedLabelStyle: GoogleFonts.notoSansKr(
+        unselectedLabelStyle: GoogleFonts.notoSans(
           fontSize: 12,
           fontWeight: FontWeight.normal,
         ),

@@ -73,10 +73,12 @@ class AuthService {
 
   Future<void> logout() async {
     try {
-      final token = await _apiClient.getAccessToken();
-      if (token != null) {
-        // Try to call backend logout (optional, don't throw on error)
-        await _apiClient.dio.post('/api/v1/auth/logout').catchError((_) {});
+      final refreshToken = await _apiClient.getRefreshToken();
+      if (refreshToken != null) {
+        await _apiClient.dio.post(
+          '/api/v1/auth/logout',
+          data: {'refreshToken': refreshToken},
+        ).catchError((_) => Response(requestOptions: RequestOptions(), statusCode: 0));
       }
     } finally {
       await _apiClient.clearTokens();
@@ -90,7 +92,7 @@ class AuthService {
 
   Future<Map<String, dynamic>?> getCurrentUser() async {
     try {
-      final response = await _apiClient.dio.get('/api/v1/auth/me');
+      final response = await _apiClient.getMe();
       if (response.statusCode == 200) {
         return response.data as Map<String, dynamic>;
       }

@@ -151,9 +151,9 @@
   --color-danger: #8B0000;            /* 암적색 */
   --color-danger-light: #ffe6e6;
 
-  /* 타이포그래피 (Typography) */
-  --font-heading: var(--font-heading);
-  --font-body: var(--font-body);
+  /* 타이포그래피 (Typography)
+     NOTE: --font-heading and --font-body are set by next/font/google on <html>.
+     Do NOT redefine them here — that creates a circular reference and breaks font loading. */
 
   --font-size-xs: 0.75rem;      /* 12px */
   --font-size-sm: 0.875rem;     /* 14px */
@@ -318,21 +318,9 @@
     transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
   }
 
-  /* Default style for raw <button> elements without data-slot (not shadcn) */
-  button:not([data-slot]) {
-    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-light));
-    color: var(--color-bg-primary);
-    font-weight: var(--font-weight-bold);
-    padding: var(--spacing-md) var(--spacing-xl);
-    border-radius: var(--radius-pill);
-    min-height: 48px;
-    font-family: var(--font-heading);
-  }
-
-  button:not([data-slot]):hover:not(:disabled) {
-    background: var(--color-gold-hover);
-    transform: translateY(-1px);
-  }
+  /* NOTE: Raw <button> elements no longer receive gold gradient styling.
+     Use .btn-gold or ActionButton/Button components for styled buttons.
+     This prevents style leaks into filter chips, language switcher, etc. */
 
   button:active:not(:disabled) {
     transform: translateY(0);

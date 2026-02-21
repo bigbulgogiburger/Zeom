@@ -2,9 +2,15 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getWallet, getWalletTransactions, exportTransactionsCsv, getTransactionReceiptHtml } from '../../components/api-client';
+import { getWallet, getWalletTransactions, exportTransactionsCsv, getTransactionReceiptHtml, getCreditBalance } from '../../components/api-client';
 import { RequireLogin } from '../../components/route-guard';
 import { Card, EmptyState, InlineError, PageTitle, StatusBadge } from '../../components/ui';
+
+type CreditBalance = {
+  totalCredits: number;
+  usedCredits: number;
+  remainingCredits: number;
+};
 
 type Wallet = {
   id: number;
@@ -70,6 +76,16 @@ export default function WalletPage() {
   const [customTo, setCustomTo] = useState('');
   const [periodTotal, setPeriodTotal] = useState<number | null>(null);
   const [csvExporting, setCsvExporting] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<CreditBalance | null>(null);
+
+  async function loadCreditBalance() {
+    try {
+      const data = await getCreditBalance();
+      setCreditBalance(data);
+    } catch {
+      // Credit balance is optional — fail silently
+    }
+  }
 
   async function loadWallet() {
     try {
@@ -118,6 +134,7 @@ export default function WalletPage() {
 
   useEffect(() => {
     loadWallet();
+    loadCreditBalance();
     loadTransactions(0);
   }, []);
 
@@ -207,6 +224,48 @@ export default function WalletPage() {
                 className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-10 py-3.5 font-bold text-base cursor-pointer min-h-[48px] font-heading border-none hover:shadow-[0_4px_20px_rgba(201,162,39,0.2)] transition-all"
               >
                 충전하기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Credit Balance */}
+        {creditBalance && (
+          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 text-center max-w-[520px] mx-auto">
+            <div className="text-center py-4">
+              <div className="text-[#C9A227] text-sm mb-3 font-bold font-heading tracking-wide">
+                보유 상담권
+              </div>
+              <div className="text-4xl font-black text-[#C9A227] mb-2 font-heading">
+                {creditBalance.remainingCredits}회
+              </div>
+              <div className="text-sm text-[var(--color-text-muted-dark)] mb-6">
+                ({creditBalance.usedCredits}회 사용됨)
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full max-w-[320px] mx-auto mb-6">
+                <div className="h-2 rounded-full bg-black/30 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] transition-all duration-500"
+                    style={{
+                      width: creditBalance.totalCredits > 0
+                        ? `${(creditBalance.remainingCredits / creditBalance.totalCredits) * 100}%`
+                        : '0%',
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-[var(--color-text-muted-dark)] mt-1.5">
+                  <span>사용: {creditBalance.usedCredits}회</span>
+                  <span>전체: {creditBalance.totalCredits}회</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => router.push('/credits/buy')}
+                className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-10 py-3.5 font-bold text-base cursor-pointer min-h-[48px] font-heading border-none hover:shadow-[0_4px_20px_rgba(201,162,39,0.2)] transition-all"
+              >
+                상담권 구매
               </button>
             </div>
           </div>

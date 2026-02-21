@@ -13,6 +13,7 @@ import '../features/consultation/consultation_room_screen.dart';
 import '../features/consultation/consultation_complete_screen.dart';
 import '../features/consultation/consultation_history_screen.dart';
 import '../features/consultation/review_screen.dart';
+import '../features/credit/credit_buy_screen.dart';
 import '../features/refund/refund_list_screen.dart';
 import '../features/refund/refund_request_screen.dart';
 
@@ -82,9 +83,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           final extra = state.extra as Map<String, dynamic>?;
           final counselorId = extra?['counselorId'] as int;
           final slotStart = extra?['slotStart'] as String?;
+          final slotIds = (extra?['slotIds'] as List<dynamic>?)
+              ?.cast<int>();
+          final counselorData =
+              extra?['counselorData'] as Map<String, dynamic>?;
           return BookingCreateScreen(
             counselorId: counselorId,
             initialSlotStart: slotStart,
+            initialSlotIds: slotIds,
+            counselorData: counselorData,
           );
         },
       ),
@@ -98,7 +105,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Wallet routes
       GoRoute(
         path: '/wallet/cash-buy',
-        builder: (context, state) => const CashBuyScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final returnTo = extra?['returnTo'] as String?;
+          return CashBuyScreen(returnTo: returnTo);
+        },
+      ),
+      // Credit routes
+      GoRoute(
+        path: '/credits/buy',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final needed = extra?['needed'] as int?;
+          final returnTo = extra?['returnTo'] as String?;
+          return CreditBuyScreen(needed: needed, returnTo: returnTo);
+        },
       ),
       // Consultation routes
       GoRoute(
