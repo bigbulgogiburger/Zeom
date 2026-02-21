@@ -16,7 +16,7 @@ export default function CreditWidget() {
     setLoading(true);
     try {
       const data = await getCreditBalance();
-      setCredits(data.remaining ?? data.balance ?? 0);
+      setCredits(data.remainingCredits ?? 0);
     } catch {
       // Silent fail - widget is non-critical
     } finally {

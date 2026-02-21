@@ -144,7 +144,8 @@ export async function updateCounselorBankAccount(data: { bankCode: string; accou
 export async function getCashProducts() {
   const res = await apiFetch('/api/v1/products/cash', { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch cash products');
-  return res.json();
+  const data = await res.json();
+  return data.products;
 }
 
 export async function chargeCash(amount: number, paymentMethod: string = 'TEST') {
@@ -287,7 +288,12 @@ export async function getSessionStatus(sessionId: string) {
 export async function getCreditBalance() {
   const res = await apiFetch('/api/v1/credits/my', { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch credit balance');
-  return res.json();
+  const data = await res.json();
+  return {
+    totalCredits: data.totalUnits ?? data.totalCredits ?? 0,
+    usedCredits: data.usedUnits ?? data.usedCredits ?? 0,
+    remainingCredits: data.remainingUnits ?? data.remainingCredits ?? 0,
+  };
 }
 
 export async function getCreditHistory() {

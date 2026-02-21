@@ -32,7 +32,7 @@ export default function CreditsPage() {
   async function loadCredits() {
     try {
       const data = await getCreditBalance();
-      setCredits(data.remaining ?? data.balance ?? 0);
+      setCredits(data.remainingCredits ?? 0);
     } catch {
       // Silent fail
     }

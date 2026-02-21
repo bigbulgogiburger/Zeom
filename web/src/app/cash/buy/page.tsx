@@ -12,8 +12,7 @@ type CashProduct = {
   description: string;
   priceKrw: number;
   cashAmount: number;
-  durationMinutes: number;
-  active: boolean;
+  minutes: number;
 };
 
 type PaymentStatus = 'idle' | 'processing' | 'success' | 'failed';
@@ -53,7 +52,7 @@ export default function CashBuyPage() {
     setLoading(true);
     try {
       const data = await getCashProducts();
-      setProducts(data.filter((p: CashProduct) => p.active));
+      setProducts(data);
     } catch {
       setMessage('상품 목록을 불러오지 못했습니다.');
     } finally {
@@ -267,7 +266,7 @@ export default function CashBuyPage() {
                     <div className="flex justify-between text-sm">
                       <span className="text-[var(--color-text-muted-card)]">상담 시간</span>
                       <span className="font-bold text-[var(--color-accent-primary)] font-heading">
-                        {product.durationMinutes}분
+                        {product.minutes}분
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">

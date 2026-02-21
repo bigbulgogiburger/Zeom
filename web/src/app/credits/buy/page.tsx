@@ -12,8 +12,7 @@ type CashProduct = {
   description: string;
   priceKrw: number;
   cashAmount: number;
-  durationMinutes: number;
-  active: boolean;
+  minutes: number;
 };
 
 type PurchaseStatus = 'idle' | 'purchasing' | 'success' | 'failed';
@@ -42,13 +41,13 @@ export default function CreditBuyPage() {
         getCashProducts().catch(() => null),
       ]);
       if (creditData !== null) {
-        setCreditBalance(creditData.balance ?? creditData.credits ?? 0);
+        setCreditBalance(creditData.remainingCredits ?? 0);
       }
       if (walletData !== null) {
         setCashBalance(walletData.balanceCash ?? walletData.balance ?? 0);
       }
       if (productData !== null) {
-        setProducts(productData.filter((p: CashProduct) => p.active));
+        setProducts(productData);
       } else {
         setMessage('상품 목록을 불러오지 못했습니다.');
       }
@@ -64,7 +63,7 @@ export default function CreditBuyPage() {
   }, []);
 
   function getCreditUnits(product: CashProduct): number {
-    return Math.floor(product.durationMinutes / 30) || 1;
+    return Math.floor(product.minutes / 30) || 1;
   }
 
   async function handlePurchase(product: CashProduct) {
@@ -87,7 +86,7 @@ export default function CreditBuyPage() {
         getWallet().catch(() => null),
       ]);
       if (creditData !== null) {
-        setCreditBalance(creditData.balance ?? creditData.credits ?? 0);
+        setCreditBalance(creditData.remainingCredits ?? 0);
       }
       if (walletData !== null) {
         setCashBalance(walletData.balanceCash ?? walletData.balance ?? 0);
@@ -248,7 +247,7 @@ export default function CreditBuyPage() {
                       <div className="flex justify-between text-sm">
                         <span className="text-[var(--color-text-muted-card)]">상담 시간</span>
                         <span className="font-bold text-[var(--color-accent-primary)] font-heading">
-                          {product.durationMinutes}분
+                          {product.minutes}분
                         </span>
                       </div>
                     </div>

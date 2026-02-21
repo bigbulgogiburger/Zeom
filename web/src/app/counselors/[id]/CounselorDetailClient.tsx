@@ -134,7 +134,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
       return;
     }
     getCreditBalance()
-      .then((data) => setCreditBalance(data.remainingUnits ?? 0))
+      .then((data) => setCreditBalance(data.remainingCredits ?? 0))
       .catch(() => setCreditBalance(null));
   }, [me]);
 
