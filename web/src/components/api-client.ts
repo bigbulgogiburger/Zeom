@@ -147,6 +147,19 @@ export async function getCashProducts() {
   return res.json();
 }
 
+export async function chargeCash(amount: number, paymentMethod: string = 'TEST') {
+  const res = await apiFetch('/api/v1/cash/charge', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount, paymentMethod }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message || '캐시 충전에 실패했습니다.');
+  }
+  return res.json();
+}
+
 // Payment API methods
 export async function preparePayment(productId: number) {
   const res = await apiFetch('/api/v1/payments/prepare', {

@@ -50,6 +50,17 @@ public class WalletService {
                 .orElseThrow(() -> new ApiException(404, "Wallet not found"));
     }
 
+    @Transactional
+    public WalletEntity getOrCreateWallet(Long userId) {
+        return walletRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    WalletEntity wallet = new WalletEntity();
+                    wallet.setUserId(userId);
+                    wallet.setBalanceCash(0L);
+                    return walletRepository.save(wallet);
+                });
+    }
+
     public WalletDtos.WalletResponse getBalance(String authHeader) {
         UserEntity user = resolveUser(authHeader);
         WalletEntity wallet = getByUserId(user.getId());

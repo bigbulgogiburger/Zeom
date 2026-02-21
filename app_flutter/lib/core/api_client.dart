@@ -220,7 +220,7 @@ class ApiClient {
 
   Future<Response> buyCash({
     required int amount,
-    String paymentMethod = 'CASH',
+    String paymentMethod = 'TEST',
   }) async {
     return await _dio.post('/api/v1/cash/charge', data: {
       'amount': amount,

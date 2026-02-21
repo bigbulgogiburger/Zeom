@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import * as PortOne from '@portone/browser-sdk/v2';
-import { getCashProducts, preparePayment, confirmPayment, getWallet } from '../../../components/api-client';
+import { getCashProducts, chargeCash, getWallet } from '../../../components/api-client';
 import { RequireLogin } from '../../../components/route-guard';
 import { Card, EmptyState, InlineError, InlineSuccess, PageTitle } from '../../../components/ui';
 
@@ -17,42 +16,23 @@ type CashProduct = {
   active: boolean;
 };
 
-type PaymentStatus = 'idle' | 'preparing' | 'processing' | 'success' | 'failed';
-
-type PayMethod = 'CARD' | 'EASY_PAY' | 'TRANSFER';
+type PaymentStatus = 'idle' | 'processing' | 'success' | 'failed';
 
 type PayMethodOption = {
-  id: PayMethod;
+  id: string;
   label: string;
   icon: string;
-  channelKey?: string;
-  easyPayProvider?: string;
 };
 
 const PAY_METHODS: PayMethodOption[] = [
   { id: 'CARD', label: '신용카드', icon: '💳' },
-  { id: 'EASY_PAY', label: '카카오페이', icon: '🟡', easyPayProvider: 'KAKAOPAY' },
-  { id: 'EASY_PAY', label: '토스페이', icon: '🔵', easyPayProvider: 'TOSSPAY' },
-  { id: 'EASY_PAY', label: '네이버페이', icon: '🟢', easyPayProvider: 'NAVERPAY' },
+  { id: 'EASY_PAY', label: '카카오페이', icon: '🟡' },
+  { id: 'EASY_PAY', label: '토스페이', icon: '🔵' },
+  { id: 'EASY_PAY', label: '네이버페이', icon: '🟢' },
   { id: 'TRANSFER', label: '계좌이체', icon: '🏦' },
 ];
 
 const MAX_RETRY_COUNT = 3;
-
-const FAILURE_MESSAGES: Record<string, string> = {
-  'CARD_LIMIT_EXCEEDED': '카드 한도가 초과되었습니다. 다른 카드를 이용해 주세요.',
-  'CARD_DECLINED': '카드가 거절되었습니다. 카드사에 문의해 주세요.',
-  'INSUFFICIENT_FUNDS': '잔액이 부족합니다.',
-  'NETWORK_ERROR': '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
-  'TIMEOUT': '결제 시간이 초과되었습니다. 다시 시도해 주세요.',
-};
-
-function getFailureMessage(errorCode: string | undefined, defaultMsg: string): string {
-  if (errorCode && FAILURE_MESSAGES[errorCode]) {
-    return FAILURE_MESSAGES[errorCode];
-  }
-  return defaultMsg || '결제 처리 중 오류가 발생했습니다.';
-}
 
 export default function CashBuyPage() {
   const router = useRouter();
@@ -90,64 +70,29 @@ export default function CashBuyPage() {
     setSuccessMessage('');
     setFailureReason('');
     setSelectedProductId(product.id);
-    setPaymentStatus('preparing');
+    setPaymentStatus('processing');
 
     try {
-      // Step 1: Prepare payment from backend
-      const prepareData = await preparePayment(product.id);
-      const { paymentId, storeId } = prepareData;
+      const selectedPaymentMethod = PAY_METHODS[selectedMethod].id;
+      await chargeCash(product.cashAmount, selectedPaymentMethod);
 
-      // Step 2: Call PortOne payment
-      setPaymentStatus('processing');
-      const method = PAY_METHODS[selectedMethod];
-      const paymentRequest: Record<string, unknown> = {
-        storeId: storeId,
-        paymentId: paymentId,
-        orderName: product.name,
-        totalAmount: product.priceKrw,
-        currency: 'KRW',
-        channelKey: method.channelKey || process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY || 'channel-key-test',
-        payMethod: method.id,
-      };
-      if (method.easyPayProvider) {
-        paymentRequest.easyPay = { easyPayProvider: method.easyPayProvider };
-      }
-      const response = await PortOne.requestPayment(paymentRequest as Parameters<typeof PortOne.requestPayment>[0]);
-
-      if (response?.code != null) {
-        // Payment failed
-        const newCount = failureCount + 1;
-        setFailureCount(newCount);
-        setPaymentStatus('failed');
-        const reason = getFailureMessage(response.code, response.message || '알 수 없는 오류');
-        setFailureReason(reason);
-        setMessage(`결제 실패: ${reason}`);
-        setSelectedProductId(null);
-        return;
-      }
-
-      // Step 3: Confirm payment with backend
-      await confirmPayment(paymentId, response.paymentId);
-
-      // Step 4: Refresh wallet balance
+      // Refresh wallet balance
       const walletData = await getWallet();
-      setNewBalance(walletData.balanceCash ?? walletData.balance ?? 0);
+      const balance = walletData.balanceCash ?? walletData.balance ?? 0;
+      setNewBalance(balance);
 
-      // Success!
       setFailureCount(0);
       setPaymentStatus('success');
-      setSuccessMessage(`충전 완료! 새로운 잔액: ${(walletData.balanceCash ?? walletData.balance ?? 0).toLocaleString()}원`);
+      setSuccessMessage(`충전 완료! 새로운 잔액: ${balance.toLocaleString()}원`);
 
-      // Auto redirect after 3 seconds
       setTimeout(() => {
         router.push(returnTo || '/wallet');
       }, 3000);
-
-    } catch (error: any) {
+    } catch (error: unknown) {
       const newCount = failureCount + 1;
       setFailureCount(newCount);
       setPaymentStatus('failed');
-      const reason = getFailureMessage(undefined, error.message);
+      const reason = error instanceof Error ? error.message : '결제 처리 중 오류가 발생했습니다.';
       setFailureReason(reason);
       setMessage(reason);
       setSelectedProductId(null);
@@ -276,19 +221,12 @@ export default function CashBuyPage() {
           </div>
         </div>
 
-        {loading || paymentStatus === 'preparing' ? (
+        {loading ? (
           <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
             {[1, 2, 3].map((i) => (
               <div key={i} className="border-2 border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] rounded-2xl p-6 min-h-[180px] flex items-center justify-center">
                 <div className="text-center text-[var(--color-text-muted-card)]">
-                  {paymentStatus === 'preparing' ? (
-                    <>
-                      <div className="text-4xl mb-2">&#129463;</div>
-                      <div>결제 준비 중...</div>
-                    </>
-                  ) : (
-                    '불러오는 중...'
-                  )}
+                  불러오는 중...
                 </div>
               </div>
             ))}
@@ -365,7 +303,7 @@ export default function CashBuyPage() {
         <div className="mt-4">
           <button
             onClick={() => router.push('/wallet')}
-            disabled={paymentStatus === 'processing' || paymentStatus === 'preparing'}
+            disabled={paymentStatus === 'processing'}
             className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 text-sm hover:bg-[#C9A227]/10 disabled:opacity-50 disabled:cursor-not-allowed bg-transparent"
           >
             지갑으로 돌아가기

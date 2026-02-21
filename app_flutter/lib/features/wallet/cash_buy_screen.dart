@@ -1,9 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/api_client.dart';
 import '../../shared/theme.dart';
+import 'wallet_screen.dart';
 
 final cashProductsProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
@@ -133,19 +135,32 @@ class _CashBuyScreenState extends ConsumerState<CashBuyScreen> {
       });
 
       final apiClient = ref.read(apiClientProvider);
-      await apiClient.buyCash(amount: amount.toInt());
+      final response = await apiClient.buyCash(amount: amount.toInt());
+      final data = response.data as Map<String, dynamic>;
+      final newBalance = data['newBalance'] as num?;
 
-      // Fetch updated wallet balance
-      final walletResponse = await apiClient.getWallet();
-      final walletData = walletResponse.data as Map<String, dynamic>;
-      final balance = walletData['balanceCash'] ?? walletData['balance'] ?? 0;
+      // Invalidate wallet/credit providers so wallet screen refreshes
+      ref.invalidate(walletProvider);
+      ref.invalidate(creditBalanceProvider);
+      ref.invalidate(transactionsProvider);
 
       if (mounted) {
         setState(() {
           _paymentStatus = _PaymentStatus.success;
-          _newBalance = (balance as num).toInt();
+          _newBalance = newBalance?.toInt();
           _failureCount = 0;
         });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              newBalance != null
+                  ? '충전 완료! 새 잔액: ${_formatCurrency(newBalance)}원'
+                  : '충전이 완료되었습니다.',
+            ),
+            backgroundColor: AppColors.gold,
+          ),
+        );
 
         // Auto redirect after 3 seconds
         Future.delayed(const Duration(seconds: 3), () {
@@ -158,14 +173,32 @@ class _CashBuyScreenState extends ConsumerState<CashBuyScreen> {
           }
         });
       }
-    } catch (e) {
+    } on DioException catch (e) {
       if (mounted) {
         final newCount = _failureCount + 1;
-        final reason = _getFailureMessage(null, e.toString());
+        final errorCode = e.response?.data is Map
+            ? (e.response!.data as Map<String, dynamic>)['errorCode']
+                ?.toString()
+            : null;
+        final serverMsg = e.response?.data is Map
+            ? (e.response!.data as Map<String, dynamic>)['message']
+                ?.toString() ?? ''
+            : '';
+        final reason = _getFailureMessage(errorCode, serverMsg);
         setState(() {
           _failureCount = newCount;
           _paymentStatus = _PaymentStatus.failed;
           _failureReason = reason;
+          selectedProductIndex = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        final newCount = _failureCount + 1;
+        setState(() {
+          _failureCount = newCount;
+          _paymentStatus = _PaymentStatus.failed;
+          _failureReason = '결제 처리 중 오류가 발생했습니다.';
           selectedProductIndex = null;
         });
       }
