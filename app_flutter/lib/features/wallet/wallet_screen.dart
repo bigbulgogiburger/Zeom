@@ -169,8 +169,8 @@ class WalletScreen extends ConsumerWidget {
               // Credit balance card
               creditAsync.when(
                 data: (credit) {
-                  final remaining = credit['remaining'] ?? 0;
-                  final used = credit['used'] ?? 0;
+                  final remaining = credit['remainingUnits'] ?? credit['remaining'] ?? 0;
+                  final used = credit['usedUnits'] ?? credit['used'] ?? 0;
                   return Container(
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(horizontal: 16),

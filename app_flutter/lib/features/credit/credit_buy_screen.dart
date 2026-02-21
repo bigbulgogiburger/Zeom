@@ -17,7 +17,7 @@ final _creditBalanceProvider = FutureProvider<int>((ref) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.getCreditBalance();
   final data = response.data as Map<String, dynamic>;
-  return (data['balance'] ?? data['credits'] ?? 0) as int;
+  return (data['remainingUnits'] ?? data['remainingCredits'] ?? data['balance'] ?? 0) as int;
 });
 
 final _walletBalanceProvider = FutureProvider<int>((ref) async {
@@ -82,7 +82,7 @@ class _CreditBuyScreenState extends ConsumerState<CreditBuyScreen> {
       final creditResponse = await apiClient.getCreditBalance();
       final creditData = creditResponse.data as Map<String, dynamic>;
       final newBalance =
-          (creditData['balance'] ?? creditData['credits'] ?? 0) as int;
+          (creditData['remainingUnits'] ?? creditData['remainingCredits'] ?? 0) as int;
 
       if (mounted) {
         setState(() {
@@ -619,7 +619,7 @@ class _CreditBuyScreenState extends ConsumerState<CreditBuyScreen> {
                             final name = product['name'] ?? '';
                             final priceKrw = product['priceKrw'] ?? 0;
                             final durationMinutes =
-                                product['durationMinutes'];
+                                product['minutes'] ?? product['durationMinutes'];
                             final creditUnits = durationMinutes != null
                                 ? ((durationMinutes as num).toInt() / 30)
                                     .ceil()

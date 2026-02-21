@@ -643,7 +643,7 @@ class _CashBuyScreenState extends ConsumerState<CashBuyScreen> {
                             final priceKrw = product['priceKrw'] ?? 0;
                             final description = product['description'];
                             final durationMinutes =
-                                product['durationMinutes'];
+                                product['minutes'] ?? product['durationMinutes'];
 
                             return Card(
                               color: isSelected
