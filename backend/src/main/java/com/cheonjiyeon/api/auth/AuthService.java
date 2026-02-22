@@ -81,6 +81,11 @@ public class AuthService {
         if (req.birthDate() != null && !req.birthDate().isBlank()) {
             user.setBirthDate(LocalDate.parse(req.birthDate()));
         }
+        if (req.birthHour() != null) user.setBirthHour(req.birthHour());
+        if (req.calendarType() != null) {
+            user.setCalendarType(req.calendarType());
+        }
+        if (req.isLeapMonth() != null) user.setIsLeapMonth(req.isLeapMonth());
         if (Boolean.TRUE.equals(req.termsAgreed())) {
             user.setTermsAgreed(true);
             user.setTermsAgreedAt(LocalDateTime.now());

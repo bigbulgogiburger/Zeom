@@ -51,7 +51,8 @@ description: Flutter 앱 품질 및 React-Flutter UX 동기화 검증. Flutter �
 | `app_flutter/lib/features/dispute/dispute_list_screen.dart` | 분쟁 목록 |
 | `app_flutter/lib/features/dispute/dispute_detail_screen.dart` | 분쟁 상세 |
 | `app_flutter/lib/features/dispute/dispute_create_screen.dart` | 분쟁 생성 |
-| `app_flutter/lib/features/fortune/fortune_screen.dart` | 운세 상세 |
+| `app_flutter/lib/features/fortune/fortune_screen.dart` | 운세 상세 (사주 기반 + 오행 차트) |
+| `app_flutter/lib/features/fortune/saju_chart_screen.dart` | 사주 명식 화면 (4기둥 시각화) |
 | `app_flutter/lib/features/auth/onboarding_screen.dart` | 온보딩 플로우 |
 | `app_flutter/lib/core/push_notification_service.dart` | 푸시 알림 서비스 |
 | `app_flutter/pubspec.yaml` | 의존성 정의 |

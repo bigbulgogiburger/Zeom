@@ -17,7 +17,10 @@ public class AuthDtos {
             @Size(max = 20) String phone,
             String birthDate,
             @Size(max = 10) String gender,
-            Boolean termsAgreed
+            Boolean termsAgreed,
+            @Size(max = 10) String birthHour,
+            @Size(max = 10) String calendarType,
+            Boolean isLeapMonth
     ) {}
 
     public record LoginRequest(

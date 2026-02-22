@@ -21,9 +21,25 @@ const YEARS = Array.from({ length: 71 }, (_, i) => 2010 - i);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 
+const BIRTH_HOURS = [
+  { value: '자시', label: '자시 (쥐) 23:30~01:30' },
+  { value: '축시', label: '축시 (소) 01:30~03:30' },
+  { value: '인시', label: '인시 (호랑이) 03:30~05:30' },
+  { value: '묘시', label: '묘시 (토끼) 05:30~07:30' },
+  { value: '진시', label: '진시 (용) 07:30~09:30' },
+  { value: '사시', label: '사시 (뱀) 09:30~11:30' },
+  { value: '오시', label: '오시 (말) 11:30~13:30' },
+  { value: '미시', label: '미시 (양) 13:30~15:30' },
+  { value: '신시', label: '신시 (원숭이) 15:30~17:30' },
+  { value: '유시', label: '유시 (닭) 17:30~19:30' },
+  { value: '술시', label: '술시 (개) 19:30~21:30' },
+  { value: '해시', label: '해시 (돼지) 21:30~23:30' },
+  { value: 'unknown', label: '모름' },
+];
+
 const TERMS_DETAIL: Record<string, string> = {
   terms: '제1조 (목적)\n이 약관은 천지연꽃신당(이하 "회사")이 제공하는 서비스의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.\n\n제2조 (정의)\n"서비스"란 회사가 제공하는 온라인 상담 예약 및 관련 부가서비스를 의미합니다.\n\n제3조 (약관의 효력)\n본 약관은 서비스를 이용하고자 하는 모든 이용자에게 적용됩니다.',
-  privacy: '1. 수집하는 개인정보 항목\n- 필수: 이메일, 이름, 비밀번호\n- 선택: 전화번호, 생년월일, 성별\n\n2. 개인정보의 수집 및 이용목적\n- 회원 가입 및 관리\n- 서비스 제공 및 상담 예약\n- 고지사항 전달\n\n3. 개인정보의 보유 및 이용기간\n- 회원 탈퇴 시까지 (법령에 의한 보존 의무 기간 제외)',
+  privacy: '1. 수집하는 개인정보 항목\n- 필수: 이메일, 이름, 비밀번호, 생년월일, 태어난 시간, 성별\n- 선택: 전화번호\n\n2. 개인정보의 수집 및 이용목적\n- 회원 가입 및 관리\n- 서비스 제공 및 상담 예약\n- 운세 서비스 제공\n- 고지사항 전달\n\n3. 개인정보의 보유 및 이용기간\n- 회원 탈퇴 시까지 (법령에 의한 보존 의무 기간 제외)',
   marketing: '마케팅 정보 수신에 동의하시면 다음과 같은 혜택을 받으실 수 있습니다:\n- 신규 상담사 소개\n- 이벤트 및 할인 정보\n- 서비스 업데이트 안내\n\n수신 동의는 언제든지 철회하실 수 있습니다.',
 };
 
@@ -98,6 +114,9 @@ export default function SignupPage() {
   const [birthYear, setBirthYear] = useState('');
   const [birthMonth, setBirthMonth] = useState('');
   const [birthDay, setBirthDay] = useState('');
+  const [birthHour, setBirthHour] = useState('');
+  const [calendarType, setCalendarType] = useState<'solar' | 'lunar'>('solar');
+  const [isLeapMonth, setIsLeapMonth] = useState(false);
   const [gender, setGender] = useState('');
 
   // Step 3
@@ -118,6 +137,12 @@ export default function SignupPage() {
   const passwordError = password && !passwordValid ? t('validation.passwordMin') : '';
   const confirmError = confirmPassword && !confirmValid ? t('validation.passwordMismatch') : '';
   const nameError = name && !nameValid ? t('validation.nameMin') : '';
+
+  // Step 2 validation
+  const birthDateFilled = birthYear && birthMonth && birthDay;
+  const birthHourFilled = birthHour !== '';
+  const genderFilled = gender === 'male' || gender === 'female';
+  const step2Valid = !!birthDateFilled && birthHourFilled && genderFilled;
 
   // Step 3 validation
   const requiredTermsAgreed = termsAgreed && privacyAgreed;
@@ -152,7 +177,10 @@ export default function SignupPage() {
     };
     if (phone) body.phone = phone;
     if (birthDate) body.birthDate = birthDate;
+    if (birthHour) body.birthHour = birthHour;
     if (gender && gender !== 'none') body.gender = gender;
+    body.calendarType = calendarType;
+    if (calendarType === 'lunar') body.isLeapMonth = isLeapMonth;
 
     try {
       const res = await fetch(`${API_BASE}/api/v1/auth/signup`, {
@@ -275,21 +303,14 @@ export default function SignupPage() {
             </div>
           )}
 
-          {/* Step 2: Additional Info */}
+          {/* Step 2: Saju Birth Info */}
           {step === 1 && (
             <div>
-              <FormField label={t('phone')} hint={t('phoneHint')}>
-                <Input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
-                  placeholder="010-0000-0000"
-                  autoComplete="tel"
-                  className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
-                />
-              </FormField>
+              <p className="text-sm text-[#C9A227] text-center mb-6 leading-relaxed">
+                {t('sajuInfoHeader')}
+              </p>
 
-              <FormField label={t('birthDate')} hint={t('birthDateHint')}>
+              <FormField label={t('birthDate')} required hint={t('birthDateHint')}>
                 <div className="grid grid-cols-3 gap-2">
                   <select
                     value={birthYear}
@@ -324,9 +345,59 @@ export default function SignupPage() {
                 </div>
               </FormField>
 
-              <FormField label={t('gender')} hint={t('genderHint')}>
+              <FormField label={t('calendarType')} required>
+                <div className="flex items-center gap-6 pt-1">
+                  <label className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
+                    <input
+                      type="radio"
+                      name="calendarType"
+                      value="solar"
+                      checked={calendarType === 'solar'}
+                      onChange={() => { setCalendarType('solar'); setIsLeapMonth(false); }}
+                      className="w-[18px] h-[18px] cursor-pointer accent-[#C9A227]"
+                    />
+                    {t('calendarSolar')}
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
+                    <input
+                      type="radio"
+                      name="calendarType"
+                      value="lunar"
+                      checked={calendarType === 'lunar'}
+                      onChange={() => setCalendarType('lunar')}
+                      className="w-[18px] h-[18px] cursor-pointer accent-[#C9A227]"
+                    />
+                    {t('calendarLunar')}
+                  </label>
+                  {calendarType === 'lunar' && (
+                    <label className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
+                      <Checkbox
+                        checked={isLeapMonth}
+                        onCheckedChange={(checked) => setIsLeapMonth(checked === true)}
+                        className="w-[18px] h-[18px]"
+                      />
+                      {t('leapMonth')}
+                    </label>
+                  )}
+                </div>
+              </FormField>
+
+              <FormField label={t('birthHour')} required hint={t('birthHourHint')}>
+                <select
+                  value={birthHour}
+                  onChange={(e) => setBirthHour(e.target.value)}
+                  className={selectClass}
+                >
+                  <option value="">-- {t('birthHour')} --</option>
+                  {BIRTH_HOURS.map((h) => (
+                    <option key={h.value} value={h.value}>{h.label}</option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField label={t('gender')} required hint={t('genderHint')}>
                 <div className="flex gap-6 pt-1">
-                  {([['male', t('male')], ['female', t('female')], ['none', t('noSelect')]] as const).map(([val, label]) => (
+                  {([['male', t('male')], ['female', t('female')]] as const).map(([val, label]) => (
                     <label key={val} className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
                       <input
                         type="radio"
@@ -342,6 +413,17 @@ export default function SignupPage() {
                 </div>
               </FormField>
 
+              <FormField label={t('phone')} hint={t('phoneHint')}>
+                <Input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  placeholder="010-0000-0000"
+                  autoComplete="tel"
+                  className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+                />
+              </FormField>
+
               <div className="flex gap-3 mt-6">
                 <Button
                   type="button"
@@ -353,6 +435,7 @@ export default function SignupPage() {
                 </Button>
                 <ActionButton
                   onClick={() => setStep(2)}
+                  disabled={!step2Valid}
                   className="flex-1"
                 >
                   {tc('next')}

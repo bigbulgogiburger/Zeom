@@ -22,7 +22,7 @@ description: Flyway DB 마이그레이션과 JPA Entity 일관성 검증. 마이
 
 | File | Purpose |
 |------|---------|
-| `backend/src/main/resources/db/migration/V*.sql` | Flyway 마이그레이션 파일 (V1~V53) |
+| `backend/src/main/resources/db/migration/V*.sql` | Flyway 마이그레이션 파일 (V1~V57) |
 | `backend/src/test/resources/db/migration/V99__test_extra_slots.sql` | 테스트 전용 마이그레이션 |
 | `backend/src/main/resources/application.yml` | Flyway 설정 (enabled, ddl-auto: none) |
 | `backend/src/main/java/com/cheonjiyeon/api/auth/UserEntity.java` | users 테이블 |
@@ -52,7 +52,8 @@ description: Flyway DB 마이그레이션과 JPA Entity 일관성 검증. 마이
 | `backend/src/main/java/com/cheonjiyeon/api/referral/ReferralRewardEntity.java` | referral_rewards 테이블 (V44) |
 | `backend/src/main/java/com/cheonjiyeon/api/chat/ChatMessageEntity.java` | chat_messages 테이블 (V46) |
 | `backend/src/main/java/com/cheonjiyeon/api/settlement/CounselorSettlementEntity.java` | counselor_settlements 테이블 (V50) |
-| `backend/src/main/java/com/cheonjiyeon/api/fortune/FortuneEntity.java` | fortunes 테이블 (V53) |
+| `backend/src/main/java/com/cheonjiyeon/api/fortune/FortuneEntity.java` | daily_fortunes 테이블 (V53, V57 확장) |
+| `backend/src/main/java/com/cheonjiyeon/api/fortune/SajuChartEntity.java` | saju_charts 테이블 (V56) |
 
 ## Workflow
 

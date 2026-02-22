@@ -138,7 +138,30 @@ grep -n 'oauth/login\|provider\|code' web/src/app/auth/callback/page.tsx
 **FAIL:** 프론트엔드에 버튼이 있으나 백엔드에 OAuthProvider 구현체가 없음
 **수정:** 백엔드 OAuthProvider 구현체 추가 또는 프론트엔드 버튼 제거
 
-### Step 6: 인증 Context 상태 관리
+### Step 6: 회원가입 사주 정보 필드 처리 확인
+
+**도구:** Grep
+
+백엔드 SignupRequest 사주 필드:
+```bash
+grep -n 'birthHour\|calendarType\|isLeapMonth' backend/src/main/java/com/cheonjiyeon/api/auth/AuthDtos.java
+```
+
+AuthService에서 필드 처리:
+```bash
+grep -n 'birthHour\|calendarType\|isLeapMonth' backend/src/main/java/com/cheonjiyeon/api/auth/AuthService.java
+```
+
+프론트엔드 전송:
+```bash
+grep -n 'birthHour\|calendarType\|isLeapMonth' web/src/app/signup/page.tsx
+```
+
+**PASS:** SignupRequest에 birthHour/calendarType/isLeapMonth 필드 존재, AuthService에서 UserEntity에 저장, 프론트엔드에서 전송
+**FAIL:** 필드 누락 또는 처리 로직 누락
+**수정:** 누락 필드/처리 로직 추가
+
+### Step 7: 인증 Context 상태 관리
 
 **도구:** Grep
 

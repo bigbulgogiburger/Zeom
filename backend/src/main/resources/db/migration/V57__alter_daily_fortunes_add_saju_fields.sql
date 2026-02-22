@@ -1,0 +1,14 @@
+-- 사주 기반 운세를 위한 daily_fortunes 확장
+ALTER TABLE daily_fortunes ADD COLUMN daily_gan_index INT;
+ALTER TABLE daily_fortunes ADD COLUMN daily_ji_index INT;
+ALTER TABLE daily_fortunes ADD COLUMN twelve_unseong VARCHAR(20);
+ALTER TABLE daily_fortunes ADD COLUMN sipseong VARCHAR(20);
+ALTER TABLE daily_fortunes ADD COLUMN harmony_type VARCHAR(20);
+ALTER TABLE daily_fortunes ADD COLUMN career_score INT;
+ALTER TABLE daily_fortunes ADD COLUMN career_text VARCHAR(500);
+ALTER TABLE daily_fortunes ADD COLUMN study_score INT;
+ALTER TABLE daily_fortunes ADD COLUMN study_text VARCHAR(500);
+ALTER TABLE daily_fortunes ADD COLUMN lucky_time VARCHAR(50);
+ALTER TABLE daily_fortunes ADD COLUMN warning_time VARCHAR(50);
+ALTER TABLE daily_fortunes ADD COLUMN saju_insight VARCHAR(500);
+ALTER TABLE daily_fortunes ADD COLUMN counselor_cta_message VARCHAR(300);

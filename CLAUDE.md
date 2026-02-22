@@ -225,7 +225,7 @@ GitHub Actions workflows in `.github/workflows/`:
 | `verify-auth-system` | 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀번호 리셋, 소셜 로그인) |
 | `verify-notification-system` | 알림/이메일/SMS 시스템 무결성 검증 |
 | `verify-flutter-app` | Flutter 앱 품질 및 React-Flutter UX 동기화 검증 |
-| `verify-fortune` | 운세 엔진 도메인 무결성 검증 |
+| `verify-fortune` | 운세 엔진 도메인 무결성 검증 (사주 기반 + SHA-256 폴백) |
 | `verify-seo-analytics` | SEO/GA4/온보딩 시스템 무결성 검증 |
 | `verify-implementation` | 통합 검증 (위 스킬 순차 실행) |
 | `manage-skills` | 검증 스킬 유지보수 및 드리프트 탐지 |

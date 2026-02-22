@@ -12,6 +12,11 @@ class AuthService {
     required String name,
     String? phone,
     String? referralCode,
+    String? birthDate,
+    String? birthHour,
+    String? gender,
+    String? calendarType,
+    bool? isLeapMonth,
   }) async {
     try {
       final response = await _apiClient.dio.post(
@@ -21,6 +26,11 @@ class AuthService {
           'password': password,
           'name': name,
           if (phone != null) 'phone': phone,
+          if (birthDate != null) 'birthDate': birthDate,
+          if (birthHour != null) 'birthHour': birthHour,
+          if (gender != null) 'gender': gender,
+          if (calendarType != null) 'calendarType': calendarType,
+          if (isLeapMonth != null) 'isLeapMonth': isLeapMonth,
         },
       );
 

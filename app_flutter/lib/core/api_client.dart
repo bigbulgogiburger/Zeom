@@ -357,4 +357,33 @@ class ApiClient {
   Future<Response> getFortuneSummary() async {
     return await _dio.get('/api/v1/fortune/summary');
   }
+
+  // ==================== Saju APIs ====================
+  Future<Response> getSajuChart() async {
+    return await _dio.get('/api/v1/saju/my-chart');
+  }
+
+  Future<Response> updateBirthInfo({
+    required String birthDate,
+    required String birthHour,
+    required String gender,
+    String calendarType = 'solar',
+    bool? isLeapMonth,
+  }) async {
+    return await _dio.put('/api/v1/saju/birth-info', data: {
+      'birthDate': birthDate,
+      'birthHour': birthHour,
+      'gender': gender,
+      'calendarType': calendarType,
+      if (isLeapMonth != null) 'isLeapMonth': isLeapMonth,
+    });
+  }
+
+  Future<Response> getMonthlyFortune() async {
+    return await _dio.get('/api/v1/fortune/monthly');
+  }
+
+  Future<Response> getYearlyFortune() async {
+    return await _dio.get('/api/v1/fortune/yearly');
+  }
 }

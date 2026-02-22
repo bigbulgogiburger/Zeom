@@ -23,16 +23,38 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  // Step tracking (0: basic info, 1: additional info, 2: terms)
+  // Step tracking (0: basic info, 1: saju info, 2: terms)
   int _currentStep = 0;
 
-  // Step 2: Additional info
+  // Step 2: Saju info
   String? _selectedGender;
+  int? _birthYear;
+  int? _birthMonth;
+  int? _birthDay;
+  String? _selectedBirthHour;
+  String _calendarType = 'solar';
+  bool _isLeapMonth = false;
 
   // Step 3: Terms
   bool _termsAgreed = false;
   bool _privacyAgreed = false;
   bool _marketingAgreed = false;
+
+  static const List<Map<String, String>> _birthHourOptions = [
+    {'value': '자시', 'label': '자시 (쥐) 23:30~01:30'},
+    {'value': '축시', 'label': '축시 (소) 01:30~03:30'},
+    {'value': '인시', 'label': '인시 (호랑이) 03:30~05:30'},
+    {'value': '묘시', 'label': '묘시 (토끼) 05:30~07:30'},
+    {'value': '진시', 'label': '진시 (용) 07:30~09:30'},
+    {'value': '사시', 'label': '사시 (뱀) 09:30~11:30'},
+    {'value': '오시', 'label': '오시 (말) 11:30~13:30'},
+    {'value': '미시', 'label': '미시 (양) 13:30~15:30'},
+    {'value': '신시', 'label': '신시 (원숭이) 15:30~17:30'},
+    {'value': '유시', 'label': '유시 (닭) 17:30~19:30'},
+    {'value': '술시', 'label': '술시 (개) 19:30~21:30'},
+    {'value': '해시', 'label': '해시 (돼지) 21:30~23:30'},
+    {'value': 'unknown', 'label': '모름'},
+  ];
 
   @override
   void dispose() {
@@ -56,6 +78,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         name.length >= 2;
   }
 
+  bool get _step2Valid {
+    return _birthYear != null &&
+        _birthMonth != null &&
+        _birthDay != null &&
+        _selectedBirthHour != null &&
+        _selectedGender != null;
+  }
+
   bool get _requiredTermsAgreed => _termsAgreed && _privacyAgreed;
 
   bool get _allTermsAgreed =>
@@ -69,6 +99,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     });
   }
 
+  int _daysInMonth(int year, int month) {
+    return DateTime(year, month + 1, 0).day;
+  }
+
+  String _formatBirthDate() {
+    final y = _birthYear.toString().padLeft(4, '0');
+    final m = _birthMonth.toString().padLeft(2, '0');
+    final d = _birthDay.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+
   Future<void> _handleSignup() async {
     final success = await ref.read(authProvider.notifier).signup(
           email: _emailController.text.trim(),
@@ -80,6 +121,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           referralCode: _referralCodeController.text.trim().isEmpty
               ? null
               : _referralCodeController.text.trim(),
+          birthDate: _formatBirthDate(),
+          birthHour: _selectedBirthHour!,
+          gender: _selectedGender!,
+          calendarType: _calendarType,
+          isLeapMonth: _calendarType == 'lunar' ? _isLeapMonth : null,
         );
 
     if (mounted) {
@@ -126,7 +172,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               const SizedBox(height: 28),
               // Step content
               if (_currentStep == 0) _buildStep1BasicInfo(),
-              if (_currentStep == 1) _buildStep2AdditionalInfo(),
+              if (_currentStep == 1) _buildStep2SajuInfo(),
               if (_currentStep == 2) _buildStep3Terms(authState),
               const SizedBox(height: 24),
               // Social login divider and buttons
@@ -161,7 +207,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Widget _buildProgressIndicator() {
-    const stepLabels = ['기본 정보', '추가 정보', '약관 동의'];
+    const stepLabels = ['기본 정보', '사주 정보', '약관 동의'];
 
     return Row(
       children: List.generate(stepLabels.length * 2 - 1, (index) {
@@ -363,10 +409,230 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     );
   }
 
-  Widget _buildStep2AdditionalInfo() {
+  Widget _buildStep2SajuInfo() {
+    final currentYear = DateTime.now().year;
+    final maxDays = (_birthYear != null && _birthMonth != null)
+        ? _daysInMonth(_birthYear!, _birthMonth!)
+        : 31;
+
+    // Reset day if it exceeds max days for selected month
+    if (_birthDay != null && _birthDay! > maxDays) {
+      _birthDay = null;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Header text
+        Text(
+          '정확한 운세를 위해\n태어난 정보를 입력해주세요',
+          style: GoogleFonts.notoSerif(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            height: 1.4,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+
+        // Birth date (required)
+        Text(
+          '생년월일 *',
+          style: GoogleFonts.notoSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            // Year
+            Expanded(
+              flex: 3,
+              child: DropdownButtonFormField<int>(
+                value: _birthYear,
+                hint: Text(
+                  '년',
+                  style: GoogleFonts.notoSans(fontSize: 13, color: AppColors.textSecondary),
+                ),
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+                items: List.generate(
+                  currentYear - 1940 + 1,
+                  (i) {
+                    final year = currentYear - i;
+                    return DropdownMenuItem(
+                      value: year,
+                      child: Text('$year', style: GoogleFonts.notoSans(fontSize: 13)),
+                    );
+                  },
+                ),
+                onChanged: (val) => setState(() {
+                  _birthYear = val;
+                }),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Month
+            Expanded(
+              flex: 2,
+              child: DropdownButtonFormField<int>(
+                value: _birthMonth,
+                hint: Text(
+                  '월',
+                  style: GoogleFonts.notoSans(fontSize: 13, color: AppColors.textSecondary),
+                ),
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+                items: List.generate(12, (i) {
+                  final month = i + 1;
+                  return DropdownMenuItem(
+                    value: month,
+                    child: Text('$month월', style: GoogleFonts.notoSans(fontSize: 13)),
+                  );
+                }),
+                onChanged: (val) => setState(() {
+                  _birthMonth = val;
+                }),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Day
+            Expanded(
+              flex: 2,
+              child: DropdownButtonFormField<int>(
+                value: _birthDay,
+                hint: Text(
+                  '일',
+                  style: GoogleFonts.notoSans(fontSize: 13, color: AppColors.textSecondary),
+                ),
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+                items: List.generate(maxDays, (i) {
+                  final day = i + 1;
+                  return DropdownMenuItem(
+                    value: day,
+                    child: Text('$day일', style: GoogleFonts.notoSans(fontSize: 13)),
+                  );
+                }),
+                onChanged: (val) => setState(() {
+                  _birthDay = val;
+                }),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Calendar type (양력/음력) + leap month
+        Row(
+          children: [
+            _buildCalendarTypeChip('solar', '양력'),
+            const SizedBox(width: 12),
+            _buildCalendarTypeChip('lunar', '음력'),
+            if (_calendarType == 'lunar') ...[
+              const SizedBox(width: 16),
+              GestureDetector(
+                onTap: () => setState(() => _isLeapMonth = !_isLeapMonth),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Checkbox(
+                        value: _isLeapMonth,
+                        onChanged: (val) => setState(() => _isLeapMonth = val ?? false),
+                        activeColor: AppColors.gold,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '윤달',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 13,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // Birth hour (required)
+        Text(
+          '태어난 시간 *',
+          style: GoogleFonts.notoSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _selectedBirthHour,
+          hint: Text(
+            '태어난 시간을 선택하세요',
+            style: GoogleFonts.notoSans(fontSize: 13, color: AppColors.textSecondary),
+          ),
+          isExpanded: true,
+          decoration: const InputDecoration(
+            prefixIcon: Icon(Icons.access_time_outlined),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          ),
+          items: _birthHourOptions.map((opt) {
+            return DropdownMenuItem(
+              value: opt['value'],
+              child: Text(
+                opt['label']!,
+                style: GoogleFonts.notoSans(fontSize: 13),
+              ),
+            );
+          }).toList(),
+          onChanged: (val) => setState(() {
+            _selectedBirthHour = val;
+          }),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '모르시면 "모름"을 선택하세요',
+          style: GoogleFonts.notoSans(
+            fontSize: 11,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Gender (required)
+        Text(
+          '성별 *',
+          style: GoogleFonts.notoSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            _buildGenderChip('male', '남성'),
+            const SizedBox(width: 12),
+            _buildGenderChip('female', '여성'),
+          ],
+        ),
+        const SizedBox(height: 20),
+
         // Phone field (optional)
         TextFormField(
           controller: _phoneController,
@@ -378,25 +644,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        // Gender selection (optional)
-        Text(
-          '성별 (선택)',
-          style: GoogleFonts.notoSans(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            _buildGenderChip('male', '남성'),
-            const SizedBox(width: 12),
-            _buildGenderChip('female', '여성'),
-            const SizedBox(width: 12),
-            _buildGenderChip('none', '선택안함'),
-          ],
-        ),
-        const SizedBox(height: 24),
+
         // Referral code (optional)
         TextFormField(
           controller: _referralCodeController,
@@ -407,6 +655,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           ),
         ),
         const SizedBox(height: 32),
+
         // Navigation buttons
         Row(
           children: [
@@ -419,13 +668,46 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: () => setState(() => _currentStep = 2),
+                onPressed: _step2Valid
+                    ? () => setState(() => _currentStep = 2)
+                    : null,
                 child: const Text('다음'),
               ),
             ),
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildCalendarTypeChip(String value, String label) {
+    final isSelected = _calendarType == value;
+    return GestureDetector(
+      onTap: () => setState(() {
+        _calendarType = value;
+        if (value == 'solar') _isLeapMonth = false;
+      }),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.gold : AppColors.border,
+            width: isSelected ? 2 : 1,
+          ),
+          color: isSelected
+              ? AppColors.gold.withOpacity(0.1)
+              : Colors.white,
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.notoSans(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected ? AppColors.gold : AppColors.textPrimary,
+          ),
+        ),
+      ),
     );
   }
 

@@ -70,6 +70,22 @@ class MoreScreen extends ConsumerWidget {
           // Menu items
           _buildMenuItem(
             context,
+            icon: Icons.auto_awesome,
+            title: '나의 사주',
+            onTap: () {
+              context.push('/my-saju');
+            },
+          ),
+          _buildMenuItem(
+            context,
+            icon: Icons.wb_sunny_outlined,
+            title: '오늘의 운세',
+            onTap: () {
+              context.push('/fortune');
+            },
+          ),
+          _buildMenuItem(
+            context,
             icon: Icons.calendar_today,
             title: '내 예약',
             onTap: () {

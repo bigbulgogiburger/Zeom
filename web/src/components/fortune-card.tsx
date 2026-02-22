@@ -18,6 +18,16 @@ type FortuneData = {
   luckyColor: string;
   luckyNumber: number;
   luckyDirection: string;
+  // Saju-based fields
+  dailyPillar?: {
+    gan: string;
+    ji: string;
+    ganHanja?: string;
+    jiHanja?: string;
+  };
+  myDayGan?: string;
+  relationship?: string;
+  twelveUnseong?: string;
 };
 
 const MOCK_FORTUNE: FortuneData = {
@@ -115,6 +125,7 @@ export default function FortuneCard() {
 
   const today = new Date();
   const dateStr = `${today.getFullYear()}. ${today.getMonth() + 1}. ${today.getDate()}.`;
+  const hasSajuData = !!(fortune.dailyPillar && fortune.myDayGan);
 
   return (
     <div className="glass-card p-6 mx-auto max-w-[800px] transition-all duration-300">
@@ -127,9 +138,17 @@ export default function FortuneCard() {
           <span className="text-3xl">\uD83D\uDD2E</span>
           <div>
             <h3 className="text-lg font-heading font-bold text-[#C9A227] m-0">
-              오늘의 운세
+              \uC624\uB298\uC758 \uC6B4\uC138
             </h3>
-            <p className="text-xs text-[#a49484] m-0">{dateStr}</p>
+            <p className="text-xs text-[#a49484] m-0">
+              {dateStr}
+              {hasSajuData && fortune.dailyPillar && (
+                <span className="ml-1 text-[#C9A227]">
+                  {fortune.dailyPillar.ganHanja || fortune.dailyPillar.gan}
+                  {fortune.dailyPillar.jiHanja || fortune.dailyPillar.ji}\uC77C
+                </span>
+              )}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -149,6 +168,20 @@ export default function FortuneCard() {
       <p className="text-sm text-[#a49484] mt-3 mb-0 leading-relaxed">
         {fortune.summary}
       </p>
+
+      {/* Saju relationship badge */}
+      {hasSajuData && fortune.relationship && (
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[rgba(201,162,39,0.1)] text-xs text-[#C9A227] font-bold">
+            {fortune.relationship}
+          </span>
+          {fortune.twelveUnseong && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[rgba(201,162,39,0.1)] text-xs text-[#C9A227] font-bold">
+              {fortune.twelveUnseong}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Expanded content */}
       {expanded && (
@@ -191,26 +224,26 @@ export default function FortuneCard() {
                   href="/fortune"
                   className="btn-ghost text-sm px-5 py-2 min-h-0"
                 >
-                  자세히 보기
+                  \uC790\uC138\uD788 \uBCF4\uAE30
                 </Link>
                 <Link
                   href="/counselors"
                   className="btn-primary-lg text-sm px-5 py-2 min-h-0"
                 >
-                  상담 받기
+                  \uC0C1\uB2F4 \uBC1B\uAE30
                 </Link>
               </div>
             </>
           ) : (
             <div className="text-center py-4">
               <p className="text-[#a49484] text-sm mb-4">
-                로그인하시면 맞춤 운세와 상세 분석을 확인할 수 있습니다.
+                \uB85C\uADF8\uC778\uD558\uC2DC\uBA74 \uB9DE\uCDA4 \uC6B4\uC138\uC640 \uC0C1\uC138 \uBD84\uC11D\uC744 \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
               </p>
               <Link
                 href="/login"
                 className="btn-primary-lg text-sm px-8 py-2 min-h-0"
               >
-                로그인하여 상세 보기
+                \uB85C\uADF8\uC778\uD558\uC5EC \uC0C1\uC138 \uBCF4\uAE30
               </Link>
             </div>
           )}

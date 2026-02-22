@@ -20,6 +20,7 @@ import '../features/dispute/dispute_list_screen.dart';
 import '../features/dispute/dispute_detail_screen.dart';
 import '../features/dispute/dispute_create_screen.dart';
 import '../features/fortune/fortune_screen.dart';
+import '../features/fortune/saju_chart_screen.dart';
 import '../features/auth/onboarding_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -193,6 +194,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/fortune',
         builder: (context, state) => const FortuneScreen(),
+      ),
+      GoRoute(
+        path: '/my-saju',
+        builder: (context, state) => const SajuChartScreen(),
       ),
       // Onboarding route
       GoRoute(

@@ -69,6 +69,15 @@ public class UserEntity {
     @Column(name = "oauth_id", length = 255)
     private String oauthId;
 
+    @Column(name = "birth_hour", length = 10)
+    private String birthHour;
+
+    @Column(name = "calendar_type", length = 10)
+    private String calendarType;
+
+    @Column(name = "is_leap_month")
+    private Boolean isLeapMonth;
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
@@ -113,4 +122,10 @@ public class UserEntity {
     public void setOauthProvider(String oauthProvider) { this.oauthProvider = oauthProvider; }
     public String getOauthId() { return oauthId; }
     public void setOauthId(String oauthId) { this.oauthId = oauthId; }
+    public String getBirthHour() { return birthHour; }
+    public void setBirthHour(String birthHour) { this.birthHour = birthHour; }
+    public String getCalendarType() { return calendarType; }
+    public void setCalendarType(String calendarType) { this.calendarType = calendarType; }
+    public Boolean getIsLeapMonth() { return isLeapMonth; }
+    public void setIsLeapMonth(Boolean isLeapMonth) { this.isLeapMonth = isLeapMonth; }
 }

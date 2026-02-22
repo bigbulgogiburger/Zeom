@@ -94,6 +94,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String name,
     String? phone,
     String? referralCode,
+    String? birthDate,
+    String? birthHour,
+    String? gender,
+    String? calendarType,
+    bool? isLeapMonth,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -103,6 +108,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
         name: name,
         phone: phone,
         referralCode: referralCode,
+        birthDate: birthDate,
+        birthHour: birthHour,
+        gender: gender,
+        calendarType: calendarType,
+        isLeapMonth: isLeapMonth,
       );
       // Fetch user info after signup
       final user = await _authService.getCurrentUser();
