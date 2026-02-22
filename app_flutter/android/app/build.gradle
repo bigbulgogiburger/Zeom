@@ -28,6 +28,7 @@ android {
     ndkVersion "26.1.10909125"
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -42,7 +43,7 @@ android {
 
     defaultConfig {
         applicationId "com.cheonjiyeon.cheonjiyeon_app"
-        minSdk 21
+        minSdk 23
         targetSdk 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -61,4 +62,11 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+repositories {
+    maven { url "https://repo.sendbird.com/public/maven" }
+}
+
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+    implementation 'com.sendbird.sdk:sendbird-calls:1.12.2'
+}

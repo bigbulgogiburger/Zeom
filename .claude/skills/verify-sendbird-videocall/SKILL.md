@@ -46,6 +46,15 @@ description: Sendbird 화상통화 파이프라인 검증. 통화 관련 코드 
 | `web/src/app/consultation/components/connection-monitor.tsx` | 연결 안정성 모니터 |
 | `web/src/app/consultation/components/quality-indicator.tsx` | 통화 품질 인디케이터 |
 | `backend/src/main/resources/application.yml` | Sendbird 설정 (enabled, app-id, api-token) |
+| `app_flutter/lib/core/sendbird_calls_service.dart` | Flutter MethodChannel bridge to native Sendbird SDK |
+| `app_flutter/lib/features/consultation/consultation_room_screen.dart` | Flutter video call room (waiting screen, video views, auto-retry) |
+| `app_flutter/ios/Runner/SendbirdCallsPlugin.swift` | iOS native Sendbird Calls plugin (MethodChannel handler) |
+| `app_flutter/ios/Runner/SendbirdVideoViewFactory.swift` | iOS PlatformView for Sendbird video rendering |
+| `app_flutter/ios/Runner/AppDelegate.swift` | iOS plugin registration |
+| `app_flutter/android/app/src/main/kotlin/com/cheonjiyeon/cheonjiyeon_app/SendbirdCallsPlugin.kt` | Android native Sendbird Calls plugin |
+| `app_flutter/android/app/src/main/kotlin/com/cheonjiyeon/cheonjiyeon_app/SendbirdVideoViewFactory.kt` | Android PlatformView for Sendbird video rendering |
+| `app_flutter/android/app/src/main/kotlin/com/cheonjiyeon/cheonjiyeon_app/MainActivity.kt` | Android plugin registration |
+| `backend/src/main/java/com/cheonjiyeon/api/booking/BookingDtos.java` | BookingResponse DTO (customerName field) |
 
 ## Workflow
 
@@ -165,6 +174,45 @@ grep -n 'consultationType\|chat\|video' web/src/app/counselors/\[id\]/CounselorD
 **PASS:** BookingEntity에 consultationType 필드 존재, 프론트엔드에서 상담 유형 선택 UI 존재
 **FAIL:** 상담 유형 분기 누락
 **수정:** 누락된 분기 로직 추가
+
+### Step 9: Flutter 네이티브 통합 검증
+
+**도구:** Grep
+
+1. **MethodChannel 이름 일치**: Dart `sendbird_calls_service.dart`의 channel name이 iOS `SendbirdCallsPlugin.swift`와 Android `SendbirdCallsPlugin.kt`에서 동일한지 확인 (expected: `com.cheonjiyeon/sendbird_calls`)
+   ```bash
+   grep -rn "com.cheonjiyeon/sendbird_calls" app_flutter/lib/core/sendbird_calls_service.dart app_flutter/ios/Runner/SendbirdCallsPlugin.swift app_flutter/android/app/src/main/kotlin/com/cheonjiyeon/cheonjiyeon_app/SendbirdCallsPlugin.kt
+   ```
+   **PASS**: 3개 파일 모두에서 동일한 channel name 발견
+   **FAIL**: 일부 파일에서 누락되거나 불일치
+
+2. **PlatformView viewType 일치**: Dart에서 사용하는 `sendbird-local-video`, `sendbird-remote-video` viewType이 iOS AppDelegate.swift와 Android MainActivity.kt에서 동일하게 등록되는지 확인
+   ```bash
+   grep -rn "sendbird-local-video\|sendbird-remote-video" app_flutter/lib/core/sendbird_calls_service.dart app_flutter/ios/Runner/AppDelegate.swift app_flutter/android/app/src/main/kotlin/com/cheonjiyeon/cheonjiyeon_app/MainActivity.kt
+   ```
+   **PASS**: local/remote viewType이 Dart와 iOS/Android 모두에서 일치
+   **FAIL**: viewType 불일치
+
+3. **Video View 바인딩**: iOS plugin의 `registerVideoView`와 `didConnect`에서 `updateLocalVideoView`/`updateRemoteVideoView`가 호출되는지 확인
+   ```bash
+   grep -n "registerVideoView\|updateLocalVideoView\|updateRemoteVideoView" app_flutter/ios/Runner/SendbirdCallsPlugin.swift
+   ```
+   **PASS**: registerVideoView 메서드 존재하고 updateLocal/RemoteVideoView 호출
+   **FAIL**: 비디오 뷰 바인딩 누락 (검은 화면 발생)
+
+4. **웹 상담사 미디어 뷰 바인딩**: `room/page.tsx`에서 `callConnected` 후 `setLocalMediaView`/`setRemoteMediaView`가 호출되는지 확인
+   ```bash
+   grep -n "setLocalMediaView\|setRemoteMediaView" web/src/app/counselor/room/page.tsx
+   ```
+   **PASS**: useEffect에서 callConnected 시 미디어 뷰 바인딩
+   **FAIL**: 미디어 뷰 바인딩 없음 (비디오 안 보임)
+
+5. **BookingResponse customerName**: 상담사용 today bookings에서 customerName이 반환되는지 확인
+   ```bash
+   grep -n "customerName" backend/src/main/java/com/cheonjiyeon/api/booking/BookingDtos.java
+   ```
+   **PASS**: BookingResponse record에 customerName 필드 존재
+   **FAIL**: 상담사 화면에서 고객 이름 표시 불가
 
 ## Output Format
 

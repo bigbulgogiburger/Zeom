@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// Sendbird Calls service - bridges to native iOS/Android SDKs via MethodChannel.
@@ -130,6 +132,44 @@ class SendbirdCallsService {
         final error = call.arguments as String? ?? '알 수 없는 오류';
         onError?.call(error);
     }
+  }
+
+  /// Builds a platform-specific widget for the local video view.
+  /// Returns null if in fake mode.
+  Widget? buildLocalVideoView() {
+    if (useFake) return null;
+    const viewType = 'sendbird-local-video';
+    if (Platform.isIOS) {
+      return const UiKitView(
+        viewType: viewType,
+        creationParamsCodec: StandardMessageCodec(),
+      );
+    } else if (Platform.isAndroid) {
+      return const AndroidView(
+        viewType: viewType,
+        creationParamsCodec: StandardMessageCodec(),
+      );
+    }
+    return null;
+  }
+
+  /// Builds a platform-specific widget for the remote video view.
+  /// Returns null if in fake mode.
+  Widget? buildRemoteVideoView() {
+    if (useFake) return null;
+    const viewType = 'sendbird-remote-video';
+    if (Platform.isIOS) {
+      return const UiKitView(
+        viewType: viewType,
+        creationParamsCodec: StandardMessageCodec(),
+      );
+    } else if (Platform.isAndroid) {
+      return const AndroidView(
+        viewType: viewType,
+        creationParamsCodec: StandardMessageCodec(),
+      );
+    }
+    return null;
   }
 
   void dispose() {

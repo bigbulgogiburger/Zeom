@@ -48,7 +48,23 @@ description: Flutter 앱 품질 및 React-Flutter UX 동기화 검증. Flutter �
 | `app_flutter/lib/features/refund/refund_list_screen.dart` | 환불 목록 |
 | `app_flutter/lib/features/refund/refund_request_screen.dart` | 환불 요청 |
 | `app_flutter/lib/features/more/more_screen.dart` | 더보기/설정 |
+| `app_flutter/lib/features/dispute/dispute_list_screen.dart` | 분쟁 목록 |
+| `app_flutter/lib/features/dispute/dispute_detail_screen.dart` | 분쟁 상세 |
+| `app_flutter/lib/features/dispute/dispute_create_screen.dart` | 분쟁 생성 |
+| `app_flutter/lib/features/fortune/fortune_screen.dart` | 운세 상세 |
+| `app_flutter/lib/features/auth/onboarding_screen.dart` | 온보딩 플로우 |
+| `app_flutter/lib/core/push_notification_service.dart` | 푸시 알림 서비스 |
 | `app_flutter/pubspec.yaml` | 의존성 정의 |
+| `app_flutter/ios/Runner/SendbirdCallsPlugin.swift` | iOS Sendbird Calls native plugin |
+| `app_flutter/ios/Runner/SendbirdVideoViewFactory.swift` | iOS PlatformView for video rendering |
+| `app_flutter/ios/Runner/AppDelegate.swift` | iOS plugin/PlatformView registration |
+| `app_flutter/ios/Podfile` | iOS native dependencies (SendBirdCalls pod) |
+| `app_flutter/ios/Runner/Info.plist` | iOS permissions (camera, microphone) |
+| `app_flutter/android/app/src/main/kotlin/com/cheonjiyeon/cheonjiyeon_app/SendbirdCallsPlugin.kt` | Android Sendbird Calls native plugin |
+| `app_flutter/android/app/src/main/kotlin/com/cheonjiyeon/cheonjiyeon_app/SendbirdVideoViewFactory.kt` | Android PlatformView for video rendering |
+| `app_flutter/android/app/src/main/kotlin/com/cheonjiyeon/cheonjiyeon_app/MainActivity.kt` | Android plugin registration |
+| `app_flutter/android/app/build.gradle` | Android dependencies (Sendbird SDK) |
+| `app_flutter/android/app/src/main/AndroidManifest.xml` | Android permissions (camera, audio, bluetooth) |
 | `web/src/components/api-client.ts` | React API 클라이언트 (매칭 비교용) |
 | `web/src/app/globals.css` | React 디자인 토큰 (매칭 비교용) |
 
@@ -192,6 +208,68 @@ grep -n "durationMinutes\|minutes" app_flutter/lib/features/wallet/cash_buy_scre
 **FAIL:** 이전 필드명(`remaining`, `balance`, `durationMinutes`)만 단독 사용
 **수정:** Backend API 응답 필드(`remainingUnits`, `minutes`)를 우선 참조하고 호환성 fallback 추가
 
+### Step 9: 네이티브 플랫폼 통합 검증
+
+**도구:** Bash / Grep
+
+1. **iOS Podfile에 SendBirdCalls 포함 확인**
+
+```bash
+grep -n "SendBirdCalls" app_flutter/ios/Podfile
+```
+
+**PASS:** SendBirdCalls pod이 Podfile에 존재
+**FAIL:** iOS에서 Sendbird 통화 불가
+
+2. **Android build.gradle에 Sendbird SDK 포함 확인**
+
+```bash
+grep -n "sendbird-calls" app_flutter/android/app/build.gradle
+```
+
+**PASS:** sendbird-calls 의존성 존재
+**FAIL:** Android에서 Sendbird 통화 불가
+
+3. **iOS 카메라/마이크 권한 확인**
+
+```bash
+grep -n "NSCameraUsageDescription\|NSMicrophoneUsageDescription" app_flutter/ios/Runner/Info.plist
+```
+
+**PASS:** 카메라, 마이크 Usage Description 모두 존재
+**FAIL:** 권한 누락 시 앱 크래시 발생
+
+4. **Android 권한 확인**
+
+```bash
+grep -n "CAMERA\|RECORD_AUDIO" app_flutter/android/app/src/main/AndroidManifest.xml
+```
+
+**PASS:** CAMERA, RECORD_AUDIO 권한 모두 존재
+**FAIL:** 권한 누락 시 런타임 에러
+
+### Step 10: UTC 시간 파싱 안전성 검증
+
+**도구:** Grep
+
+1. **DateTime.parse() 직접 사용 금지**: booking_list_screen.dart에서 API 응답의 날짜 문자열을 `DateTime.parse()` 대신 `_parseUtc()`로 파싱하는지 확인
+
+```bash
+grep -n "DateTime.parse" app_flutter/lib/features/booking/booking_list_screen.dart
+```
+
+**PASS:** `DateTime.parse` 직접 호출 없음 (모두 _parseUtc 사용)
+**FAIL:** `DateTime.parse` 직접 호출 발견 — UTC→KST 변환 누락으로 시간 오류 발생
+
+2. **null-safe 캐스팅**: API 응답 맵에서 `as String`, `as int` 하드 캐스팅 대신 null-safe 캐스팅 사용 확인
+
+```bash
+grep -n "as String;" app_flutter/lib/features/home/home_screen.dart | grep -v "as String?"
+```
+
+**PASS:** 하드 캐스팅 없음
+**FAIL:** null이 올 수 있는 필드에 하드 캐스팅 사용 → 런타임 크래시
+
 ## Output Format
 
 | 검사 | 결과 | 상세 |
@@ -204,6 +282,8 @@ grep -n "durationMinutes\|minutes" app_flutter/lib/features/wallet/cash_buy_scre
 | Riverpod 패턴 | PASS/FAIL | 패턴 위반: ... |
 | API 클라이언트 매칭 | PASS/FAIL | 누락 메서드: ... |
 | API 필드명 동기화 | PASS/FAIL | 불일치 필드: ... |
+| 네이티브 플랫폼 통합 | PASS/FAIL | 누락 의존성/권한: ... |
+| UTC 시간 파싱 안전성 | PASS/FAIL | 위반 위치: ... |
 
 ## Exceptions
 

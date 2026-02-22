@@ -27,6 +27,8 @@ description: 모든 검증 스킬을 순차적으로 실행하는 통합 검증.
 | 7 | verify-auth-system | 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀번호 리셋, 소셜 로그인) |
 | 8 | verify-notification-system | 알림/이메일/SMS 시스템 무결성 검증 |
 | 9 | verify-flutter-app | Flutter 앱 품질 및 React-Flutter UX 동기화 검증 |
+| 10 | verify-fortune | 운세 엔진 도메인 무결성 검증 |
+| 11 | verify-seo-analytics | SEO/GA4/온보딩 시스템 무결성 검증 |
 
 ## Workflow
 
@@ -51,6 +53,8 @@ git diff HEAD --name-only
 - `backend/**/auth/` 또는 `web/src/app/login/` 또는 `web/src/app/signup/` 또는 `web/src/app/forgot-password/` → `verify-auth-system`
 - `backend/**/notification/` 또는 `web/src/app/notifications/` 또는 `web/src/components/notification-bell.tsx` → `verify-notification-system`
 - `app_flutter/lib/**/*.dart` → `verify-flutter-app`
+- `backend/**/fortune/` 또는 `web/src/app/fortune/` 또는 `web/src/components/fortune-card.tsx` → `verify-fortune`
+- `web/src/app/robots.ts` 또는 `web/src/app/sitemap.ts` 또는 `web/src/components/analytics*` 또는 `web/src/app/onboarding/` → `verify-seo-analytics`
 
 ### Step 3: 결과 집계
 

@@ -22,12 +22,14 @@ import CreditIndicator from '@/components/credit-indicator';
 
 type Booking = {
   id: number;
-  customerName: string;
-  startTime: string;
-  endTime: string;
+  customerName?: string;
+  counselorName?: string;
+  startAt?: string;
+  endAt?: string;
   status: string;
-  durationMinutes?: number;
-  specialty?: string;
+  slots?: { slotId: number; startAt: string; endAt: string }[];
+  creditsUsed?: number;
+  consultationType?: string;
 };
 
 enum RoomState {
@@ -98,7 +100,11 @@ export default function CounselorRoomPage() {
     try {
       const data = await getCounselorTodayBookings();
       const list: Booking[] = Array.isArray(data) ? data : data.content || [];
-      list.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      list.sort((a, b) => {
+        const aTime = a.slots?.[0]?.startAt || a.startAt || '';
+        const bTime = b.slots?.[0]?.startAt || b.startAt || '';
+        return new Date(aTime).getTime() - new Date(bTime).getTime();
+      });
       setBookings(list);
     } catch {
       // Non-critical, bookings are supplementary info
@@ -161,10 +167,13 @@ export default function CounselorRoomPage() {
           setCallerInfo({
             customerName: matched?.customerName || call.caller?.nickname || '고객',
             bookingTime: matched
-              ? `${formatTime(matched.startTime)} ~ ${formatTime(matched.endTime)}`
+              ? (() => {
+                  const start = matched.slots?.[0]?.startAt || matched.startAt;
+                  const end = matched.slots?.[matched.slots!.length - 1]?.endAt || matched.endAt;
+                  return start ? `${formatTime(start)} ~ ${end ? formatTime(end) : ''}` : undefined;
+                })()
               : undefined,
-            specialty: matched?.specialty,
-            durationMinutes: matched?.durationMinutes,
+            specialty: matched?.consultationType === 'VIDEO' ? '영상상담' : matched?.consultationType === 'CHAT' ? '채팅상담' : undefined,
           });
 
           setIncomingCall(call);
@@ -341,9 +350,23 @@ export default function CounselorRoomPage() {
   }, []);
 
   function formatTime(isoString: string) {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    // Backend returns UTC LocalDateTime without timezone suffix — append 'Z' to parse as UTC
+    const utcString = isoString.endsWith('Z') ? isoString : isoString + 'Z';
+    const date = new Date(utcString);
+    return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' });
   }
+
+  // Bind media views to the call after video elements are rendered
+  useEffect(() => {
+    if (callConnected && currentCallRef.current) {
+      if (localVideoRef.current) {
+        currentCallRef.current.setLocalMediaView(localVideoRef.current);
+      }
+      if (remoteVideoRef.current) {
+        currentCallRef.current.setRemoteMediaView(remoteVideoRef.current);
+      }
+    }
+  }, [callConnected]);
 
   // Check PIP support
   useEffect(() => {
@@ -412,7 +435,7 @@ export default function CounselorRoomPage() {
       {/* ===== WAITING MODE ===== */}
       {roomState !== RoomState.IN_CALL && !callConnected && (
         <>
-          {/* Waiting indicator */}
+          {/* Waiting indicator with next booking info */}
           {roomState === RoomState.WAITING && (
             <Card>
               <div className="text-center py-8">
@@ -420,9 +443,36 @@ export default function CounselorRoomPage() {
                 <div className="font-heading font-bold text-lg text-[#C9A227] mb-2">
                   고객의 호출을 기다리는 중...
                 </div>
-                <div className="text-sm text-[#a49484]">
-                  고객이 상담실에 입장하면 자동으로 알림이 표시됩니다.
-                </div>
+                {waitingBookings.length > 0 ? (
+                  <div className="mt-4 space-y-2">
+                    <div className="text-sm text-[#a49484]">
+                      다음 예약 고객
+                    </div>
+                    <div className="inline-flex items-center gap-3 bg-[#1a1612] rounded-xl px-5 py-3">
+                      <div className="w-10 h-10 rounded-full bg-[#C9A227]/20 flex items-center justify-center text-lg">
+                        👤
+                      </div>
+                      <div className="text-left">
+                        <div className="font-heading font-bold text-[#f9f5ed]">
+                          {waitingBookings[0].customerName || '고객'}
+                        </div>
+                        <div className="text-xs text-[#a49484]">
+                          {(() => {
+                            const start = waitingBookings[0].slots?.[0]?.startAt || waitingBookings[0].startAt;
+                            const end = waitingBookings[0].slots?.[waitingBookings[0].slots.length - 1]?.endAt || waitingBookings[0].endAt;
+                            if (!start) return '시간 미정';
+                            return `${formatTime(start)} ~ ${end ? formatTime(end) : ''}`;
+                          })()}
+                          {waitingBookings[0].consultationType && ` · ${waitingBookings[0].consultationType === 'VIDEO' ? '영상' : '채팅'}`}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-[#a49484]">
+                    고객이 상담실에 입장하면 자동으로 알림이 표시됩니다.
+                  </div>
+                )}
               </div>
             </Card>
           )}
@@ -472,12 +522,22 @@ export default function CounselorRoomPage() {
                     <div className="flex items-center justify-between gap-4 flex-wrap">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold font-heading">{booking.customerName}</span>
+                          <span className="font-bold font-heading">{booking.customerName || '고객'}</span>
                           <StatusBadge value={booking.status} />
+                          {booking.consultationType && (
+                            <span className="text-xs text-[#a49484]">
+                              {booking.consultationType === 'VIDEO' ? '영상' : '채팅'}
+                            </span>
+                          )}
                         </div>
                         <div className="text-sm text-[#a49484]">
-                          {formatTime(booking.startTime)} ~ {formatTime(booking.endTime)}
-                          {booking.durationMinutes && ` (${booking.durationMinutes}분)`}
+                          {(() => {
+                            const start = booking.slots?.[0]?.startAt || booking.startAt;
+                            const end = booking.slots?.[booking.slots!.length - 1]?.endAt || booking.endAt;
+                            if (!start) return '시간 미정';
+                            return `${formatTime(start)} ~ ${end ? formatTime(end) : ''}`;
+                          })()}
+                          {booking.creditsUsed ? ` (${booking.creditsUsed}크레딧)` : ''}
                         </div>
                       </div>
                     </div>

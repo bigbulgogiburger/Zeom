@@ -22,7 +22,7 @@ description: Flyway DB 마이그레이션과 JPA Entity 일관성 검증. 마이
 
 | File | Purpose |
 |------|---------|
-| `backend/src/main/resources/db/migration/V*.sql` | Flyway 마이그레이션 파일 (V1~V47) |
+| `backend/src/main/resources/db/migration/V*.sql` | Flyway 마이그레이션 파일 (V1~V53) |
 | `backend/src/test/resources/db/migration/V99__test_extra_slots.sql` | 테스트 전용 마이그레이션 |
 | `backend/src/main/resources/application.yml` | Flyway 설정 (enabled, ddl-auto: none) |
 | `backend/src/main/java/com/cheonjiyeon/api/auth/UserEntity.java` | users 테이블 |
@@ -51,6 +51,8 @@ description: Flyway DB 마이그레이션과 JPA Entity 일관성 검증. 마이
 | `backend/src/main/java/com/cheonjiyeon/api/referral/ReferralCodeEntity.java` | referral_codes 테이블 (V44) |
 | `backend/src/main/java/com/cheonjiyeon/api/referral/ReferralRewardEntity.java` | referral_rewards 테이블 (V44) |
 | `backend/src/main/java/com/cheonjiyeon/api/chat/ChatMessageEntity.java` | chat_messages 테이블 (V46) |
+| `backend/src/main/java/com/cheonjiyeon/api/settlement/CounselorSettlementEntity.java` | counselor_settlements 테이블 (V50) |
+| `backend/src/main/java/com/cheonjiyeon/api/fortune/FortuneEntity.java` | fortunes 테이블 (V53) |
 
 ## Workflow
 
@@ -133,6 +135,41 @@ grep -n 'CONSTRAINT\|CREATE INDEX' backend/src/main/resources/db/migration/V*.sq
 **FAIL:** 일관되지 않은 명명 패턴 발견
 **수정:** 새 마이그레이션에서 ALTER로 이름 수정
 
+### Step 7: MySQL 호환성 검증
+
+**도구:** Grep, Bash
+
+H2에서는 통과하지만 MySQL 8.0에서 실패하는 비호환 SQL 패턴을 검출한다.
+
+**1. CREATE INDEX IF NOT EXISTS 금지**: MySQL 8.0은 CREATE INDEX에서 IF NOT EXISTS를 지원하지 않음
+
+```bash
+grep -rn "CREATE INDEX IF NOT EXISTS" backend/src/main/resources/db/migration/V*.sql
+```
+
+**PASS**: 해당 패턴 없음
+**FAIL**: MySQL에서 마이그레이션 실패 — 프로시저로 감싸거나 INFORMATION_SCHEMA 체크 필요
+
+**2. ALTER COLUMN SET NULL 금지**: MySQL에서는 `ALTER TABLE ... ALTER COLUMN ... SET NULL` 대신 `MODIFY COLUMN` 사용
+
+```bash
+grep -rn "ALTER COLUMN.*SET NULL\|ALTER COLUMN.*SET DEFAULT" backend/src/main/resources/db/migration/V*.sql
+```
+
+**PASS**: 해당 패턴 없음
+**FAIL**: MySQL에서 구문 오류 — `MODIFY COLUMN <name> <full_type> NULL` 으로 변경
+
+**3. ADD COLUMN IF NOT EXISTS 금지**: MySQL 8.0은 ADD COLUMN에서 IF NOT EXISTS를 지원하지 않음
+
+```bash
+grep -rn "ADD COLUMN IF NOT EXISTS" backend/src/main/resources/db/migration/V*.sql
+```
+
+**PASS**: 해당 패턴 없음
+**FAIL**: MySQL에서 마이그레이션 실패 — 프로시저 사용 필요
+
+**예외**: H2 전용 테스트 마이그레이션 파일(`src/test/resources/db/migration/`)은 이 검증 대상에서 제외
+
 ## Output Format
 
 | 검사 | 결과 | 상세 |
@@ -143,10 +180,12 @@ grep -n 'CONSTRAINT\|CREATE INDEX' backend/src/main/resources/db/migration/V*.sq
 | ddl-auto 설정 | PASS/FAIL | 현재 값: ... |
 | 테스트 마이그레이션 분리 | PASS/FAIL | 위치: ... |
 | FK/Index 명명 | PASS/FAIL | 위반: ... |
+| MySQL 호환성 | PASS/FAIL | 비호환 패턴: ... |
 
 ## Exceptions
 
 1. **V20 gap**: V19 → V21 사이의 gap은 기존 알려진 이슈이며 위반이 아님
 2. **V21 테스트 데이터**: `V21__add_test_counselor_slots.sql`이 main에 있는 것은 기존 이슈이며 즉시 수정 불필요
 3. **H2 MODE=MySQL 차이**: H2와 MySQL 간의 미세한 SQL 차이는 위반이 아님 (예: AUTO_INCREMENT 지원)
-4. **V31~V47 다중 테이블 마이그레이션**: 하나의 마이그레이션 파일에 여러 CREATE TABLE이 포함되는 것은 관련 테이블 그룹의 경우 허용 (예: V43 coupons + coupon_usages)
+4. **V31~V53 다중 테이블 마이그레이션**: 하나의 마이그레이션 파일에 여러 CREATE TABLE이 포함되는 것은 관련 테이블 그룹의 경우 허용 (예: V43 coupons + coupon_usages)
+5. **ALTER TABLE 마이그레이션**: V50~V52처럼 기존 테이블에 컬럼/인덱스를 추가하는 마이그레이션은 대응 Entity가 이미 존재하므로 별도 Entity 생성 불필요

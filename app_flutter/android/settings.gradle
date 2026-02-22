@@ -14,6 +14,7 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven { url "https://repo.sendbird.com/public/maven" }
     }
 
     plugins {
@@ -24,6 +25,14 @@ pluginManagement {
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
     id "com.android.application" version "8.4.0" apply false
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://repo.sendbird.com/public/maven" }
+    }
 }
 
 include ":app"

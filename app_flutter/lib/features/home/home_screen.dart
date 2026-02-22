@@ -297,8 +297,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (_fortune == null) return const SizedBox.shrink();
 
-    final score = _fortune!['overallScore'] as int;
-    final summary = _fortune!['summary'] as String;
+    final score = (_fortune!['overallScore'] as num?)?.toInt() ?? 0;
+    final summary = (_fortune!['summary'] as String?) ?? '';
     final categories = (_fortune!['categories'] as List?)
         ?.map((e) => Map<String, dynamic>.from(e as Map))
         .toList() ?? [];
@@ -385,8 +385,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 if (_fortuneExpanded) ...[
                   const Divider(height: 24),
                   ...categories.map((cat) {
-                    final catScore = cat['score'] as int;
-                    final label = cat['label'] as String;
+                    final catScore = (cat['score'] as num?)?.toInt() ?? 0;
+                    final label = (cat['label'] as String?) ?? '';
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Row(

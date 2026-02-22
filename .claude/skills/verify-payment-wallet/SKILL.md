@@ -69,6 +69,8 @@ description: 결제/지갑/크레딧 시스템 무결성 검증. 결제 관련 �
 | `backend/src/main/java/com/cheonjiyeon/api/referral/ReferralCodeEntity.java` | 추천 코드 엔티티 |
 | `backend/src/main/java/com/cheonjiyeon/api/referral/ReferralRewardEntity.java` | 추천 보상 엔티티 |
 | `web/src/app/counselor/settlement/page.tsx` | 상담사 정산 페이지 |
+| `backend/src/main/java/com/cheonjiyeon/api/cash/ReceiptController.java` | 영수증 PDF 다운로드 엔드포인트 |
+| `backend/src/main/java/com/cheonjiyeon/api/cash/ReceiptPdfService.java` | 영수증 PDF 생성 서비스 |
 
 ## Workflow
 

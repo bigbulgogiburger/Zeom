@@ -14,8 +14,10 @@ description: 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀�
 ## When to Run
 
 - `backend/.../auth/` 패키지 파일 추가/변경 시
+- `backend/.../oauth/` 패키지 파일 추가/변경 시
 - `web/src/app/login/`, `signup/`, `forgot-password/`, `reset-password/`, `verify-email/` 변경 시
-- `web/src/components/auth-context.tsx` 변경 시
+- `web/src/app/auth/callback/` 변경 시
+- `web/src/components/auth-context.tsx`, `social-login-buttons.tsx` 변경 시
 - JWT/Refresh Token 관련 로직 변경 시
 - 소셜 로그인 프로바이더 추가/변경 시
 
@@ -33,12 +35,18 @@ description: 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀�
 | `backend/src/main/java/com/cheonjiyeon/api/auth/PasswordResetService.java` | 비밀번호 리셋 로직 |
 | `backend/src/main/java/com/cheonjiyeon/api/auth/PasswordResetTokenEntity.java` | 리셋 토큰 엔티티 |
 | `backend/src/main/java/com/cheonjiyeon/api/auth/PasswordResetTokenRepository.java` | 리셋 토큰 레포지토리 |
-| `backend/src/main/java/com/cheonjiyeon/api/auth/OAuthController.java` | 소셜 로그인 엔드포인트 |
-| `backend/src/main/java/com/cheonjiyeon/api/auth/OAuthService.java` | 소셜 로그인 서비스 |
-| `backend/src/main/java/com/cheonjiyeon/api/auth/SocialAccountEntity.java` | 소셜 계정 연동 엔티티 |
+| `backend/src/main/java/com/cheonjiyeon/api/oauth/OAuthProvider.java` | OAuth Provider 인터페이스 |
+| `backend/src/main/java/com/cheonjiyeon/api/oauth/OAuthLoginController.java` | OAuth 로그인 엔드포인트 (POST /api/v1/auth/oauth/login) |
+| `backend/src/main/java/com/cheonjiyeon/api/oauth/OAuthLoginService.java` | OAuth 로그인 서비스 (사용자 생성/병합/토큰 발급) |
+| `backend/src/main/java/com/cheonjiyeon/api/oauth/FakeOAuthProvider.java` | 개발용 Fake OAuth Provider |
+| `backend/src/main/java/com/cheonjiyeon/api/oauth/KakaoOAuthProvider.java` | 카카오 OAuth Provider |
+| `backend/src/main/java/com/cheonjiyeon/api/oauth/NaverOAuthProvider.java` | 네이버 OAuth Provider |
+| `backend/src/main/java/com/cheonjiyeon/api/oauth/OAuthUserInfo.java` | OAuth 사용자 정보 Record |
 | `backend/src/main/java/com/cheonjiyeon/api/auth/refresh/RefreshTokenEntity.java` | 리프레시 토큰 엔티티 |
 | `web/src/app/login/page.tsx` | 로그인 페이지 (소셜 로그인 버튼 포함) |
 | `web/src/app/signup/page.tsx` | 회원가입 페이지 (소셜 가입 포함) |
+| `web/src/app/auth/callback/page.tsx` | OAuth 콜백 페이지 (code→토큰 교환) |
+| `web/src/components/social-login-buttons.tsx` | 카카오/네이버 소셜 로그인 버튼 컴포넌트 |
 | `web/src/app/forgot-password/page.tsx` | 비밀번호 찾기 페이지 |
 | `web/src/app/reset-password/page.tsx` | 비밀번호 리셋 페이지 |
 | `web/src/app/verify-email/page.tsx` | 이메일 인증 페이지 |
@@ -47,6 +55,7 @@ description: 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀�
 | `backend/src/main/resources/db/migration/V31__email_verification.sql` | 이메일 인증 마이그레이션 |
 | `backend/src/main/resources/db/migration/V32__password_reset_tokens.sql` | 비밀번호 리셋 토큰 마이그레이션 |
 | `backend/src/main/resources/db/migration/V45__social_accounts.sql` | 소셜 계정 마이그레이션 |
+| `backend/src/main/resources/db/migration/V52__user_oauth_fields.sql` | OAuth 필드 마이그레이션 (oauth_provider, oauth_id) |
 
 ## Workflow
 
@@ -106,18 +115,28 @@ grep -rn 'reset-password\|forgot-password\|password.*reset' web/src/app/forgot-p
 **FAIL:** 플로우 단계 누락
 **수정:** 누락 단계 구현
 
-### Step 5: 소셜 로그인 프로바이더 확인
+### Step 5: OAuth Provider 패턴 확인
 
 **도구:** Grep
 
+OAuth Provider 인터페이스 구현체 확인:
 ```bash
-grep -n 'KAKAO\|NAVER\|GOOGLE\|provider' backend/src/main/java/com/cheonjiyeon/api/auth/OAuthService.java
-grep -n 'kakao\|naver\|google\|social' web/src/app/login/page.tsx
+grep -rn 'implements OAuthProvider' backend/src/main/java/com/cheonjiyeon/api/oauth/
 ```
 
-**PASS:** 백엔드에서 지원하는 프로바이더와 프론트엔드 버튼이 일치
-**FAIL:** 프론트엔드에 버튼이 있으나 백엔드에서 미지원
-**수정:** 백엔드 프로바이더 추가 또는 프론트엔드 버튼 제거
+프론트엔드 소셜 로그인 버튼 확인:
+```bash
+grep -n 'kakao\|naver\|google\|social' web/src/components/social-login-buttons.tsx
+```
+
+OAuth 콜백 페이지 확인:
+```bash
+grep -n 'oauth/login\|provider\|code' web/src/app/auth/callback/page.tsx
+```
+
+**PASS:** 백엔드 OAuthProvider 구현체와 프론트엔드 소셜 로그인 버튼이 일치, 콜백 페이지 존재
+**FAIL:** 프론트엔드에 버튼이 있으나 백엔드에 OAuthProvider 구현체가 없음
+**수정:** 백엔드 OAuthProvider 구현체 추가 또는 프론트엔드 버튼 제거
 
 ### Step 6: 인증 Context 상태 관리
 

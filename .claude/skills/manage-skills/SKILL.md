@@ -39,6 +39,8 @@ argument-hint: "[선택사항: 특정 스킬 이름 또는 집중할 영역]"
 | `verify-auth-system` | 인증/인가 시스템 무결성 검증 (이메일 인증, 비밀번호 리셋, 소셜 로그인) | `backend/**/auth/*.java`, `web/src/app/login/**`, `web/src/app/signup/**`, `web/src/app/forgot-password/**`, `web/src/app/reset-password/**`, `web/src/app/verify-email/**` |
 | `verify-notification-system` | 알림/이메일/SMS 시스템 무결성 검증 | `backend/**/notification/*.java`, `web/src/app/notifications/**`, `web/src/app/notification-preferences/**`, `web/src/components/notification-bell.tsx` |
 | `verify-flutter-app` | Flutter 앱 품질 및 React-Flutter UX 동기화 검증 | `app_flutter/lib/**/*.dart` |
+| `verify-fortune` | 운세 엔진 도메인 무결성 검증 | `backend/**/fortune/*.java`, `web/src/app/fortune/**`, `web/src/components/fortune-card.tsx`, `app_flutter/**/fortune/*.dart` |
+| `verify-seo-analytics` | SEO/GA4/온보딩 시스템 무결성 검증 | `web/src/app/robots.ts`, `web/src/app/sitemap.ts`, `web/src/components/analytics*.tsx`, `web/src/components/json-ld.tsx`, `web/src/app/onboarding/**` |
 
 ## 워크플로우
 

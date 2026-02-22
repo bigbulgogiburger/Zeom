@@ -143,7 +143,8 @@ public class ConsultationSessionController {
                 booking.getPaymentRetryCount(),
                 booking.getConsultationType(),
                 null,
-                null
+                null,
+                booking.getUser() != null ? booking.getUser().getName() : null
         );
     }
 }

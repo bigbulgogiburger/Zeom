@@ -427,7 +427,8 @@ public class BookingService {
                 booking.getPaymentRetryCount(),
                 booking.getConsultationType(),
                 cancelType,
-                refundedCredits
+                refundedCredits,
+                booking.getUser() != null ? booking.getUser().getName() : null
         );
     }
 }

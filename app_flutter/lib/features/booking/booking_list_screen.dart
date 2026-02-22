@@ -18,21 +18,25 @@ const _maxPaymentRetries = 3;
 const _entryBeforeMs = 5 * 60 * 1000;
 const _entryAfterMs = 10 * 60 * 1000;
 
+/// Parse ISO datetime string from backend (UTC) into a proper UTC DateTime.
+DateTime _parseUtc(String s) =>
+    DateTime.parse(s.endsWith('Z') ? s : '${s}Z');
+
 /// Groups consecutive 30-min slots into merged time ranges.
 List<Map<String, String>> _groupConsecutiveSlots(
     List<Map<String, dynamic>> slots) {
   if (slots.isEmpty) return [];
   final sorted = List<Map<String, dynamic>>.from(slots)
-    ..sort((a, b) => DateTime.parse(a['startAt'] as String)
-        .compareTo(DateTime.parse(b['startAt'] as String)));
+    ..sort((a, b) => _parseUtc(a['startAt'] as String)
+        .compareTo(_parseUtc(b['startAt'] as String)));
 
   final ranges = <Map<String, String>>[];
   var rangeStart = sorted[0]['startAt'] as String;
   var rangeEnd = sorted[0]['endAt'] as String;
 
   for (var i = 1; i < sorted.length; i++) {
-    final slotStart = DateTime.parse(sorted[i]['startAt'] as String);
-    final prevEnd = DateTime.parse(rangeEnd);
+    final slotStart = _parseUtc(sorted[i]['startAt'] as String);
+    final prevEnd = _parseUtc(rangeEnd);
     if (!slotStart.isAfter(prevEnd)) {
       rangeEnd = sorted[i]['endAt'] as String;
     } else {
@@ -50,11 +54,11 @@ List<Map<String, String>> _groupConsecutiveSlots(
     List<Map<String, dynamic>> slots) {
   if (slots.isEmpty) return null;
   final sorted = List<Map<String, dynamic>>.from(slots)
-    ..sort((a, b) => DateTime.parse(a['startAt'] as String)
-        .compareTo(DateTime.parse(b['startAt'] as String)));
+    ..sort((a, b) => _parseUtc(a['startAt'] as String)
+        .compareTo(_parseUtc(b['startAt'] as String)));
 
   final earliestStart =
-      DateTime.parse(sorted.first['startAt'] as String).millisecondsSinceEpoch;
+      _parseUtc(sorted.first['startAt'] as String).millisecondsSinceEpoch;
   final now = DateTime.now().millisecondsSinceEpoch;
   final hoursUntilStart = (earliestStart - now) / (1000 * 60 * 60);
 
@@ -71,10 +75,10 @@ List<Map<String, String>> _groupConsecutiveSlots(
 bool _canReschedule(List<Map<String, dynamic>> slots) {
   if (slots.isEmpty) return false;
   final sorted = List<Map<String, dynamic>>.from(slots)
-    ..sort((a, b) => DateTime.parse(a['startAt'] as String)
-        .compareTo(DateTime.parse(b['startAt'] as String)));
+    ..sort((a, b) => _parseUtc(a['startAt'] as String)
+        .compareTo(_parseUtc(b['startAt'] as String)));
   final earliestStart =
-      DateTime.parse(sorted.first['startAt'] as String).millisecondsSinceEpoch;
+      _parseUtc(sorted.first['startAt'] as String).millisecondsSinceEpoch;
   final now = DateTime.now().millisecondsSinceEpoch;
   final hoursUntilStart = (earliestStart - now) / (1000 * 60 * 60);
   return hoursUntilStart >= 24;
@@ -172,13 +176,13 @@ class _BookingListScreenState extends ConsumerState<BookingListScreen> {
   }
 
   String _formatDate(String isoString) {
-    final dt = DateTime.parse(isoString);
+    final dt = _parseUtc(isoString).toLocal();
     const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
     return '${dt.year}년 ${dt.month}월 ${dt.day}일 (${weekdays[dt.weekday - 1]})';
   }
 
   String _formatTime(String isoString) {
-    final dt = DateTime.parse(isoString);
+    final dt = _parseUtc(isoString).toLocal();
     return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
@@ -206,13 +210,13 @@ class _BookingListScreenState extends ConsumerState<BookingListScreen> {
     if (slots.isEmpty) return (phase: 'ended', minutesUntilEntry: 0);
 
     final sorted = List<Map<String, dynamic>>.from(slots)
-      ..sort((a, b) => DateTime.parse(a['startAt'] as String)
-          .compareTo(DateTime.parse(b['startAt'] as String)));
+      ..sort((a, b) => _parseUtc(a['startAt'] as String)
+          .compareTo(_parseUtc(b['startAt'] as String)));
 
     final earliestStart =
-        DateTime.parse(sorted.first['startAt'] as String).millisecondsSinceEpoch;
+        _parseUtc(sorted.first['startAt'] as String).millisecondsSinceEpoch;
     final latestEnd =
-        DateTime.parse(sorted.last['endAt'] as String).millisecondsSinceEpoch;
+        _parseUtc(sorted.last['endAt'] as String).millisecondsSinceEpoch;
     final now = DateTime.now().millisecondsSinceEpoch;
 
     final entryOpenTime = earliestStart - _entryBeforeMs;
@@ -286,11 +290,9 @@ class _BookingListScreenState extends ConsumerState<BookingListScreen> {
 
     try {
       final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.startSession(bookingId);
-      final data = response.data as Map<String, dynamic>;
-      final sessionId = data['id'] ?? bookingId;
+      await apiClient.startSession(bookingId);
       if (mounted) {
-        context.push('/consultation/$sessionId');
+        context.push('/consultation/$bookingId');
       }
     } catch (e) {
       setState(() {
