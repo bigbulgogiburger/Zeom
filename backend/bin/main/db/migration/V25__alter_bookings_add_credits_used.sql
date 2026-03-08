@@ -1,1 +1,0 @@
-ALTER TABLE bookings ADD COLUMN credits_used INT NOT NULL DEFAULT 0;
