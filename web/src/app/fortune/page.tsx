@@ -102,14 +102,16 @@ const OHAENG_LABELS: Record<string, string> = {
   water: '\u6C34',
 };
 
-function ScoreGauge({ score, size = 'lg' }: { score: number; size?: 'sm' | 'lg' }) {
+function ScoreGauge({ score, size = 'lg', hidden = false }: { score: number; size?: 'sm' | 'lg'; hidden?: boolean }) {
   const radius = size === 'lg' ? 60 : 36;
   const stroke = size === 'lg' ? 8 : 5;
   const circumference = 2 * Math.PI * radius;
-  const dashOffset = circumference - (score / 100) * circumference;
+  const displayScore = hidden ? 65 : score;
+  const dashOffset = circumference - (displayScore / 100) * circumference;
   const dim = (radius + stroke) * 2;
 
   const getColor = (s: number) => {
+    if (hidden) return 'rgba(201,162,39,0.3)';
     if (s >= 80) return '#C9A227';
     if (s >= 60) return '#b08d1f';
     if (s >= 40) return '#8B6914';
@@ -131,7 +133,7 @@ function ScoreGauge({ score, size = 'lg' }: { score: number; size?: 'sm' | 'lg' 
         cy={radius + stroke}
         r={radius}
         fill="none"
-        stroke={getColor(score)}
+        stroke={getColor(displayScore)}
         strokeWidth={stroke}
         strokeLinecap="round"
         strokeDasharray={circumference}
@@ -144,30 +146,33 @@ function ScoreGauge({ score, size = 'lg' }: { score: number; size?: 'sm' | 'lg' 
         y={radius + stroke}
         textAnchor="middle"
         dominantBaseline="central"
-        fill="#C9A227"
+        fill={hidden ? 'rgba(201,162,39,0.5)' : '#C9A227'}
         fontSize={size === 'lg' ? 28 : 16}
         fontWeight="900"
         fontFamily="var(--font-heading)"
       >
-        {score}
+        {hidden ? '?' : score}
       </text>
     </svg>
   );
 }
 
-function ScoreBar({ score }: { score: number }) {
+function ScoreBar({ score, hidden = false }: { score: number; hidden?: boolean }) {
   const getBarColor = (s: number) => {
+    if (hidden) return 'from-[rgba(201,162,39,0.2)] to-[rgba(201,162,39,0.3)]';
     if (s >= 80) return 'from-[#C9A227] to-[#D4A843]';
     if (s >= 60) return 'from-[#C9A227] to-[#b08d1f]';
     if (s >= 40) return 'from-[#b08d1f] to-[#8B6914]';
     return 'from-[#8B0000] to-[#b08d1f]';
   };
 
+  const displayScore = hidden ? 60 : score;
+
   return (
     <div className="w-full h-3 rounded-full bg-[rgba(201,162,39,0.1)] overflow-hidden">
       <div
         className={`h-full rounded-full bg-gradient-to-r ${getBarColor(score)} transition-all duration-700`}
-        style={{ width: `${score}%` }}
+        style={{ width: `${displayScore}%` }}
       />
     </div>
   );
@@ -202,8 +207,16 @@ export default function FortunePage() {
   const [fortune, setFortune] = useState<FortuneDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const isLoggedIn = !!me;
+
   useEffect(() => {
     if (authLoading) return;
+
+    if (!me) {
+      setFortune(MOCK_FORTUNE);
+      setLoading(false);
+      return;
+    }
 
     async function fetchFortune() {
       setLoading(true);
@@ -219,11 +232,6 @@ export default function FortunePage() {
       } finally {
         setLoading(false);
       }
-    }
-
-    if (!me) {
-      window.location.href = '/login';
-      return;
     }
 
     fetchFortune();
@@ -257,6 +265,21 @@ export default function FortunePage() {
 
   return (
     <div className="page-container">
+      {/* Login CTA Banner */}
+      {!isLoggedIn && (
+        <div className="glass-card p-5 border-[rgba(201,162,39,0.3)] text-center">
+          <p className="text-sm text-foreground m-0 mb-3">
+            {'\uB85C\uADF8\uC778\uD558\uACE0'} <span className="font-bold text-[#C9A227]">{'\uB098\uB9CC\uC758 \uC0AC\uC8FC \uC6B4\uC138'}</span>{'\uB97C \uD655\uC778\uD558\uC138\uC694'}
+          </p>
+          <Link
+            href="/login"
+            className="btn-primary text-sm px-6 py-2"
+          >
+            {'\uB85C\uADF8\uC778\uD558\uAE30'}
+          </Link>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-heading font-black text-[#C9A227] m-0">
@@ -316,12 +339,12 @@ export default function FortunePage() {
       {/* Overall Score */}
       <div className="glass-card p-8 text-center">
         <div className="flex justify-center mb-4">
-          <ScoreGauge score={fortune.overallScore} />
+          <ScoreGauge score={fortune.overallScore} hidden={!isLoggedIn} />
         </div>
         <h2 className="text-xl font-heading font-bold text-foreground m-0 mb-3">
           \uCD1D\uC6B4 \uC810\uC218
         </h2>
-        <p className="text-[#a49484] text-sm leading-relaxed max-w-[480px] mx-auto">
+        <p className={`text-sm leading-relaxed max-w-[480px] mx-auto ${!isLoggedIn ? 'text-[#a49484]/50 blur-[3px] select-none' : 'text-[#a49484]'}`}>
           {fortune.summary}
         </p>
       </div>
@@ -338,11 +361,11 @@ export default function FortunePage() {
                 </h3>
               </div>
               <span className="text-xl font-heading font-black text-[#C9A227]">
-                {cat.score}
+                {isLoggedIn ? cat.score : '?'}
               </span>
             </div>
-            <ScoreBar score={cat.score} />
-            <p className="text-sm text-[#a49484] mt-3 mb-0 leading-relaxed">
+            <ScoreBar score={cat.score} hidden={!isLoggedIn} />
+            <p className={`text-sm mt-3 mb-0 leading-relaxed ${!isLoggedIn ? 'text-[#a49484]/50 blur-[3px] select-none' : 'text-[#a49484]'}`}>
               {cat.description}
             </p>
           </div>
@@ -374,22 +397,22 @@ export default function FortunePage() {
           <div className="text-center">
             <div className="text-3xl mb-2">\uD83C\uDFA8</div>
             <p className="text-xs text-[#a49484] m-0">\uD589\uC6B4\uC758 \uC0C9</p>
-            <p className="text-base font-heading font-bold text-[#C9A227] m-0 mt-1">
-              {fortune.luckyColor}
+            <p className={`text-base font-heading font-bold m-0 mt-1 ${!isLoggedIn ? 'text-[#C9A227]/40 blur-[2px] select-none' : 'text-[#C9A227]'}`}>
+              {isLoggedIn ? fortune.luckyColor : '???'}
             </p>
           </div>
           <div className="text-center">
             <div className="text-3xl mb-2">\uD83D\uDD22</div>
             <p className="text-xs text-[#a49484] m-0">\uD589\uC6B4\uC758 \uC22B\uC790</p>
-            <p className="text-base font-heading font-bold text-[#C9A227] m-0 mt-1">
-              {fortune.luckyNumber}
+            <p className={`text-base font-heading font-bold m-0 mt-1 ${!isLoggedIn ? 'text-[#C9A227]/40 blur-[2px] select-none' : 'text-[#C9A227]'}`}>
+              {isLoggedIn ? fortune.luckyNumber : '?'}
             </p>
           </div>
           <div className="text-center">
             <div className="text-3xl mb-2">\uD83E\uDDED</div>
             <p className="text-xs text-[#a49484] m-0">\uD589\uC6B4\uC758 \uBC29\uD5A5</p>
-            <p className="text-base font-heading font-bold text-[#C9A227] m-0 mt-1">
-              {fortune.luckyDirection}
+            <p className={`text-base font-heading font-bold m-0 mt-1 ${!isLoggedIn ? 'text-[#C9A227]/40 blur-[2px] select-none' : 'text-[#C9A227]'}`}>
+              {isLoggedIn ? fortune.luckyDirection : '???'}
             </p>
           </div>
         </div>
@@ -423,8 +446,31 @@ export default function FortunePage() {
         </div>
       )}
 
-      {/* Counselor CTA */}
-      {fortune.counselorCta?.show ? (
+      {/* Bottom CTA */}
+      {!isLoggedIn ? (
+        <div className="glass-card p-8 border-[rgba(201,162,39,0.3)] text-center">
+          <p className="text-lg font-heading font-bold text-foreground m-0 mb-2">
+            {'\uB098\uC758 \uC6B4\uC138 \uC810\uC218\uAC00 \uAD81\uAE08\uD558\uC2E0\uAC00\uC694?'}
+          </p>
+          <p className="text-sm text-[#a49484] m-0 mb-5">
+            {'\uB85C\uADF8\uC778\uD558\uBA74 \uC0AC\uC8FC\uD314\uC790 \uAE30\uBC18 \uB9DE\uCDA4\uD615 \uC6B4\uC138\uB97C \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4'}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Link
+              href="/login"
+              className="btn-primary-lg text-base px-8 py-3"
+            >
+              {'\uB85C\uADF8\uC778'}
+            </Link>
+            <Link
+              href="/signup"
+              className="btn-secondary text-base px-8 py-3"
+            >
+              {'\uD68C\uC6D0\uAC00\uC785'}
+            </Link>
+          </div>
+        </div>
+      ) : fortune.counselorCta?.show ? (
         <div className="glass-card p-6 border-[rgba(201,162,39,0.3)]">
           <p className="text-sm text-foreground leading-relaxed mb-4 m-0">
             {fortune.counselorCta.message}

@@ -68,6 +68,8 @@ PODS:
   - GoogleUtilities/UserDefaults (7.13.3):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
+  - integration_test (0.0.1):
+    - Flutter
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -97,6 +99,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - open_filex (from `.symlinks/plugins/open_filex/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
@@ -131,6 +134,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
   flutter_secure_storage:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
   open_filex:
     :path: ".symlinks/plugins/open_filex/ios"
   path_provider_foundation:
@@ -156,6 +161,7 @@ SPEC CHECKSUMS:
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
+  integration_test: 2d03ab552da9a1f408709a6acf3d7ca4cb3cb307
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   open_filex: 432f3cd11432da3e39f47fcc0df2b1603854eff1
   path_provider_foundation: 608fcb11be570ce83519b076ab6a1fffe2474f05
