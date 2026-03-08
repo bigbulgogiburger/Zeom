@@ -37,10 +37,22 @@ public class ReviewController {
 
     @GetMapping("/counselors/{id}/reviews")
     public ReviewDtos.ReviewListResponse getCounselorReviews(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long id,
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(defaultValue = "0") int minRating,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return reviewService.getReviewsByCounselor(id, page, size);
+        return reviewService.listWithFilters(authHeader, id, type, sort, minRating, page, size);
+    }
+
+    @PostMapping("/reviews/{id}/helpful")
+    public ReviewDtos.HelpfulResponse toggleHelpful(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id
+    ) {
+        return reviewService.toggleHelpful(authHeader, id);
     }
 }

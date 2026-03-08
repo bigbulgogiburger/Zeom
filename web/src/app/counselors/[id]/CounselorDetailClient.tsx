@@ -39,8 +39,14 @@ type Review = {
   userName?: string;
   rating: number;
   content: string;
+  comment?: string;
   createdAt: string;
   reply?: string | null;
+  photoUrls?: string | null;
+  helpfulCount?: number;
+  consultationType?: string | null;
+  isAnonymous?: boolean;
+  helpfulByMe?: boolean;
 };
 
 const MAX_SLOTS = 3;
@@ -177,6 +183,12 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   const [showCreditModal, setShowCreditModal] = useState(false);
   const [creditShortfall, setCreditShortfall] = useState({ needed: 0, have: 0 });
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewSort, setReviewSort] = useState<'latest' | 'helpful' | 'rating'>('latest');
+  const [reviewType, setReviewType] = useState<string>('');
+  const [reviewMinRating, setReviewMinRating] = useState(0);
+  const [reviewPage, setReviewPage] = useState(0);
+  const [reviewTotalPages, setReviewTotalPages] = useState(0);
+  const [reviewTotal, setReviewTotal] = useState(0);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/counselors/${id}`, { cache: 'no-store' })
@@ -191,18 +203,35 @@ export default function CounselorDetailClient({ id }: { id: string }) {
       .catch(() => setLoadError('상담사 정보를 불러오지 못했습니다.'));
   }, [id]);
 
-  // Fetch reviews
-  useEffect(() => {
-    fetch(`${API_BASE}/api/v1/reviews/counselor/${id}`, { cache: 'no-store' })
+  // Fetch reviews with filters
+  const loadReviews = useCallback(() => {
+    const params = new URLSearchParams();
+    if (reviewType) params.set('type', reviewType);
+    params.set('sort', reviewSort);
+    if (reviewMinRating > 0) params.set('minRating', String(reviewMinRating));
+    params.set('page', String(reviewPage));
+    params.set('size', '10');
+
+    const headers: Record<string, string> = {};
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    fetch(`${API_BASE}/api/v1/counselors/${id}/reviews?${params}`, { cache: 'no-store', headers })
       .then((r) => {
-        if (!r.ok) return [];
+        if (!r.ok) return { reviews: [], totalPages: 0, totalElements: 0 };
         return r.json();
       })
       .then((data) => {
-        setReviews(Array.isArray(data) ? data : data.content ?? []);
+        setReviews(data.reviews ?? (Array.isArray(data) ? data : data.content ?? []));
+        setReviewTotalPages(data.totalPages ?? 0);
+        setReviewTotal(data.totalElements ?? 0);
       })
       .catch(() => {});
-  }, [id]);
+  }, [id, reviewSort, reviewType, reviewMinRating, reviewPage]);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
 
   // Check favorite status when logged in
   useEffect(() => {
@@ -733,46 +762,192 @@ export default function CounselorDetailClient({ id }: { id: string }) {
       )}
 
       {/* Reviews Section */}
-      {reviews.length > 0 && (
-        <div>
-          <h3 className="m-0 mb-6 font-heading text-xl font-bold text-[var(--color-text-on-dark)] text-center">
-            리뷰 ({reviews.length}건)
-          </h3>
-          <div className="grid gap-4">
-            {reviews.map((review) => (
-              <Card key={review.id}>
-                <div className="flex items-start gap-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <StarRating rating={review.rating} size="sm" />
-                      <span className="text-sm font-bold text-card-foreground">
-                        {review.rating.toFixed(1)}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {review.userName ?? '익명'}
-                      </span>
-                      <span className="text-xs text-muted-foreground ml-auto">
-                        {new Date(review.createdAt).toLocaleDateString('ko-KR')}
-                      </span>
-                    </div>
-                    <p className="text-sm text-card-foreground leading-relaxed">
-                      {review.content}
-                    </p>
-                    {review.reply && (
-                      <div className="mt-3 pl-4 border-l-2 border-[#C9A227]/20">
-                        <p className="text-xs text-muted-foreground mb-1 font-bold">상담사 답변</p>
-                        <p className="text-sm text-card-foreground leading-relaxed">
-                          {review.reply}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+      <div>
+        <h3 className="m-0 mb-4 font-heading text-xl font-bold text-[var(--color-text-on-dark)] text-center">
+          리뷰 ({reviewTotal}건)
+        </h3>
+
+        {/* Filter & Sort Controls */}
+        <div className="flex flex-wrap items-center gap-2 mb-4 justify-center">
+          {/* Consultation type filter chips */}
+          {['', '사주', '타로', '신점', '궁합'].map((t) => (
+            <button
+              key={t}
+              onClick={() => { setReviewType(t); setReviewPage(0); }}
+              className={cn(
+                'px-3 py-1.5 rounded-full text-xs font-heading font-bold transition-all duration-200 border',
+                reviewType === t
+                  ? 'border-[#C9A227] bg-[#C9A227]/15 text-[#C9A227]'
+                  : 'border-[rgba(201,162,39,0.15)] bg-transparent text-[#a49484] hover:border-[#C9A227]/30'
+              )}
+            >
+              {t || '전체'}
+            </button>
+          ))}
         </div>
-      )}
+
+        <div className="flex flex-wrap items-center gap-2 mb-6 justify-center">
+          {/* Sort options */}
+          {([
+            { key: 'latest', label: '최신순' },
+            { key: 'helpful', label: '도움순' },
+            { key: 'rating', label: '별점순' },
+          ] as const).map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => { setReviewSort(key); setReviewPage(0); }}
+              className={cn(
+                'px-3 py-1.5 rounded-full text-xs font-heading font-bold transition-all duration-200',
+                reviewSort === key
+                  ? 'bg-[#C9A227] text-[#1a1612]'
+                  : 'bg-[#1a1612] text-[#a49484] hover:bg-[#C9A227]/10'
+              )}
+            >
+              {label}
+            </button>
+          ))}
+
+          {/* Min rating filter */}
+          <select
+            value={reviewMinRating}
+            onChange={(e) => { setReviewMinRating(Number(e.target.value)); setReviewPage(0); }}
+            className="px-3 py-1.5 rounded-full text-xs font-heading font-bold bg-[#1a1612] text-[#a49484] border border-[rgba(201,162,39,0.15)] outline-none"
+          >
+            <option value={0}>전체 별점</option>
+            <option value={3}>3점 이상</option>
+            <option value={4}>4점 이상</option>
+            <option value={5}>5점만</option>
+          </select>
+        </div>
+
+        {reviews.length === 0 ? (
+          <div className="text-center py-8 text-[#a49484] text-sm">
+            리뷰가 없습니다.
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {reviews.map((review) => {
+              const reviewText = review.content || review.comment || '';
+              const photos = review.photoUrls
+                ? review.photoUrls.split(',').map((u: string) => u.trim()).filter(Boolean)
+                : [];
+
+              return (
+                <Card key={review.id}>
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <StarRating rating={review.rating} size="sm" />
+                        <span className="text-sm font-bold text-card-foreground">
+                          {review.rating.toFixed(1)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {review.isAnonymous ? '익명' : (review.userName ?? '익명')}
+                        </span>
+                        {review.consultationType && (
+                          <Badge variant="outline" className="text-[10px] px-2 py-0 rounded-full border-[#C9A227]/20 text-[#C9A227]">
+                            {review.consultationType}
+                          </Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {new Date(review.createdAt).toLocaleDateString('ko-KR')}
+                        </span>
+                      </div>
+                      <p className="text-sm text-card-foreground leading-relaxed">
+                        {reviewText}
+                      </p>
+
+                      {/* Photo thumbnails */}
+                      {photos.length > 0 && (
+                        <div className="flex gap-2 mt-3 overflow-x-auto">
+                          {photos.map((url: string, i: number) => (
+                            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                              <img
+                                src={url}
+                                alt={`리뷰 사진 ${i + 1}`}
+                                className="w-16 h-16 object-cover rounded-lg border border-[rgba(201,162,39,0.1)] hover:border-[#C9A227]/40 transition-colors"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      )}
+
+                      {review.reply && (
+                        <div className="mt-3 pl-4 border-l-2 border-[#C9A227]/20">
+                          <p className="text-xs text-muted-foreground mb-1 font-bold">상담사 답변</p>
+                          <p className="text-sm text-card-foreground leading-relaxed">
+                            {review.reply}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Helpful button */}
+                      <div className="mt-3 flex items-center">
+                        <button
+                          onClick={async () => {
+                            const token = localStorage.getItem('token');
+                            if (!token) return;
+                            try {
+                              const res = await fetch(`${API_BASE}/api/v1/reviews/${review.id}/helpful`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` },
+                              });
+                              if (res.ok) {
+                                const data = await res.json();
+                                setReviews((prev) =>
+                                  prev.map((r) =>
+                                    r.id === review.id
+                                      ? { ...r, helpfulCount: data.helpfulCount, helpfulByMe: data.helpfulByMe }
+                                      : r
+                                  )
+                                );
+                              }
+                            } catch {}
+                          }}
+                          className={cn(
+                            'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-heading font-bold transition-all duration-200 border',
+                            review.helpfulByMe
+                              ? 'border-[#C9A227] bg-[#C9A227]/15 text-[#C9A227]'
+                              : 'border-[rgba(201,162,39,0.15)] bg-transparent text-[#a49484] hover:border-[#C9A227]/30'
+                          )}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                            <path d="M1 8.998a1 1 0 011-1h1v7a1 1 0 01-1 1H2a1 1 0 01-1-1v-7zm4 7.5v-8.5l3-5.5a1.5 1.5 0 012.83.68L10 5.998h5a2 2 0 011.94 2.48l-1.5 6a2 2 0 01-1.94 1.52H5z" />
+                          </svg>
+                          도움됐어요 {(review.helpfulCount ?? 0) > 0 ? review.helpfulCount : ''}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+
+            {/* Review pagination */}
+            {reviewTotalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-4">
+                <button
+                  onClick={() => setReviewPage((p) => Math.max(0, p - 1))}
+                  disabled={reviewPage === 0}
+                  className="px-3 py-1 rounded-full text-xs font-heading font-bold border border-[rgba(201,162,39,0.15)] text-[#a49484] hover:border-[#C9A227]/30 disabled:opacity-30"
+                >
+                  이전
+                </button>
+                <span className="px-3 py-1 text-xs text-[#a49484]">
+                  {reviewPage + 1} / {reviewTotalPages}
+                </span>
+                <button
+                  onClick={() => setReviewPage((p) => Math.min(reviewTotalPages - 1, p + 1))}
+                  disabled={reviewPage >= reviewTotalPages - 1}
+                  className="px-3 py-1 rounded-full text-xs font-heading font-bold border border-[rgba(201,162,39,0.15)] text-[#a49484] hover:border-[#C9A227]/30 disabled:opacity-30"
+                >
+                  다음
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Insufficient Credit Modal */}
       {showCreditModal && (

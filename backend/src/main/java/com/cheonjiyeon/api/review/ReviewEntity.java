@@ -43,6 +43,18 @@ public class ReviewEntity {
     @Column(name = "moderated_by")
     private Long moderatedBy;
 
+    @Column(name = "photo_urls", length = 2000)
+    private String photoUrls;
+
+    @Column(name = "helpful_count")
+    private int helpfulCount;
+
+    @Column(name = "consultation_type", length = 50)
+    private String consultationType;
+
+    @Column(name = "is_anonymous")
+    private Boolean isAnonymous;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -76,4 +88,12 @@ public class ReviewEntity {
     public void setModeratedAt(LocalDateTime moderatedAt) { this.moderatedAt = moderatedAt; }
     public Long getModeratedBy() { return moderatedBy; }
     public void setModeratedBy(Long moderatedBy) { this.moderatedBy = moderatedBy; }
+    public String getPhotoUrls() { return photoUrls; }
+    public void setPhotoUrls(String photoUrls) { this.photoUrls = photoUrls; }
+    public int getHelpfulCount() { return helpfulCount; }
+    public void setHelpfulCount(int helpfulCount) { this.helpfulCount = helpfulCount; }
+    public String getConsultationType() { return consultationType; }
+    public void setConsultationType(String consultationType) { this.consultationType = consultationType; }
+    public Boolean getIsAnonymous() { return isAnonymous; }
+    public void setIsAnonymous(Boolean isAnonymous) { this.isAnonymous = isAnonymous; }
 }

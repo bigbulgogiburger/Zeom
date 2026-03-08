@@ -68,6 +68,7 @@ export default function WalletPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   // Filter state
   const [filterType, setFilterType] = useState<FilterType>('');
@@ -115,18 +116,21 @@ export default function WalletPage() {
 
   const loadTransactions = useCallback(async (pageNum: number) => {
     setLoading(true);
+    setLoadError(false);
     try {
       const filters = getFilters();
       const data: TransactionPage = await getWalletTransactions(pageNum, 20, filters);
       setTransactions(data.content);
       setTotalPages(data.totalPages);
       setPage(data.number);
+      setMessage('');
 
       // Calculate period total
       const total = data.content.reduce((sum: number, t: Transaction) => sum + t.amount, 0);
       setPeriodTotal(total);
     } catch {
       setMessage('거래 내역을 불러오지 못했습니다.');
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -357,8 +361,23 @@ export default function WalletPage() {
                 불러오는 중...
               </div>
             </Card>
+          ) : loadError ? (
+            <EmptyState
+              icon="!"
+              title="잠시 문제가 발생했습니다"
+              desc="거래 내역을 불러오지 못했습니다. 다시 시도해주세요."
+              variant="error"
+              actionLabel="다시 시도"
+              onAction={() => loadTransactions(0)}
+            />
           ) : transactions.length === 0 ? (
-            <EmptyState title="거래 내역이 없습니다" desc="지갑을 충전하여 상담 서비스를 이용해보세요." />
+            <EmptyState
+              icon="💰"
+              title="거래 내역이 없습니다"
+              desc="지갑을 충전하여 상담 서비스를 이용해보세요."
+              actionLabel="캐시 충전하기"
+              actionHref="/cash/buy"
+            />
           ) : (
             <>
               <div className="grid gap-5">

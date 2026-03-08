@@ -275,6 +275,195 @@ public class FortuneService {
         return new SajuChart(yearPillar, monthPillar, dayPillar, hourPillar);
     }
 
+    // === 띠별 운세 ===
+
+    /**
+     * 12지신 전체 띠별 운세 반환 (인증 불필요)
+     * 날짜 기반 시드로 일관된 일일 운세 생성
+     */
+    public List<FortuneDtos.ZodiacFortuneResponse> getAllZodiacFortunes() {
+        LocalDate today = LocalDate.now();
+        return java.util.Arrays.stream(JijiEnum.values())
+                .map(ji -> generateZodiacFortune(ji, today))
+                .toList();
+    }
+
+    /**
+     * 특정 띠 운세 반환
+     */
+    public FortuneDtos.ZodiacFortuneResponse getZodiacFortune(String animal) {
+        JijiEnum ji = findJijiByAnimal(animal);
+        return generateZodiacFortune(ji, LocalDate.now());
+    }
+
+    private FortuneDtos.ZodiacFortuneResponse generateZodiacFortune(JijiEnum ji, LocalDate date) {
+        // 띠 + 날짜 기반 시드로 일관된 운세 생성
+        byte[] hash = computeHash((long) ji.getIndex(), date);
+
+        int overallScore = scoreFromHash(hash, 0);
+        int wealthScore = scoreFromHash(hash, 4);
+        int loveScore = scoreFromHash(hash, 8);
+        int healthScore = scoreFromHash(hash, 12);
+
+        return new FortuneDtos.ZodiacFortuneResponse(
+                ji.getAnimal(),
+                getAnimalEmoji(ji),
+                ji.getName(),
+                ji.getHanja(),
+                date,
+                overallScore,
+                pickText("overall", overallScore, hash, 16),
+                wealthScore,
+                pickText("wealth", wealthScore, hash, 17),
+                loveScore,
+                pickText("love", loveScore, hash, 18),
+                healthScore,
+                pickText("health", healthScore, hash, 19),
+                pickFromArray(FortuneTexts.LUCKY_COLORS, hash, 20),
+                FortuneTexts.LUCKY_NUMBERS[unsignedByte(hash[21]) % FortuneTexts.LUCKY_NUMBERS.length],
+                pickFromArray(FortuneTexts.LUCKY_DIRECTIONS, hash, 22)
+        );
+    }
+
+    private JijiEnum findJijiByAnimal(String animal) {
+        for (JijiEnum ji : JijiEnum.values()) {
+            if (ji.getAnimal().equals(animal)) return ji;
+        }
+        throw new com.cheonjiyeon.api.common.ApiException(400, "알 수 없는 띠입니다: " + animal);
+    }
+
+    private String getAnimalEmoji(JijiEnum ji) {
+        return switch (ji) {
+            case JA -> "\uD83D\uDC2D";     // 쥐
+            case CHUK -> "\uD83D\uDC2E";   // 소
+            case IN -> "\uD83D\uDC2F";     // 호랑이
+            case MYO -> "\uD83D\uDC30";    // 토끼
+            case JIN -> "\uD83D\uDC09";    // 용
+            case SA -> "\uD83D\uDC0D";     // 뱀
+            case O -> "\uD83D\uDC34";      // 말
+            case MI -> "\uD83D\uDC11";     // 양
+            case SHIN -> "\uD83D\uDC12";   // 원숭이
+            case YU -> "\uD83D\uDC14";     // 닭
+            case SUL -> "\uD83D\uDC15";    // 개
+            case HAE -> "\uD83D\uDC37";    // 돼지
+        };
+    }
+
+    // === 궁합 ===
+
+    /**
+     * 두 사람의 생년월일로 궁합 점수 계산 (인증 불필요)
+     * 띠 오행 기반 궁합 알고리즘
+     */
+    public FortuneDtos.CompatibilityResponse calculateCompatibility(LocalDate birthDate1, LocalDate birthDate2) {
+        // 출생연도로 띠(지지) 결정
+        JijiEnum ji1 = getYearJiji(birthDate1.getYear());
+        JijiEnum ji2 = getYearJiji(birthDate2.getYear());
+
+        OhaengEnum ohaeng1 = ji1.getOhaeng();
+        OhaengEnum ohaeng2 = ji2.getOhaeng();
+
+        String relation = ohaeng1.getRelation(ohaeng2);
+
+        // 기본 점수: 오행 관계 기반
+        int baseScore = switch (relation) {
+            case "상생" -> 85;   // 내가 생해줌 → 좋음
+            case "피생" -> 88;   // 상대가 생해줌 → 매우 좋음
+            case "비화" -> 75;   // 같은 오행 → 무난
+            case "상극" -> 50;   // 내가 극함 → 주의
+            case "피극" -> 45;   // 내가 당함 → 주의
+            default -> 70;
+        };
+
+        // 충(沖) 관계 감점 (인덱스 차이 6)
+        boolean isChung = ji1.getChung() == ji2;
+        if (isChung) baseScore -= 15;
+
+        // 삼합(三合) 보너스 (인덱스 차이 4 또는 8)
+        int diff = Math.abs(ji1.getIndex() - ji2.getIndex());
+        boolean isSamhap = (diff == 4 || diff == 8);
+        if (isSamhap) baseScore += 10;
+
+        // 육합(六合) 보너스
+        boolean isYukhap = isYukhapPair(ji1, ji2);
+        if (isYukhap) baseScore += 12;
+
+        int score = Math.max(20, Math.min(100, baseScore));
+
+        // 날짜 기반 변동으로 카테고리별 점수 약간 다르게
+        byte[] seed = computeHash(birthDate1.getYear() * 10000L + birthDate2.getYear(), LocalDate.now());
+        int loveDelta = (unsignedByte(seed[0]) % 15) - 7;
+        int workDelta = (unsignedByte(seed[1]) % 15) - 7;
+        int friendDelta = (unsignedByte(seed[2]) % 15) - 7;
+
+        int loveScore = Math.max(20, Math.min(100, score + loveDelta));
+        int workScore = Math.max(20, Math.min(100, score + workDelta));
+        int friendScore = Math.max(20, Math.min(100, score + friendDelta));
+
+        return new FortuneDtos.CompatibilityResponse(
+                score,
+                generateCompatibilitySummary(ji1, ji2, relation, score),
+                new FortuneDtos.CompatibilityCategoryScore(loveScore, generateCategoryDesc("love", relation, loveScore)),
+                new FortuneDtos.CompatibilityCategoryScore(workScore, generateCategoryDesc("work", relation, workScore)),
+                new FortuneDtos.CompatibilityCategoryScore(friendScore, generateCategoryDesc("friendship", relation, friendScore)),
+                ji1.getAnimal(),
+                ji2.getAnimal(),
+                getAnimalEmoji(ji1),
+                getAnimalEmoji(ji2)
+        );
+    }
+
+    private JijiEnum getYearJiji(int year) {
+        // 지지는 12년 주기, 자(쥐)=1 기준: (year - 4) % 12 → 0=자, 1=축, ...
+        int idx = ((year - 4) % 12 + 12) % 12;
+        return JijiEnum.fromIndex(idx + 1);
+    }
+
+    private boolean isYukhapPair(JijiEnum a, JijiEnum b) {
+        // 육합 쌍: 자-축, 인-해, 묘-술, 진-유, 사-신, 오-미
+        int[][] pairs = {{1,2},{3,12},{4,11},{5,10},{6,9},{7,8}};
+        for (int[] p : pairs) {
+            if ((a.getIndex() == p[0] && b.getIndex() == p[1]) ||
+                (a.getIndex() == p[1] && b.getIndex() == p[0])) return true;
+        }
+        return false;
+    }
+
+    private String generateCompatibilitySummary(JijiEnum ji1, JijiEnum ji2, String relation, int score) {
+        String animal1 = ji1.getAnimal();
+        String animal2 = ji2.getAnimal();
+        if (score >= 85) {
+            return animal1 + "띠와 " + animal2 + "띠는 천생연분의 궁합입니다! 서로를 깊이 이해하고 보완하는 관계입니다.";
+        } else if (score >= 70) {
+            return animal1 + "띠와 " + animal2 + "띠는 좋은 궁합입니다. 서로 배려하며 함께 성장할 수 있는 관계예요.";
+        } else if (score >= 55) {
+            return animal1 + "띠와 " + animal2 + "띠는 무난한 궁합입니다. 서로의 차이를 존중하면 좋은 관계를 유지할 수 있어요.";
+        } else {
+            return animal1 + "띠와 " + animal2 + "띠는 노력이 필요한 궁합입니다. 상대의 입장을 이해하려는 노력이 중요합니다.";
+        }
+    }
+
+    private String generateCategoryDesc(String category, String relation, int score) {
+        return switch (category) {
+            case "love" -> score >= 75
+                ? "감정적으로 잘 통하며 서로에게 깊은 유대감을 느낄 수 있습니다."
+                : score >= 55
+                    ? "서로의 감정 표현 방식이 다를 수 있지만, 대화를 통해 충분히 극복 가능합니다."
+                    : "감정적 교류에 약간의 어려움이 있을 수 있으니 서로의 감정에 귀 기울이세요.";
+            case "work" -> score >= 75
+                ? "업무적으로 시너지가 뛰어납니다. 함께 일하면 좋은 성과를 기대할 수 있어요."
+                : score >= 55
+                    ? "역할을 명확히 나누면 효율적으로 협력할 수 있습니다."
+                    : "업무 스타일의 차이가 있으니 서로의 방식을 존중하는 것이 중요합니다.";
+            case "friendship" -> score >= 75
+                ? "서로에게 든든한 친구가 될 수 있습니다. 오래도록 좋은 관계를 유지할 수 있어요."
+                : score >= 55
+                    ? "적절한 거리를 유지하며 서로를 응원하는 관계가 될 수 있습니다."
+                    : "서로의 생활 방식이 다를 수 있으니 이해와 양보가 필요합니다.";
+            default -> "";
+        };
+    }
+
     // === SHA-256 helper methods (preserved for fallback) ===
 
     private byte[] computeHash(Long userId, LocalDate date) {

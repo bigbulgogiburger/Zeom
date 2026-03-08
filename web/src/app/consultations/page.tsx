@@ -22,21 +22,26 @@ export default function ConsultationsPage() {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   async function loadConsultations() {
     setLoading(true);
+    setLoadError(false);
     try {
       const res = await apiFetch('/api/v1/consultations/me', { cache: 'no-store' });
       if (!res.ok) {
         const json = await res.json();
         setMessage(json.message || '상담 내역을 불러올 수 없습니다.');
+        setLoadError(true);
         setConsultations([]);
         return;
       }
       const data = await res.json();
       setConsultations(data);
+      setMessage('');
     } catch {
       setMessage('상담 내역을 불러오는 중 오류가 발생했습니다.');
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -67,10 +72,22 @@ export default function ConsultationsPage() {
               불러오는 중...
             </div>
           </Card>
+        ) : loadError ? (
+          <EmptyState
+            icon="!"
+            title="잠시 문제가 발생했습니다"
+            desc="상담 내역을 불러오지 못했습니다. 다시 시도해주세요."
+            variant="error"
+            actionLabel="다시 시도"
+            onAction={() => loadConsultations()}
+          />
         ) : consultations.length === 0 ? (
           <EmptyState
-            title="상담 내역이 없습니다"
-            desc="상담을 예약하고 이용해보세요."
+            icon="💬"
+            title="아직 상담 내역이 없습니다"
+            desc="상담사를 둘러보고 첫 상담을 시작해보세요."
+            actionLabel="첫 상담 시작하기"
+            actionHref="/counselors"
           />
         ) : (
           <div className="grid gap-6">

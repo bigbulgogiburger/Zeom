@@ -49,5 +49,37 @@
 	<string>영상 상담을 위해 카메라 접근이 필요합니다.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>음성 상담을 위해 마이크 접근이 필요합니다.</string>
+	<!-- Kakao Login URL Schemes -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- Replace YOUR_KAKAO_APP_KEY with actual native app key -->
+				<string>kakaoYOUR_KAKAO_APP_KEY</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<!-- Kakao: check if KakaoTalk is installed -->
+		<string>kakaokompassauth</string>
+		<string>storykompassauth</string>
+		<string>kakaolink</string>
+		<!-- Naver: check if Naver app is installed -->
+		<string>naversearchapp</string>
+		<string>naversearchthirdlogin</string>
+	</array>
+	<!-- Naver Login configuration -->
+	<key>naverServiceAppUrlScheme</key>
+	<string>YOUR_NAVER_URL_SCHEME</string>
+	<key>naverConsumerKey</key>
+	<string>YOUR_NAVER_CLIENT_ID</string>
+	<key>naverConsumerSecret</key>
+	<string>YOUR_NAVER_CLIENT_SECRET</string>
+	<key>naverServiceAppName</key>
+	<string>천지연꽃신당</string>
 </dict>
 </plist>

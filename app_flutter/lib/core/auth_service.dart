@@ -127,6 +127,40 @@ class AuthService {
     }
   }
 
+  /// Mobile native SDK social login.
+  /// Sends the social provider's access token as the `code` parameter
+  /// to the backend OAuth endpoint.
+  Future<Map<String, dynamic>> socialLogin({
+    required String provider,
+    required String accessToken,
+  }) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/api/v1/auth/oauth/login',
+        data: {
+          'provider': provider,
+          'code': accessToken,
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data as Map<String, dynamic>;
+        await _apiClient.saveTokens(
+          accessToken: data['accessToken'],
+          refreshToken: data['refreshToken'],
+        );
+        return data;
+      }
+      throw Exception('소셜 로그인 실패');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        final data = e.response?.data;
+        throw Exception(data?['message'] ?? '잘못된 요청입니다');
+      }
+      throw Exception('소셜 로그인 실패: ${e.message}');
+    }
+  }
+
   Future<void> logout() async {
     try {
       final refreshToken = await _apiClient.getRefreshToken();

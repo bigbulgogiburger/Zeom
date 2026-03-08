@@ -25,25 +25,32 @@ export default function SessionsPage() {
   const [items, setItems] = useState<SessionItem[]>([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   async function load() {
     setLoading(true);
-    const r = await apiFetch('/api/v1/auth/sessions', { cache: 'no-store' });
-    const json = await r.json();
-    if (!r.ok) {
-      setMessage(json.message ?? '조회 실패');
+    setLoadError(false);
+    try {
+      const r = await apiFetch('/api/v1/auth/sessions', { cache: 'no-store' });
+      const json = await r.json();
+      if (!r.ok) {
+        setMessage(json.message ?? '조회 실패');
+        setLoadError(true);
+        setLoading(false);
+        return;
+      }
+      setItems(json.sessions ?? []);
+      setMessage('');
+    } catch {
+      setMessage('세션 정보를 불러오지 못했습니다.');
+      setLoadError(true);
+    } finally {
       setLoading(false);
-      return;
     }
-    setItems(json.sessions ?? []);
-    setLoading(false);
   }
 
   useEffect(() => {
-    load().catch(() => {
-      setMessage('조회 실패');
-      setLoading(false);
-    });
+    load();
   }, []);
 
   async function revoke(id: number) {
@@ -71,8 +78,21 @@ export default function SessionsPage() {
               <div key={i} className="skeleton h-[100px]" />
             ))}
           </div>
+        ) : loadError ? (
+          <EmptyState
+            icon="!"
+            title="잠시 문제가 발생했습니다"
+            desc="세션 정보를 불러오지 못했습니다. 다시 시도해주세요."
+            variant="error"
+            actionLabel="다시 시도"
+            onAction={() => load()}
+          />
         ) : items.length === 0 ? (
-          <EmptyState title="세션 정보가 없어요" desc="활성 세션이 없습니다." />
+          <EmptyState
+            icon="🖥️"
+            title="세션 정보가 없어요"
+            desc="활성 세션이 없습니다."
+          />
         ) : (
           <div className="grid gap-6">
             {items.map((s) => (

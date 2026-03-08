@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ActionButton, InlineError, InlineSuccess } from './ui';
 
 type ReviewFormProps = {
-  onSubmit: (rating: number, comment: string) => Promise<void>;
+  onSubmit: (rating: number, comment: string, options?: { photoUrls?: string; consultationType?: string; isAnonymous?: boolean }) => Promise<void>;
   counselorName?: string;
 };
 
@@ -12,6 +12,8 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [photoUrls, setPhotoUrls] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -33,7 +35,10 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
 
     setLoading(true);
     try {
-      await onSubmit(rating, comment.trim());
+      await onSubmit(rating, comment.trim(), {
+        photoUrls: photoUrls.trim() || undefined,
+        isAnonymous,
+      });
       setSuccess('리뷰가 등록되었습니다.');
     } catch (err: any) {
       setError(err.message || '리뷰 등록에 실패했습니다.');
@@ -158,6 +163,63 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
           {comment.length} / 500자
         </div>
       </div>
+
+      {/* Photo URLs */}
+      <div>
+        <label htmlFor="review-photos" style={{
+          display: 'block',
+          marginBottom: 'var(--spacing-sm)',
+          fontSize: 'var(--font-size-sm)',
+          fontWeight: 'var(--font-weight-medium)',
+          color: 'var(--color-text-on-dark)',
+        }}>
+          사진 URL (선택)
+        </label>
+        <input
+          id="review-photos"
+          type="text"
+          value={photoUrls}
+          onChange={(e) => setPhotoUrls(e.target.value)}
+          placeholder="사진 URL을 콤마(,)로 구분하여 입력하세요"
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: 'var(--spacing-md)',
+            border: '2px solid var(--color-border-dark)',
+            borderRadius: 'var(--radius-md)',
+            background: 'var(--color-bg-secondary)',
+            color: 'var(--color-text-on-dark)',
+            fontSize: 'var(--font-size-base)',
+            fontFamily: 'inherit',
+          }}
+        />
+        <div style={{
+          fontSize: 'var(--font-size-xs)',
+          color: 'var(--color-text-muted-dark)',
+          marginTop: 'var(--spacing-xs)',
+        }}>
+          여러 장은 콤마(,)로 구분해 주세요
+        </div>
+      </div>
+
+      {/* Anonymous option */}
+      <label style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-sm)',
+        cursor: 'pointer',
+        fontSize: 'var(--font-size-sm)',
+        color: 'var(--color-text-on-dark)',
+      }}>
+        <input
+          type="checkbox"
+          checked={isAnonymous}
+          onChange={(e) => setIsAnonymous(e.target.checked)}
+          disabled={loading}
+          style={{ width: '18px', height: '18px', accentColor: 'var(--color-gold)' }}
+        />
+        익명으로 작성
+      </label>
 
       <InlineError message={error} />
       <InlineSuccess message={success} />

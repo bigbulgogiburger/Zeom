@@ -26,19 +26,22 @@ public class ReviewService {
     private final CounselorRepository counselorRepository;
     private final TokenStore tokenStore;
     private final UserRepository userRepository;
+    private final HelpfulVoteRepository helpfulVoteRepository;
 
     public ReviewService(
             ReviewRepository reviewRepository,
             BookingRepository bookingRepository,
             CounselorRepository counselorRepository,
             TokenStore tokenStore,
-            UserRepository userRepository
+            UserRepository userRepository,
+            HelpfulVoteRepository helpfulVoteRepository
     ) {
         this.reviewRepository = reviewRepository;
         this.bookingRepository = bookingRepository;
         this.counselorRepository = counselorRepository;
         this.tokenStore = tokenStore;
         this.userRepository = userRepository;
+        this.helpfulVoteRepository = helpfulVoteRepository;
     }
 
     @Transactional
@@ -71,6 +74,9 @@ public class ReviewService {
         review.setCounselorId(booking.getCounselor().getId());
         review.setRating(req.rating());
         review.setComment(req.comment());
+        review.setPhotoUrls(req.photoUrls());
+        review.setConsultationType(req.consultationType());
+        review.setIsAnonymous(req.isAnonymous() != null ? req.isAnonymous() : false);
 
         ReviewEntity saved = reviewRepository.save(review);
 
@@ -126,6 +132,77 @@ public class ReviewService {
                 reviewPage.getTotalPages(),
                 reviewPage.getTotalElements()
         );
+    }
+
+    @Transactional
+    @CacheEvict(value = "counselor-reviews", allEntries = true)
+    public ReviewDtos.HelpfulResponse toggleHelpful(String authHeader, Long reviewId) {
+        UserEntity user = resolveUser(authHeader);
+
+        ReviewEntity review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ApiException(404, "리뷰를 찾을 수 없습니다."));
+
+        var existing = helpfulVoteRepository.findByUserIdAndReviewId(user.getId(), reviewId);
+        boolean helpfulByMe;
+
+        if (existing.isPresent()) {
+            helpfulVoteRepository.delete(existing.get());
+            review.setHelpfulCount(Math.max(0, review.getHelpfulCount() - 1));
+            helpfulByMe = false;
+        } else {
+            HelpfulVoteEntity vote = new HelpfulVoteEntity();
+            vote.setUserId(user.getId());
+            vote.setReviewId(reviewId);
+            helpfulVoteRepository.save(vote);
+            review.setHelpfulCount(review.getHelpfulCount() + 1);
+            helpfulByMe = true;
+        }
+
+        reviewRepository.save(review);
+        return new ReviewDtos.HelpfulResponse(reviewId, review.getHelpfulCount(), helpfulByMe);
+    }
+
+    public ReviewDtos.ReviewListResponse listWithFilters(
+            String authHeader,
+            Long counselorId,
+            String type,
+            String sort,
+            int minRating,
+            int page,
+            int size
+    ) {
+        Long currentUserId = resolveUserIdOptional(authHeader);
+        String consultationType = (type != null && !type.isBlank()) ? type : null;
+
+        Page<ReviewEntity> reviewPage;
+        switch (sort != null ? sort : "latest") {
+            case "helpful" -> reviewPage = reviewRepository.findWithFiltersHelpful(
+                    counselorId, consultationType, minRating, PageRequest.of(page, size));
+            case "rating" -> reviewPage = reviewRepository.findWithFiltersHighRating(
+                    counselorId, consultationType, minRating, PageRequest.of(page, size));
+            default -> reviewPage = reviewRepository.findWithFiltersLatest(
+                    counselorId, consultationType, minRating, PageRequest.of(page, size));
+        }
+
+        return new ReviewDtos.ReviewListResponse(
+                reviewPage.getContent().stream()
+                        .map(r -> {
+                            boolean byMe = currentUserId != null
+                                    && helpfulVoteRepository.existsByUserIdAndReviewId(currentUserId, r.getId());
+                            return ReviewDtos.ReviewResponse.from(r, byMe);
+                        })
+                        .toList(),
+                reviewPage.getTotalPages(),
+                reviewPage.getTotalElements()
+        );
+    }
+
+    private Long resolveUserIdOptional(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        String token = authHeader.substring(7);
+        return tokenStore.resolveAccessUserId(token).orElse(null);
     }
 
     private UserEntity resolveUser(String authHeader) {

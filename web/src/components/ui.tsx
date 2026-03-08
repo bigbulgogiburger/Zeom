@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Card as ShadcnCard, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -75,17 +76,61 @@ export function PageTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function EmptyState({ title, desc }: { title: string; desc?: string }) {
+export function EmptyState({
+  title,
+  desc,
+  icon,
+  actionLabel,
+  actionHref,
+  onAction,
+  variant = 'empty',
+}: {
+  title: string;
+  desc?: string;
+  icon?: string;
+  actionLabel?: string;
+  actionHref?: string;
+  onAction?: () => void;
+  variant?: 'empty' | 'error';
+}) {
+  const isError = variant === 'error';
+
   return (
     <Card>
-      <div className="text-center py-6">
-        <div className="text-lg font-bold font-heading">
+      <div className="text-center py-6 flex flex-col items-center gap-3">
+        {icon && <div className="text-5xl">{icon}</div>}
+        <div className={cn(
+          'text-lg font-bold font-heading',
+          isError ? 'text-[var(--color-danger)]' : ''
+        )}>
           {title}
         </div>
         {desc && (
-          <div className="text-[var(--color-text-muted-card)] mt-2 text-sm leading-relaxed">
+          <div className="text-[var(--color-text-muted-card)] text-sm leading-relaxed max-w-[400px]">
             {desc}
           </div>
+        )}
+        {actionLabel && (onAction || actionHref) && (
+          onAction ? (
+            <button
+              onClick={onAction}
+              className={cn(
+                'mt-2 inline-flex items-center justify-center rounded-full px-8 py-3 font-bold font-heading transition-all border-none cursor-pointer',
+                isError
+                  ? 'bg-[var(--color-danger)] text-white hover:bg-[var(--color-danger)]/90'
+                  : 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)]'
+              )}
+            >
+              {actionLabel}
+            </button>
+          ) : actionHref ? (
+            <Link
+              href={actionHref}
+              className="mt-2 inline-flex items-center justify-center rounded-full px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading transition-all hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)] no-underline"
+            >
+              {actionLabel}
+            </Link>
+          ) : null
         )}
       </div>
     </Card>

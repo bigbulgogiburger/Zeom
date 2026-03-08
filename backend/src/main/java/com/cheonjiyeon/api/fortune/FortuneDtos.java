@@ -119,4 +119,54 @@ public class FortuneDtos {
             Boolean isLeapMonth,
             String gender
     ) {}
+
+    // === 띠별 운세 ===
+
+    public record ZodiacFortuneResponse(
+            String animal,
+            String emoji,
+            String jiji,
+            String hanja,
+            LocalDate fortuneDate,
+            int overallScore,
+            String overallText,
+            int wealthScore,
+            String wealthText,
+            int loveScore,
+            String loveText,
+            int healthScore,
+            String healthText,
+            String luckyColor,
+            int luckyNumber,
+            String luckyDirection
+    ) {}
+
+    public record ZodiacListResponse(
+            List<ZodiacFortuneResponse> zodiacFortunes,
+            LocalDate fortuneDate
+    ) {}
+
+    // === 궁합 ===
+
+    public record CompatibilityRequest(
+            String birthDate1,
+            String birthDate2
+    ) {}
+
+    public record CompatibilityCategoryScore(
+            int score,
+            String description
+    ) {}
+
+    public record CompatibilityResponse(
+            int score,
+            String summary,
+            CompatibilityCategoryScore love,
+            CompatibilityCategoryScore work,
+            CompatibilityCategoryScore friendship,
+            String animal1,
+            String animal2,
+            String emoji1,
+            String emoji2
+    ) {}
 }

@@ -392,11 +392,11 @@ export default function MyBookingsPage() {
         ) : loadError ? (
           <EmptyStateCard
             icon="!"
-            title="예약 목록을 불러오지 못했습니다"
-            description="네트워크 상태를 확인하고 다시 시도해주세요."
+            title="잠시 문제가 발생했습니다"
+            description="예약 목록을 불러오지 못했습니다. 다시 시도해주세요."
+            variant="error"
             actionLabel="다시 시도"
-            actionHref="#"
-            className="cursor-pointer"
+            onAction={() => load()}
           />
         ) : bookings.length === 0 ? (
           <EmptyStateCard

@@ -48,13 +48,13 @@ export default function ReviewPage() {
     }
   }, [sessionId]);
 
-  async function handleSubmitReview(rating: number, comment: string) {
+  async function handleSubmitReview(rating: number, comment: string, options?: { photoUrls?: string; consultationType?: string; isAnonymous?: boolean }) {
     if (!reservation) throw new Error('예약 정보가 없습니다.');
 
     const res = await apiFetch(`/api/v1/reservations/${reservation.id}/reviews`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rating, comment }),
+      body: JSON.stringify({ rating, comment, ...options }),
     });
 
     if (!res.ok) {

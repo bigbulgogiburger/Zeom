@@ -22,21 +22,26 @@ export default function RefundsPage() {
   const [refunds, setRefunds] = useState<Refund[]>([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   async function loadRefunds() {
     setLoading(true);
+    setLoadError(false);
     try {
       const res = await apiFetch('/api/v1/refunds/me', { cache: 'no-store' });
       if (!res.ok) {
         const json = await res.json();
         setMessage(json.message || '환불 내역을 불러올 수 없습니다.');
+        setLoadError(true);
         setRefunds([]);
         return;
       }
       const data = await res.json();
       setRefunds(data);
+      setMessage('');
     } catch {
       setMessage('환불 내역을 불러오는 중 오류가 발생했습니다.');
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -67,9 +72,19 @@ export default function RefundsPage() {
               불러오는 중...
             </div>
           </Card>
+        ) : loadError ? (
+          <EmptyState
+            icon="!"
+            title="잠시 문제가 발생했습니다"
+            desc="환불 내역을 불러오지 못했습니다. 다시 시도해주세요."
+            variant="error"
+            actionLabel="다시 시도"
+            onAction={() => loadRefunds()}
+          />
         ) : refunds.length === 0 ? (
           <EmptyState
-            title="환불 신청 내역이 없습니다"
+            icon="🔄"
+            title="환불 내역이 없습니다"
             desc="예약을 취소하거나 환불이 필요한 경우 신청할 수 있습니다."
           />
         ) : (

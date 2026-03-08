@@ -24,9 +24,22 @@ dependencies:
   firebase_core: ^2.17.0
   firebase_messaging: ^14.7.0
   flutter_local_notifications: ^17.0.0
+  kakao_flutter_sdk_user: ^1.9.1
+  flutter_naver_login: ^1.8.0
 
 flutter:
   uses-material-design: true
 dev_dependencies:
   integration_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.10
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  # Replace with actual icon path when designer provides the asset:
+  # image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#0f0d0a"
+  # adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+  min_sdk_android: 21

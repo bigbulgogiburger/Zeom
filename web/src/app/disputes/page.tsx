@@ -45,21 +45,26 @@ export default function DisputesPage() {
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   async function loadDisputes() {
     setLoading(true);
+    setLoadError(false);
     try {
       const res = await apiFetch('/api/v1/disputes/me', { cache: 'no-store' });
       if (!res.ok) {
         const json = await res.json();
         setMessage(json.message || '분쟁 내역을 불러올 수 없습니다.');
+        setLoadError(true);
         setDisputes([]);
         return;
       }
       const data = await res.json();
       setDisputes(data.disputes || []);
+      setMessage('');
     } catch {
       setMessage('분쟁 내역을 불러오는 중 오류가 발생했습니다.');
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -82,8 +87,18 @@ export default function DisputesPage() {
               불러오는 중...
             </div>
           </Card>
+        ) : loadError ? (
+          <EmptyState
+            icon="!"
+            title="잠시 문제가 발생했습니다"
+            desc="분쟁 내역을 불러오지 못했습니다. 다시 시도해주세요."
+            variant="error"
+            actionLabel="다시 시도"
+            onAction={() => loadDisputes()}
+          />
         ) : disputes.length === 0 ? (
           <EmptyState
+            icon="⚖️"
             title="분쟁 내역이 없습니다"
             desc="상담과 관련된 문제가 있으시면 분쟁을 접수할 수 있습니다."
           />

@@ -5,6 +5,8 @@ import com.cheonjiyeon.api.auth.UserRepository;
 import com.cheonjiyeon.api.common.ApiException;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
@@ -50,6 +52,39 @@ public class FortuneController {
                 fortunes.stream().map(FortuneDtos.FortuneResponse::from).toList(),
                 fortunes.size()
         );
+    }
+
+    // === 띠별 운세 (인증 불필요) ===
+
+    @GetMapping("/zodiac")
+    public FortuneDtos.ZodiacListResponse getAllZodiacFortunes() {
+        return new FortuneDtos.ZodiacListResponse(
+                fortuneService.getAllZodiacFortunes(),
+                java.time.LocalDate.now()
+        );
+    }
+
+    @GetMapping("/zodiac/{animal}")
+    public FortuneDtos.ZodiacFortuneResponse getZodiacFortune(@PathVariable String animal) {
+        return fortuneService.getZodiacFortune(animal);
+    }
+
+    // === 궁합 (인증 불필요) ===
+
+    @PostMapping("/compatibility")
+    public FortuneDtos.CompatibilityResponse getCompatibility(
+            @RequestBody FortuneDtos.CompatibilityRequest request
+    ) {
+        if (request.birthDate1() == null || request.birthDate2() == null) {
+            throw new ApiException(400, "두 사람의 생년월일을 모두 입력해주세요.");
+        }
+        try {
+            LocalDate date1 = LocalDate.parse(request.birthDate1());
+            LocalDate date2 = LocalDate.parse(request.birthDate2());
+            return fortuneService.calculateCompatibility(date1, date2);
+        } catch (DateTimeParseException e) {
+            throw new ApiException(400, "날짜 형식이 올바르지 않습니다. YYYY-MM-DD 형식으로 입력해주세요.");
+        }
     }
 
     private Long resolveUserId(String authHeader) {

@@ -1,0 +1,24 @@
+flutter_native_splash:
+  # Background color for splash screen
+  color: "#0f0d0a"
+
+  # Uncomment and set image path when designer provides the splash logo:
+  # image: assets/splash/splash_logo.png
+
+  # Branding image at the bottom of splash (optional):
+  # branding: assets/splash/branding.png
+  # branding_mode: bottom
+
+  # Android 12+ splash screen settings
+  android_12:
+    color: "#0f0d0a"
+    # icon_background_color: "#0f0d0a"
+    # image: assets/splash/splash_logo_android12.png
+
+  # Platform-specific settings
+  android: true
+  ios: true
+  web: false
+
+  # Fullscreen mode
+  fullscreen: true
