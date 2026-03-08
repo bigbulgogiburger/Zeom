@@ -43,15 +43,32 @@ public class CashTransactionService {
         WalletEntity wallet = walletRepository.findByUserIdWithLock(userId)
                 .orElseThrow(() -> new ApiException(404, "Wallet not found for user: " + userId));
 
-        long currentBalance = wallet.getBalanceCash();
-        long newBalance = currentBalance + amount;
+        long currentCash = wallet.getBalanceCash();
+        long currentBonus = wallet.getBonusBalance();
+        long newCash = currentCash;
+        long newBonus = currentBonus;
 
-        if (newBalance < 0) {
-            throw new ApiException(400, "Insufficient balance");
+        if (amount < 0) {
+            // 차감: 보너스 잔액 먼저 차감, 부족분은 유료 캐시에서 차감
+            long deductAmount = -amount;
+            long totalAvailable = currentCash + currentBonus;
+            if (totalAvailable < deductAmount) {
+                throw new ApiException(400, "Insufficient balance");
+            }
+            long bonusDeduct = Math.min(currentBonus, deductAmount);
+            long cashDeduct = deductAmount - bonusDeduct;
+            newBonus = currentBonus - bonusDeduct;
+            newCash = currentCash - cashDeduct;
+        } else {
+            // 충전: 유료 캐시에 추가
+            newCash = currentCash + amount;
         }
 
-        wallet.setBalanceCash(newBalance);
+        wallet.setBalanceCash(newCash);
+        wallet.setBonusBalance(newBonus);
         walletRepository.save(wallet);
+
+        long newBalance = newCash + newBonus;
 
         // Append transaction log
         CashTransactionEntity tx = new CashTransactionEntity();

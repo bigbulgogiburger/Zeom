@@ -1,0 +1,166 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'FAQ',
+  description: '천지연꽃신당 자주 묻는 질문',
+};
+
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
+const faqData: Record<string, FaqItem[]> = {
+  '서비스 이용': [
+    {
+      q: '천지연꽃신당은 어떤 서비스인가요?',
+      a: '천지연꽃신당은 전문 상담사와 1:1 화상 및 채팅 상담을 제공하는 온라인 점사/상담 예약 플랫폼입니다. 사주, 타로, 신점, 꿈해몽 등 다양한 분야의 전문 상담사를 만나보실 수 있습니다.',
+    },
+    {
+      q: '상담은 어떻게 진행되나요?',
+      a: '상담사 프로필을 확인하고 원하는 시간대를 예약하신 후, 예약 시간에 화상 또는 채팅으로 상담이 진행됩니다. 예약 확정 시 자동으로 상담방이 생성됩니다.',
+    },
+    {
+      q: '상담사는 어떤 분들인가요?',
+      a: '모든 상담사는 회사의 심사를 거쳐 등록된 전문가입니다. 각 상담사의 전문 분야, 경력, 리뷰를 프로필에서 확인하실 수 있습니다.',
+    },
+    {
+      q: '운세 서비스는 무엇인가요?',
+      a: '생년월일과 태어난 시간을 기반으로 사주팔자를 분석하여 오늘의 운세, 총운, 재물운, 연애운 등을 제공하는 서비스입니다.',
+    },
+  ],
+  결제: [
+    {
+      q: '결제는 어떻게 하나요?',
+      a: '캐시를 충전한 후 상담 예약 시 캐시로 결제합니다. 캐시 충전은 신용카드, 계좌이체 등 다양한 결제 수단을 지원합니다.',
+    },
+    {
+      q: '캐시 충전 금액은 어떻게 되나요?',
+      a: '다양한 캐시 패키지를 제공하고 있으며, 큰 금액을 충전할수록 보너스 캐시가 추가됩니다. 자세한 내용은 캐시 충전 페이지에서 확인하실 수 있습니다.',
+    },
+    {
+      q: '미사용 캐시는 환불 가능한가요?',
+      a: '네, 미사용 캐시는 환불 가능합니다. 마이페이지 > 지갑에서 환불 신청을 하시면 영업일 기준 3~5일 내에 처리됩니다.',
+    },
+  ],
+  상담: [
+    {
+      q: '예약을 취소하고 싶어요.',
+      a: '상담 시작 24시간 전까지 취소 시 전액 환불, 12시간 전까지 50% 환불이 가능합니다. 12시간 이내에는 환불이 불가합니다. 마이페이지 > 내역에서 취소하실 수 있습니다.',
+    },
+    {
+      q: '상담 시간을 변경할 수 있나요?',
+      a: '상담 시작 24시간 전까지 예약 변경이 가능합니다. 마이페이지 > 내역에서 일정 변경을 신청해 주세요.',
+    },
+    {
+      q: '상담 중 연결이 끊기면 어떻게 되나요?',
+      a: '네트워크 문제로 연결이 끊긴 경우, 상담방에 재접속하시면 됩니다. 상담사 측 문제로 상담이 불가한 경우 전액 환불 처리됩니다.',
+    },
+    {
+      q: '상담 내용은 녹음/녹화되나요?',
+      a: '회사는 상담 내용을 녹음하거나 녹화하지 않습니다. 상담 내용의 프라이버시는 철저히 보호됩니다.',
+    },
+  ],
+  계정: [
+    {
+      q: '비밀번호를 잊어버렸어요.',
+      a: '로그인 페이지에서 "비밀번호 찾기"를 클릭하시면 가입 시 등록한 이메일로 비밀번호 재설정 링크를 보내드립니다.',
+    },
+    {
+      q: '회원 탈퇴는 어떻게 하나요?',
+      a: '마이페이지 > 계정 설정에서 회원 탈퇴를 진행하실 수 있습니다. 탈퇴 시 미사용 캐시는 환불 처리되며, 개인정보는 관련 법령에 따라 처리됩니다.',
+    },
+    {
+      q: '소셜 로그인으로 가입할 수 있나요?',
+      a: '네, 카카오 및 네이버 계정으로 간편 가입이 가능합니다. 소셜 로그인 후 추가 정보를 입력하시면 회원가입이 완료됩니다.',
+    },
+  ],
+};
+
+export default function FaqPage() {
+  return (
+    <main
+      className="mx-auto px-6 py-10"
+      style={{
+        maxWidth: 800,
+        color: 'var(--color-text-on-dark)',
+        lineHeight: 1.8,
+      }}
+    >
+      <h1
+        className="text-2xl font-bold mb-8"
+        style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-gold)' }}
+      >
+        자주 묻는 질문 (FAQ)
+      </h1>
+
+      {Object.entries(faqData).map(([category, items]) => (
+        <section key={category} className="mb-10">
+          <h2
+            className="text-lg font-bold mb-4"
+            style={{ fontFamily: 'var(--font-heading)' }}
+          >
+            {category}
+          </h2>
+          <div className="space-y-2">
+            {items.map((item, idx) => (
+              <details
+                key={idx}
+                className="group"
+                style={{
+                  border: '1px solid var(--color-border-dark)',
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                }}
+              >
+                <summary
+                  className="cursor-pointer px-5 py-4 font-medium flex items-center justify-between"
+                  style={{
+                    fontSize: 15,
+                    listStyle: 'none',
+                    background: 'var(--color-bg-secondary)',
+                  }}
+                >
+                  <span>{item.q}</span>
+                  <span
+                    className="ml-3 shrink-0 transition-transform duration-200 group-open:rotate-180"
+                    style={{ color: 'var(--color-gold)', fontSize: 12 }}
+                  >
+                    &#9660;
+                  </span>
+                </summary>
+                <div
+                  className="px-5 py-4"
+                  style={{
+                    fontSize: 14,
+                    color: 'var(--color-text-muted-dark)',
+                    background: 'rgba(26, 22, 18, 0.5)',
+                    borderTop: '1px solid var(--color-border-dark)',
+                  }}
+                >
+                  {item.a}
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <div
+        className="mt-6 pt-6"
+        style={{ borderTop: '1px solid var(--color-border-dark)' }}
+      >
+        <p style={{ color: 'var(--color-text-muted-dark)', fontSize: 14 }}>
+          원하시는 답변을 찾지 못하셨나요?{' '}
+          <a
+            href="mailto:support@cheonjiyeon.com"
+            style={{ color: 'var(--color-gold)' }}
+          >
+            support@cheonjiyeon.com
+          </a>
+          으로 문의해 주세요.
+        </p>
+      </div>
+    </main>
+  );
+}

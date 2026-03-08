@@ -18,11 +18,15 @@ public class WalletEntity {
     private Long balanceCash;
 
     @Column(nullable = false)
+    private Long bonusBalance;
+
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
     void onCreate() {
         if (balanceCash == null) balanceCash = 0L;
+        if (bonusBalance == null) bonusBalance = 0L;
         if (updatedAt == null) updatedAt = LocalDateTime.now();
     }
 
@@ -36,5 +40,7 @@ public class WalletEntity {
     public void setUserId(Long userId) { this.userId = userId; }
     public Long getBalanceCash() { return balanceCash; }
     public void setBalanceCash(Long balanceCash) { this.balanceCash = balanceCash; }
+    public Long getBonusBalance() { return bonusBalance; }
+    public void setBonusBalance(Long bonusBalance) { this.bonusBalance = bonusBalance; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

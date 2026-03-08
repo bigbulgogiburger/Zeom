@@ -12,6 +12,7 @@ import AppHeader from '../components/app-header';
 import { ToastProvider } from '../components/toast';
 import { WebsiteJsonLd, ServiceJsonLd } from '../components/json-ld';
 import { AnalyticsProvider } from '../components/analytics-provider';
+import BottomTabBar from '../components/bottom-tab-bar';
 
 const notoSerifKr = Noto_Serif_KR({
   subsets: ['latin'],
@@ -99,7 +100,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <ToastProvider>
                 <SessionExpiryGuard />
                 <AppHeader />
-                {children}
+                <div className="pb-14 md:pb-0">{children}</div>
+                <BottomTabBar />
                 <AnalyticsProvider />
               </ToastProvider>
             </AuthProvider>

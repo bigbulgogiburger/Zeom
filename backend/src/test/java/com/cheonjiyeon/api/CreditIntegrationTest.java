@@ -40,9 +40,10 @@ class CreditIntegrationTest {
         String token = signupAndGetToken("credit_buy_" + System.nanoTime() + "@zeom.com");
         String userId = extractUserId(token);
 
-        // Fund the wallet
+        // Fund the wallet (reset bonus to isolate credit purchase test)
         WalletEntity wallet = walletRepository.findByUserId(Long.parseLong(userId)).orElseThrow();
         wallet.setBalanceCash(100000L);
+        wallet.setBonusBalance(0L);
         walletRepository.save(wallet);
 
         // Product #4 = "상담권 1회 (30분)" from V24 migration, price 33000

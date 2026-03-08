@@ -1,56 +1,51 @@
-import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../components/auth-client';
+import { getAccessToken, getRefreshToken, setTokens, clearTokens, getDeviceId } from '../components/auth-client';
+
+// Mock crypto.randomUUID
+const mockUUID = '550e8400-e29b-41d4-a716-446655440000';
+Object.defineProperty(globalThis, 'crypto', {
+  value: { randomUUID: () => mockUUID },
+});
 
 describe('auth-client', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  describe('getAccessToken', () => {
-    it('returns null when no token stored', () => {
+  describe('getDeviceId', () => {
+    it('generates and stores a UUID on first call', () => {
+      const id = getDeviceId();
+      expect(id).toBe(mockUUID);
+      expect(localStorage.getItem('device_id')).toBe(mockUUID);
+    });
+
+    it('returns same UUID on subsequent calls', () => {
+      const first = getDeviceId();
+      const second = getDeviceId();
+      expect(first).toBe(second);
+    });
+
+    it('reuses existing device_id from localStorage', () => {
+      localStorage.setItem('device_id', 'existing-id');
+      expect(getDeviceId()).toBe('existing-id');
+    });
+  });
+
+  describe('deprecated token functions (no-ops)', () => {
+    it('getAccessToken returns null (httpOnly cookie)', () => {
       expect(getAccessToken()).toBeNull();
     });
 
-    it('returns stored access token', () => {
-      localStorage.setItem('accessToken', 'test-access-token');
-      expect(getAccessToken()).toBe('test-access-token');
-    });
-  });
-
-  describe('getRefreshToken', () => {
-    it('returns null when no token stored', () => {
+    it('getRefreshToken returns null (httpOnly cookie)', () => {
       expect(getRefreshToken()).toBeNull();
     });
 
-    it('returns stored refresh token', () => {
-      localStorage.setItem('refreshToken', 'test-refresh-token');
-      expect(getRefreshToken()).toBe('test-refresh-token');
-    });
-  });
-
-  describe('setTokens', () => {
-    it('stores both access and refresh tokens', () => {
-      setTokens('my-access', 'my-refresh');
-      expect(localStorage.getItem('accessToken')).toBe('my-access');
-      expect(localStorage.getItem('refreshToken')).toBe('my-refresh');
-    });
-
-    it('overwrites existing tokens', () => {
-      setTokens('old-access', 'old-refresh');
-      setTokens('new-access', 'new-refresh');
-      expect(localStorage.getItem('accessToken')).toBe('new-access');
-      expect(localStorage.getItem('refreshToken')).toBe('new-refresh');
-    });
-  });
-
-  describe('clearTokens', () => {
-    it('removes both tokens from storage', () => {
+    it('setTokens is a no-op', () => {
       setTokens('access', 'refresh');
-      clearTokens();
       expect(localStorage.getItem('accessToken')).toBeNull();
       expect(localStorage.getItem('refreshToken')).toBeNull();
     });
 
-    it('does not throw when tokens do not exist', () => {
+    it('clearTokens does not throw', () => {
       expect(() => clearTokens()).not.toThrow();
     });
   });

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { API_BASE } from '../../components/api';
-import { setTokens } from '../../components/auth-client';
+import { getDeviceId } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
 import { useToast } from '../../components/toast';
 import { ActionButton, Card, FormField } from '../../components/ui';
@@ -35,7 +35,7 @@ export default function LoginPage() {
     const body = {
       email,
       password,
-      deviceId: 'web-main',
+      deviceId: getDeviceId(),
       deviceName: navigator.userAgent.slice(0, 120),
     };
 
@@ -43,6 +43,7 @@ export default function LoginPage() {
       const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(body),
       });
       const json = await res.json();
@@ -51,7 +52,6 @@ export default function LoginPage() {
         setError(json.message ?? t('loginFailed'));
         return;
       }
-      setTokens(json.accessToken, json.refreshToken);
       await refreshMe();
       trackEvent('login', { method: 'email' });
       toast(t('loginSuccess'), 'success');

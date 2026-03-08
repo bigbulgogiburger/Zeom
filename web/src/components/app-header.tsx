@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { apiFetch } from './api-client';
-import { clearTokens, getRefreshToken } from './auth-client';
+// auth-client: tokens managed via httpOnly cookies
 import { useAuth } from './auth-context';
 import CreditWidget from './credit-widget';
 import WalletWidget from './wallet-widget';
@@ -22,15 +22,10 @@ export default function AppHeader() {
   const t = useTranslations('common');
 
   async function logout() {
-    const refreshToken = getRefreshToken();
-    if (refreshToken) {
-      await apiFetch('/api/v1/auth/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
-    }
-    clearTokens();
+    await apiFetch('/api/v1/auth/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
     await refreshMe();
     setDrawerOpen(false);
     router.push('/login');

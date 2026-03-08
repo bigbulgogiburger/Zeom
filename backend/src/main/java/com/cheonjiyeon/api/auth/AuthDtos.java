@@ -31,11 +31,11 @@ public class AuthDtos {
     ) {}
 
     public record RefreshRequest(
-            @NotBlank @Size(max = 2000) String refreshToken,
+            @Size(max = 2000) String refreshToken,
             @Size(max = 100) String deviceId,
             @Size(max = 150) String deviceName
     ) {}
-    public record LogoutRequest(@NotBlank String refreshToken) {}
+    public record LogoutRequest(String refreshToken) {}
 
     public record UserResponse(Long id, String email, String name, String role,
                                    String phone, String birthDate, String gender,

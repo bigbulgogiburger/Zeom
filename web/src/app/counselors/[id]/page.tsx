@@ -18,6 +18,9 @@ type CounselorSummary = {
   name: string;
   specialty: string;
   intro: string;
+  profileImageUrl?: string | null;
+  averageRating?: number;
+  totalReviews?: number;
 };
 
 async function fetchCounselor(id: string): Promise<CounselorSummary | null> {
@@ -48,7 +51,8 @@ export async function generateMetadata({
     return { title: '상담사 상세' };
   }
 
-  const title = `${counselor.name} 상담사 — ${counselor.specialty}`;
+  const ratingStr = counselor.averageRating ? ` (${counselor.averageRating.toFixed(1)}점)` : '';
+  const title = `${counselor.name} 상담사 — ${counselor.specialty}${ratingStr}`;
   const description = counselor.intro || `${counselor.name} 상담사의 프로필과 예약 가능한 시간을 확인하세요.`;
 
   return {
@@ -60,6 +64,7 @@ export async function generateMetadata({
       type: 'profile',
       locale: 'ko_KR',
       url: `https://www.cheonjiyeon.com/counselors/${id}`,
+      ...(counselor.profileImageUrl ? { images: [{ url: counselor.profileImageUrl }] } : {}),
     },
     twitter: {
       card: 'summary',

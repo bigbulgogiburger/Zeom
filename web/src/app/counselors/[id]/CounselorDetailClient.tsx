@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { API_BASE } from '../../../components/api';
 import { apiFetch, getCreditBalance } from '../../../components/api-client';
 import { useAuth } from '../../../components/auth-context';
@@ -12,7 +13,35 @@ import { cn } from '@/lib/utils';
 import { trackEvent } from '../../../components/analytics';
 
 type Slot = { id: number; startAt: string; endAt: string };
-type CounselorDetail = { id: number; name: string; specialty: string; intro: string; slots: Slot[]; supportedConsultationTypes?: string };
+type CounselorDetail = {
+  id: number;
+  name: string;
+  specialty: string;
+  intro: string;
+  slots: Slot[];
+  supportedConsultationTypes?: string;
+  profileImageUrl?: string | null;
+  careerYears?: number;
+  certifications?: string | null;
+  averageRating?: number;
+  totalReviews?: number;
+  totalConsultations?: number;
+  responseRate?: number;
+  pricePerMinute?: number;
+  isOnline?: boolean;
+  tags?: string | null;
+  shortVideoUrl?: string | null;
+};
+
+type Review = {
+  id: number;
+  userId: number;
+  userName?: string;
+  rating: number;
+  content: string;
+  createdAt: string;
+  reply?: string | null;
+};
 
 const MAX_SLOTS = 3;
 
@@ -46,7 +75,6 @@ function groupSlotsByDate(slots: Slot[]): Map<string, Slot[]> {
   return groups;
 }
 
-/** Group consecutive selected slots into time ranges for display */
 function groupConsecutiveSlots(slots: Slot[]): { startAt: string; endAt: string }[] {
   if (slots.length === 0) return [];
   const sorted = [...slots].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
@@ -67,6 +95,53 @@ function groupConsecutiveSlots(slots: Slot[]): { startAt: string; endAt: string 
   }
   ranges.push({ startAt: rangeStart, endAt: rangeEnd });
   return ranges;
+}
+
+function parseTags(tags: string | null | undefined): string[] {
+  if (!tags) return [];
+  try {
+    const parsed = JSON.parse(tags);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseCertifications(certs: string | null | undefined): string[] {
+  if (!certs) return [];
+  try {
+    const parsed = JSON.parse(certs);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function StarRating({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md' }) {
+  const full = Math.floor(rating);
+  const hasHalf = rating - full >= 0.5;
+  const starSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-5 h-5';
+  return (
+    <span className="inline-flex items-center gap-0.5 text-[#C9A227]">
+      {Array.from({ length: 5 }, (_, i) => (
+        <svg
+          key={i}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          className={starSize}
+          fill={i < full ? '#C9A227' : i === full && hasHalf ? 'url(#half-detail)' : '#3a3530'}
+        >
+          <defs>
+            <linearGradient id="half-detail">
+              <stop offset="50%" stopColor="#C9A227" />
+              <stop offset="50%" stopColor="#3a3530" />
+            </linearGradient>
+          </defs>
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+    </span>
+  );
 }
 
 function HeartIcon({ filled }: { filled: boolean }) {
@@ -101,6 +176,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [showCreditModal, setShowCreditModal] = useState(false);
   const [creditShortfall, setCreditShortfall] = useState({ needed: 0, have: 0 });
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/counselors/${id}`, { cache: 'no-store' })
@@ -113,6 +189,19 @@ export default function CounselorDetailClient({ id }: { id: string }) {
         trackEvent('view_counselor', { counselor_id: id, counselor_name: data.name, specialty: data.specialty });
       })
       .catch(() => setLoadError('상담사 정보를 불러오지 못했습니다.'));
+  }, [id]);
+
+  // Fetch reviews
+  useEffect(() => {
+    fetch(`${API_BASE}/api/v1/reviews/counselor/${id}`, { cache: 'no-store' })
+      .then((r) => {
+        if (!r.ok) return [];
+        return r.json();
+      })
+      .then((data) => {
+        setReviews(Array.isArray(data) ? data : data.content ?? []);
+      })
+      .catch(() => {});
   }, [id]);
 
   // Check favorite status when logged in
@@ -186,7 +275,6 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   async function handleBook() {
     if (selectedSlots.length === 0 || !counselor) return;
 
-    // Pre-booking credit check
     const needed = selectedSlots.length;
     if (creditBalance !== null && creditBalance < needed) {
       setCreditShortfall({ needed, have: creditBalance });
@@ -242,7 +330,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
       <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 space-y-8">
         <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 animate-pulse">
           <div className="flex flex-col items-center gap-5">
-            <div className="h-16 w-16 rounded-full bg-[#1a1612]" />
+            <div className="h-24 w-24 rounded-full bg-[#1a1612]" />
             <div className="h-7 w-2/5 bg-[#1a1612] rounded-lg" />
             <div className="h-4 w-1/4 bg-[#1a1612] rounded-lg" />
             <div className="h-4 w-3/5 bg-[#1a1612] rounded-lg" />
@@ -278,6 +366,14 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   }
 
   const slotsByDate = groupSlotsByDate(counselor.slots);
+  const tags = parseTags(counselor.tags);
+  const certifications = parseCertifications(counselor.certifications);
+  const rating = counselor.averageRating ?? 0;
+  const reviewCount = counselor.totalReviews ?? 0;
+  const career = counselor.careerYears ?? 0;
+  const price = counselor.pricePerMinute ?? 3000;
+  const responseRate = counselor.responseRate ?? 100;
+  const consultations = counselor.totalConsultations ?? 0;
 
   // JSON-LD structured data
   const jsonLd = {
@@ -285,6 +381,11 @@ export default function CounselorDetailClient({ id }: { id: string }) {
     '@type': 'ProfessionalService',
     name: counselor.name,
     description: counselor.intro,
+    aggregateRating: reviewCount > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: rating,
+      reviewCount: reviewCount,
+    } : undefined,
     provider: {
       '@type': 'Organization',
       name: '천지연꽃신당',
@@ -302,9 +403,26 @@ export default function CounselorDetailClient({ id }: { id: string }) {
       {/* Counselor Info Header */}
       <Card>
         <div className="flex flex-col items-center text-center gap-5 py-4">
-          <div className="text-[3.5rem]">
-            {specialtyEmoji(counselor.specialty)}
+          {/* Profile image */}
+          <div className="relative">
+            {counselor.profileImageUrl ? (
+              <Image
+                src={counselor.profileImageUrl}
+                alt={`${counselor.name} 프로필`}
+                width={96}
+                height={96}
+                className="w-24 h-24 rounded-full object-cover border-3 border-[rgba(201,162,39,0.2)]"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-[#1a1612] border-3 border-[rgba(201,162,39,0.2)] flex items-center justify-center text-[2.5rem]">
+                {specialtyEmoji(counselor.specialty)}
+              </div>
+            )}
+            {counselor.isOnline && (
+              <span className="absolute bottom-1 right-1 w-5 h-5 bg-[#22c55e] border-3 border-[var(--color-bg-card)] rounded-full" />
+            )}
           </div>
+
           <div>
             <div className="flex items-center justify-center gap-3">
               <h2 className="m-0 font-heading font-black text-3xl tracking-tight text-card-foreground">
@@ -321,6 +439,27 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                 </button>
               )}
             </div>
+
+            {/* Rating + Career */}
+            <div className="flex items-center justify-center gap-3 mt-2">
+              <StarRating rating={rating} size="md" />
+              <span className="font-bold text-lg text-card-foreground">
+                {rating.toFixed(1)}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                ({reviewCount}건)
+              </span>
+              {career > 0 && (
+                <>
+                  <span className="text-muted-foreground">|</span>
+                  <span className="text-sm text-muted-foreground">
+                    경력 {career}년
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Badges */}
             <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
               <Badge variant="secondary" className="font-heading font-bold text-xs rounded-full px-3 py-1">
                 {counselor.specialty}
@@ -335,11 +474,58 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                   채팅상담
                 </Badge>
               )}
+              {counselor.isOnline && (
+                <Badge variant="outline" className="font-heading font-bold text-xs rounded-full px-3 py-1 border-[#22c55e]/30 text-[#22c55e]">
+                  온라인
+                </Badge>
+              )}
             </div>
+
+            {/* Tags */}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-1.5 mt-3">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-xs text-muted-foreground bg-[#1a1612]/10 rounded-full px-2.5 py-0.5"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
+
           <p className="text-muted-foreground text-lg leading-relaxed max-w-[500px]">
             {counselor.intro}
           </p>
+
+          {/* Stats row */}
+          <div className="flex flex-wrap justify-center gap-6 text-sm">
+            <div className="text-center">
+              <div className="font-bold text-xl text-card-foreground">{responseRate}%</div>
+              <div className="text-xs text-muted-foreground">응답률</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-xl text-card-foreground">{consultations.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">총 상담</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-xl text-card-foreground">{price.toLocaleString()}원</div>
+              <div className="text-xs text-muted-foreground">분당</div>
+            </div>
+          </div>
+
+          {/* Certifications */}
+          {certifications.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 mt-1">
+              {certifications.map((cert) => (
+                <Badge key={cert} variant="outline" className="font-heading text-xs rounded-full px-3 py-1 border-[#C9A227]/20 text-[#C9A227]">
+                  {cert}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       </Card>
 
@@ -542,6 +728,48 @@ export default function CounselorDetailClient({ id }: { id: string }) {
             >
               예약 확정
             </ActionButton>
+          </div>
+        </div>
+      )}
+
+      {/* Reviews Section */}
+      {reviews.length > 0 && (
+        <div>
+          <h3 className="m-0 mb-6 font-heading text-xl font-bold text-[var(--color-text-on-dark)] text-center">
+            리뷰 ({reviews.length}건)
+          </h3>
+          <div className="grid gap-4">
+            {reviews.map((review) => (
+              <Card key={review.id}>
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <StarRating rating={review.rating} size="sm" />
+                      <span className="text-sm font-bold text-card-foreground">
+                        {review.rating.toFixed(1)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {review.userName ?? '익명'}
+                      </span>
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        {new Date(review.createdAt).toLocaleDateString('ko-KR')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-card-foreground leading-relaxed">
+                      {review.content}
+                    </p>
+                    {review.reply && (
+                      <div className="mt-3 pl-4 border-l-2 border-[#C9A227]/20">
+                        <p className="text-xs text-muted-foreground mb-1 font-bold">상담사 답변</p>
+                        <p className="text-sm text-card-foreground leading-relaxed">
+                          {review.reply}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       )}

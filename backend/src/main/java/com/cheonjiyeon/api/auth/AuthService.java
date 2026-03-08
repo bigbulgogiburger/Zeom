@@ -7,6 +7,7 @@ import com.cheonjiyeon.api.auth.refresh.RefreshTokenRepository;
 import com.cheonjiyeon.api.common.ApiException;
 import com.cheonjiyeon.api.counselor.CounselorEntity;
 import com.cheonjiyeon.api.counselor.CounselorRepository;
+import com.cheonjiyeon.api.credit.SignupBonusService;
 import com.cheonjiyeon.api.wallet.WalletService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,6 +32,7 @@ public class AuthService {
     private final WalletService walletService;
     private final CounselorRepository counselorRepository;
     private final EmailVerificationService emailVerificationService;
+    private final SignupBonusService signupBonusService;
     private final boolean allowE2eAdminBootstrap;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -42,6 +44,7 @@ public class AuthService {
                        WalletService walletService,
                        CounselorRepository counselorRepository,
                        EmailVerificationService emailVerificationService,
+                       SignupBonusService signupBonusService,
                        @Value("${auth.allow-e2e-admin-bootstrap:false}") boolean allowE2eAdminBootstrap) {
         this.userRepository = userRepository;
         this.tokenStore = tokenStore;
@@ -51,6 +54,7 @@ public class AuthService {
         this.walletService = walletService;
         this.counselorRepository = counselorRepository;
         this.emailVerificationService = emailVerificationService;
+        this.signupBonusService = signupBonusService;
         this.allowE2eAdminBootstrap = allowE2eAdminBootstrap;
     }
 
@@ -104,6 +108,7 @@ public class AuthService {
         }
 
         walletService.createWalletForUser(saved.getId());
+        signupBonusService.grantSignupBonus(saved.getId());
         auditLogService.log(saved.getId(), "AUTH_SIGNUP", "USER", saved.getId());
 
         // 이메일 인증 발송 (이메일이 e2e 테스트 계정이 아닌 경우)

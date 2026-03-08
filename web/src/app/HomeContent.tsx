@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Card } from '../components/ui';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import FortuneCard from '@/components/fortune-card';
+import type { PublicStats, FeaturedReview } from './page';
 
 type Counselor = { id: number; name: string; specialty: string; intro: string };
 
@@ -102,6 +102,95 @@ function CountUpNumber({
   );
 }
 
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          className={star <= rating ? 'text-[#C9A227]' : 'text-[#3a3228]'}
+        >
+          &#9733;
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ReviewCarousel({ reviews }: { reviews: FeaturedReview[] }) {
+  const [current, setCurrent] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const next = useCallback(() => {
+    setCurrent((prev) => (prev + 1) % reviews.length);
+  }, [reviews.length]);
+
+  const prev = useCallback(() => {
+    setCurrent((prev) => (prev - 1 + reviews.length) % reviews.length);
+  }, [reviews.length]);
+
+  useEffect(() => {
+    if (reviews.length <= 1) return;
+    timerRef.current = setInterval(next, 5000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [reviews.length, next]);
+
+  if (reviews.length === 0) return null;
+
+  const review = reviews[current];
+
+  return (
+    <div className="relative max-w-2xl mx-auto">
+      <Card className="landing-card text-center p-8 sm:p-10">
+        <StarRating rating={review.rating} />
+        <p className="text-foreground text-base sm:text-lg leading-relaxed mt-4 mb-6 min-h-[3rem]">
+          &ldquo;{review.comment}&rdquo;
+        </p>
+        <div className="text-sm text-[#a49484]">
+          <span className="font-heading font-bold text-foreground">{review.authorName}</span>
+          {review.counselorName && (
+            <span> &middot; {review.counselorName} 상담사</span>
+          )}
+        </div>
+      </Card>
+
+      {reviews.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 sm:-translate-x-12 w-10 h-10 rounded-full border border-[rgba(201,162,39,0.3)] text-[#C9A227] flex items-center justify-center hover:bg-[#C9A227]/10 transition-colors"
+            aria-label="이전 후기"
+          >
+            &#8249;
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 sm:translate-x-12 w-10 h-10 rounded-full border border-[rgba(201,162,39,0.3)] text-[#C9A227] flex items-center justify-center hover:bg-[#C9A227]/10 transition-colors"
+            aria-label="다음 후기"
+          >
+            &#8250;
+          </button>
+
+          <div className="flex justify-center gap-2 mt-6">
+            {reviews.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrent(idx)}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  idx === current ? 'bg-[#C9A227]' : 'bg-[#3a3228]'
+                }`}
+                aria-label={`후기 ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /* --- Data --- */
 
 const counselorEmojis = ['\u{1FAB7}', '\uD83C\uDF19', '\u2728', '\uD83D\uDD2E', '\uD83C\uDF38', '\u262F\uFE0F'];
@@ -131,13 +220,6 @@ const steps = [
   { num: '04', title: '1:1 상담 시작', desc: '예약 시간에 상담방이 자동 개설됩니다' },
 ];
 
-const trustStats = [
-  { target: 3, suffix: '명', label: '전문 상담사' },
-  { target: 39, suffix: '슬롯', label: '예약 가능' },
-  { target: 24, suffix: '시간', label: '연중무휴' },
-  { target: 100, suffix: '%', label: '비밀 보장' },
-];
-
 const footerLinks: Record<string, { label: string; href: string }[]> = {
   서비스: [
     { label: '상담사 보기', href: '/counselors' },
@@ -146,19 +228,27 @@ const footerLinks: Record<string, { label: string; href: string }[]> = {
   ],
   고객지원: [
     { label: '이메일 문의', href: 'mailto:support@cheonjiyeon.com' },
-    { label: 'FAQ', href: '#' },
+    { label: 'FAQ', href: '/faq' },
     { label: '운영시간: 24시간', href: '#' },
   ],
   '법적 고지': [
-    { label: '이용약관', href: '#' },
-    { label: '개인정보처리방침', href: '#' },
+    { label: '이용약관', href: '/terms' },
+    { label: '개인정보처리방침', href: '/privacy' },
     { label: '사업자 정보', href: '#' },
   ],
 };
 
 /* --- Main Component --- */
 
-export default function HomeContent({ counselors }: { counselors: Counselor[] }) {
+export default function HomeContent({
+  counselors,
+  stats,
+  featuredReviews,
+}: {
+  counselors: Counselor[];
+  stats: PublicStats;
+  featuredReviews: FeaturedReview[];
+}) {
   const [mounted, setMounted] = useState(false);
   const [statsRef, statsVisible] = useInView();
 
@@ -172,6 +262,14 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
   }, []);
 
   const featured = counselors.slice(0, 3);
+
+  // Build trust stats from real data
+  const trustStats = [
+    { target: stats.totalCounselors || 0, suffix: '명', label: '전문 상담사' },
+    { target: stats.totalConsultations || 0, suffix: '건', label: '누적 상담' },
+    { target: stats.averageRating || 0, suffix: '점', label: '평균 평점' },
+    { target: stats.totalReviews || 0, suffix: '개', label: '이용 후기' },
+  ];
 
   return (
     <main>
@@ -201,18 +299,25 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
             당신의 운명, 꽃처럼 피어나는 순간
           </p>
 
+          <p
+            className={`fade-up ${mounted ? 'visible' : ''} text-[clamp(0.85rem,1.8vw,1rem)] text-[#a49484] mt-3 font-heading text-center max-w-md`}
+            style={{ animationDelay: '0.75s' }}
+          >
+            사주, 타로, 신점 ― 전통의 지혜로 삶의 방향을 찾아드립니다
+          </p>
+
           <div
             className={`fade-up ${mounted ? 'visible' : ''} flex justify-center gap-5 mt-10 flex-wrap`}
             style={{ animationDelay: '0.9s' }}
           >
             <Button asChild size="lg" className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-heading font-bold hover:opacity-90 text-lg px-10 py-4 h-auto shadow-[0_4px_24px_rgba(201,162,39,0.25)] hover:shadow-[0_6px_32px_rgba(201,162,39,0.35)] transition-all">
-              <Link href="/counselors">
-                상담 예약하기
+              <Link href="/fortune">
+                무료 오늘의 운세 보기
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="rounded-full border-2 border-[#C9A227] text-[#C9A227] font-heading font-bold hover:bg-[#C9A227]/10 text-lg px-10 py-4 h-auto bg-transparent transition-all">
               <Link href="/counselors">
-                상담사 보기
+                상담 예약하기
               </Link>
             </Button>
           </div>
@@ -359,7 +464,7 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
         </div>
       </section>
 
-      {/* Section 5 -- 신뢰 지표 (Trust Metrics) */}
+      {/* Section 5 -- 신뢰 지표 (Trust Metrics from Real Data) */}
       <section className="py-28 px-6 bg-black/30 backdrop-blur-xl border-y border-[rgba(201,162,39,0.1)]">
         <div ref={statsRef} className="max-w-[1200px] mx-auto px-6 sm:px-8 rounded-2xl py-16">
           <div className="landing-grid-stats text-center">
@@ -376,7 +481,24 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
         </div>
       </section>
 
-      {/* Section 6 -- 최종 CTA */}
+      {/* Section 6 -- 실제 후기 (Featured Reviews Carousel) */}
+      {featuredReviews.length > 0 && (
+        <section className="py-28 px-6 bg-background">
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-8">
+            <FadeIn>
+              <h2 className="text-3xl font-heading font-black tracking-tight text-center mb-10 m-0 text-foreground">
+                실제 이용 후기
+              </h2>
+            </FadeIn>
+
+            <FadeIn delay={0.2}>
+              <ReviewCarousel reviews={featuredReviews} />
+            </FadeIn>
+          </div>
+        </section>
+      )}
+
+      {/* Section 7 -- 최종 CTA */}
       <section
         className="py-28 px-6 bg-background text-center"
         style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.08) 0%, transparent 70%)' }}
@@ -402,7 +524,7 @@ export default function HomeContent({ counselors }: { counselors: Counselor[] })
         </div>
       </section>
 
-      {/* Section 7 -- Footer */}
+      {/* Section 8 -- Footer */}
       <footer className="py-12 px-6 bg-[#1a1612]">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-8">
           <div className="mb-8">

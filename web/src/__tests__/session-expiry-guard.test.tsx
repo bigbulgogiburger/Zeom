@@ -3,13 +3,6 @@ import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import SessionExpiryGuard from '../components/session-expiry-guard';
 
-// Mock auth-client
-jest.mock('../components/auth-client', () => ({
-  clearTokens: jest.fn(),
-}));
-
-import { clearTokens } from '../components/auth-client';
-
 describe('SessionExpiryGuard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -32,7 +25,14 @@ describe('SessionExpiryGuard', () => {
     expect(screen.getByText('로그인으로 이동')).toBeInTheDocument();
   });
 
-  it('calls clearTokens on button click', () => {
+  it('redirects to login on button click', () => {
+    // Mock window.location
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, href: '' },
+    });
+
     render(<SessionExpiryGuard />);
 
     act(() => {
@@ -43,7 +43,13 @@ describe('SessionExpiryGuard', () => {
       screen.getByText('로그인으로 이동').click();
     });
 
-    expect(clearTokens).toHaveBeenCalled();
+    expect(window.location.href).toBe('/login');
+
+    // Restore
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: originalLocation,
+    });
   });
 
   it('cleans up event listener on unmount', () => {

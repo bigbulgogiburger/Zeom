@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { API_BASE } from '../../../components/api';
-import { setTokens } from '../../../components/auth-client';
+import { getDeviceId } from '../../../components/auth-client';
 import { useAuth } from '../../../components/auth-context';
 
 export default function OAuthCallbackPage() {
@@ -26,10 +26,13 @@ export default function OAuthCallbackPage() {
         const res = await fetch(`${API_BASE}/api/v1/auth/oauth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             provider,
             code,
             redirectUri: `${window.location.origin}/auth/callback`,
+            deviceId: getDeviceId(),
+            deviceName: navigator.userAgent.slice(0, 120),
           }),
         });
         const json = await res.json();
@@ -37,7 +40,6 @@ export default function OAuthCallbackPage() {
           setError(json.message ?? '소셜 로그인에 실패했습니다.');
           return;
         }
-        setTokens(json.accessToken, json.refreshToken);
         await refreshMe();
         router.replace('/counselors');
       } catch {

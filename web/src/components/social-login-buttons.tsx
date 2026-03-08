@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { API_BASE } from './api';
-import { setTokens } from './auth-client';
+import { getDeviceId } from './auth-client';
 import { useAuth } from './auth-context';
 import { useToast } from './toast';
 
@@ -29,9 +29,10 @@ export function SocialLoginButtons({ mode }: SocialLoginButtonsProps) {
       const res = await fetch(`${API_BASE}/api/v1/auth/oauth/${provider}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           accessToken: mockToken,
-          deviceId: 'web-main',
+          deviceId: getDeviceId(),
           deviceName: navigator.userAgent.slice(0, 120),
         }),
       });
@@ -40,7 +41,6 @@ export function SocialLoginButtons({ mode }: SocialLoginButtonsProps) {
         setError(json.message ?? t('socialLoginFailed'));
         return;
       }
-      setTokens(json.accessToken, json.refreshToken);
       await refreshMe();
       toast(
         mode === 'login' ? t('loginSuccess') : t('signupSuccess'),

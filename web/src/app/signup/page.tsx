@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { API_BASE } from '../../components/api';
-import { setTokens } from '../../components/auth-client';
+import { getDeviceId } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
 import { useToast } from '../../components/toast';
 import { ActionButton, Card, FormField } from '../../components/ui';
@@ -172,7 +172,7 @@ export default function SignupPage() {
       password,
       name: name.trim(),
       termsAgreed: true,
-      deviceId: 'web-main',
+      deviceId: getDeviceId(),
       deviceName: navigator.userAgent.slice(0, 120),
     };
     if (phone) body.phone = phone;
@@ -186,6 +186,7 @@ export default function SignupPage() {
       const res = await fetch(`${API_BASE}/api/v1/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(body),
       });
       const json = await res.json();
@@ -194,7 +195,6 @@ export default function SignupPage() {
         setError(json.message ?? t('signupFailed'));
         return;
       }
-      setTokens(json.accessToken, json.refreshToken);
       await refreshMe();
       trackEvent('sign_up', { method: 'email' });
       toast(t('signupSuccessVerify'), 'success');

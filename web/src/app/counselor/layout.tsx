@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { RequireCounselor } from '@/components/counselor-auth';
 import { useAuth } from '@/components/auth-context';
 import { apiFetch } from '@/components/api-client';
-import { clearTokens, getRefreshToken } from '@/components/auth-client';
+// auth-client: tokens managed via httpOnly cookies
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -58,15 +58,10 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
   const [sheetOpen, setSheetOpen] = useState(false);
 
   async function logout() {
-    const refreshToken = getRefreshToken();
-    if (refreshToken) {
-      await apiFetch('/api/v1/auth/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
-    }
-    clearTokens();
+    await apiFetch('/api/v1/auth/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
     await refreshMe();
     router.push('/login');
   }

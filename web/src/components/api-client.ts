@@ -1,6 +1,14 @@
 import { API_BASE } from './api';
-import { clearTokens, getAccessToken, getRefreshToken, setTokens } from './auth-client';
+import { getDeviceId } from './auth-client';
 import { reportApiError, reportError } from './error-reporter';
+
+const STATE_CHANGING_METHODS = new Set(['POST', 'PUT', 'DELETE']);
+
+function getCsrfToken(): string {
+  if (typeof document === 'undefined') return '';
+  const match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
+  return match ? match[1] : '';
+}
 
 let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
@@ -10,19 +18,14 @@ async function refreshToken(): Promise<boolean> {
   isRefreshing = true;
 
   refreshPromise = (async () => {
-    const refresh = getRefreshToken();
-    if (!refresh) return false;
-
     try {
       const res = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: refresh, deviceId: 'web-main', deviceName: navigator.userAgent.slice(0, 120) }),
+        credentials: 'include',
+        body: JSON.stringify({ refreshToken: '', deviceId: getDeviceId(), deviceName: navigator.userAgent.slice(0, 120) }),
       });
-      if (!res.ok) return false;
-      const json = await res.json();
-      setTokens(json.accessToken, json.refreshToken);
-      return true;
+      return res.ok;
     } catch {
       return false;
     } finally {
@@ -34,26 +37,25 @@ async function refreshToken(): Promise<boolean> {
 }
 
 export async function apiFetch(path: string, init: RequestInit = {}, retry = true): Promise<Response> {
-  const token = getAccessToken();
   const headers = new Headers(init.headers || {});
-  if (token) headers.set('Authorization', `Bearer ${token}`);
+  const method = (init.method ?? 'GET').toUpperCase();
+  if (STATE_CHANGING_METHODS.has(method)) {
+    const csrf = getCsrfToken();
+    if (csrf) headers.set('X-CSRF-Token', csrf);
+  }
 
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+    res = await fetch(`${API_BASE}${path}`, { ...init, headers, credentials: 'include' });
   } catch (err) {
     reportError(err, 'high', { path, method: init.method ?? 'GET', source: 'apiFetch' });
     throw err;
   }
 
   if (res.status === 401 && retry) {
-    const hadTokens = !!(token || getRefreshToken());
     const ok = await refreshToken();
     if (!ok) {
-      clearTokens();
-      if (hadTokens) {
-        window.dispatchEvent(new CustomEvent('auth:expired'));
-      }
+      window.dispatchEvent(new CustomEvent('auth:expired'));
       return res;
     }
     return apiFetch(path, init, false);
@@ -71,7 +73,8 @@ export async function oauthLogin(provider: string, code: string, redirectUri: st
   const res = await fetch(`${API_BASE}/api/v1/auth/oauth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ provider, code, redirectUri }),
+    credentials: 'include',
+    body: JSON.stringify({ provider, code, redirectUri, deviceId: getDeviceId(), deviceName: navigator.userAgent.slice(0, 120) }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);

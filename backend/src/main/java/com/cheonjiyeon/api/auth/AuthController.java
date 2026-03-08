@@ -1,5 +1,9 @@
 package com.cheonjiyeon.api.auth;
 
+import com.cheonjiyeon.api.config.CookieUtils;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,28 +17,65 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public AuthDtos.AuthResponse signup(@Valid @RequestBody AuthDtos.SignupRequest req) {
-        return authService.signup(req);
+    public AuthDtos.AuthResponse signup(@Valid @RequestBody AuthDtos.SignupRequest req,
+                                        HttpServletResponse response) {
+        AuthDtos.AuthResponse result = authService.signup(req);
+        CookieUtils.setTokenCookies(response, result.accessToken(), result.refreshToken());
+        return result;
     }
 
     @PostMapping("/login")
-    public AuthDtos.AuthResponse login(@Valid @RequestBody AuthDtos.LoginRequest req) {
-        return authService.login(req);
+    public AuthDtos.AuthResponse login(@Valid @RequestBody AuthDtos.LoginRequest req,
+                                       HttpServletResponse response) {
+        AuthDtos.AuthResponse result = authService.login(req);
+        CookieUtils.setTokenCookies(response, result.accessToken(), result.refreshToken());
+        return result;
     }
 
     @PostMapping("/admin/login")
-    public AuthDtos.AuthResponse loginAdmin(@Valid @RequestBody AuthDtos.LoginRequest req) {
-        return authService.loginAdmin(req);
+    public AuthDtos.AuthResponse loginAdmin(@Valid @RequestBody AuthDtos.LoginRequest req,
+                                             HttpServletResponse response) {
+        AuthDtos.AuthResponse result = authService.loginAdmin(req);
+        CookieUtils.setTokenCookies(response, result.accessToken(), result.refreshToken());
+        return result;
     }
 
     @PostMapping("/refresh")
-    public AuthDtos.AuthResponse refresh(@Valid @RequestBody AuthDtos.RefreshRequest req) {
-        return authService.refresh(req);
+    public AuthDtos.AuthResponse refresh(@Valid @RequestBody AuthDtos.RefreshRequest req,
+                                          HttpServletRequest httpRequest,
+                                          HttpServletResponse response) {
+        // Cookie에서 refresh_token 가져오기 (body에 없으면)
+        AuthDtos.RefreshRequest effectiveReq = req;
+        if (req.refreshToken() == null || req.refreshToken().isBlank()) {
+            String cookieRefresh = extractCookie(httpRequest, "refresh_token");
+            if (cookieRefresh != null) {
+                effectiveReq = new AuthDtos.RefreshRequest(cookieRefresh, req.deviceId(), req.deviceName());
+            }
+        }
+
+        AuthDtos.AuthResponse result = authService.refresh(effectiveReq);
+        CookieUtils.setTokenCookies(response, result.accessToken(), result.refreshToken());
+        return result;
     }
 
     @PostMapping("/logout")
-    public AuthDtos.MessageResponse logout(@Valid @RequestBody AuthDtos.LogoutRequest req) {
-        return authService.logout(req);
+    public AuthDtos.MessageResponse logout(@Valid @RequestBody(required = false) AuthDtos.LogoutRequest req,
+                                            HttpServletRequest httpRequest,
+                                            HttpServletResponse response) {
+        // Cookie에서 refresh_token 가져오기 (body에 없으면)
+        String refreshToken = (req != null && req.refreshToken() != null && !req.refreshToken().isBlank())
+                ? req.refreshToken()
+                : extractCookie(httpRequest, "refresh_token");
+
+        AuthDtos.MessageResponse result;
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            result = authService.logout(new AuthDtos.LogoutRequest(refreshToken));
+        } else {
+            result = new AuthDtos.MessageResponse("로그아웃되었습니다.");
+        }
+
+        CookieUtils.clearTokenCookies(response);
+        return result;
     }
 
     @GetMapping("/me")
@@ -66,5 +107,16 @@ public class AuthController {
             @Valid @RequestBody ChangePasswordRequest req
     ) {
         return authService.changePassword(authHeader, req.currentPassword(), req.newPassword());
+    }
+
+    private String extractCookie(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (Cookie cookie : cookies) {
+            if (name.equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 }

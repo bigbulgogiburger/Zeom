@@ -3,7 +3,7 @@
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_BASE } from '../../../components/api';
-import { setTokens } from '../../../components/auth-client';
+import { getDeviceId } from '../../../components/auth-client';
 import { useAuth } from '../../../components/auth-context';
 import { ActionButton, InlineError, InlineSuccess } from '../../../components/ui';
 import { Input } from '@/components/ui/input';
@@ -24,13 +24,14 @@ export default function AdminLoginPage() {
     const body = {
       email: String(form.get('email')),
       password: String(form.get('password')),
-      deviceId: 'web-admin',
+      deviceId: getDeviceId(),
       deviceName: navigator.userAgent.slice(0, 120),
     };
 
     const res = await fetch(`${API_BASE}/api/v1/auth/admin/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(body),
     });
     const json = await res.json();
@@ -40,7 +41,6 @@ export default function AdminLoginPage() {
     }
 
     setSuccess('관리자 로그인 성공! 이동 중입니다.');
-    setTokens(json.accessToken, json.refreshToken);
     await refreshMe();
     router.push('/dashboard');
   }
