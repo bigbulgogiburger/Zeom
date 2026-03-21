@@ -83,7 +83,7 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <main
-      className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#0f0d0a]"
+      className="min-h-[100dvh] flex flex-col items-center justify-center p-6 bg-[#0f0d0a]"
       style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.05) 0%, transparent 70%)' }}
     >
       <div className="w-full max-w-[420px]">

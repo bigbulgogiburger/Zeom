@@ -166,14 +166,14 @@ export default function OnboardingPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-[100dvh] flex items-center justify-center">
         <div className="skeleton w-12 h-12 rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-[480px]">
         <StepIndicator currentStep={step} totalSteps={4} />
 

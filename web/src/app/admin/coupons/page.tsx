@@ -170,7 +170,7 @@ export default function AdminCouponsPage() {
 
   return (
     <RequireAdmin>
-      <main className="min-h-screen bg-[#0f0d0a] p-6">
+      <main className="min-h-[100dvh] bg-[#0f0d0a] p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <PageTitle>쿠폰 관리</PageTitle>

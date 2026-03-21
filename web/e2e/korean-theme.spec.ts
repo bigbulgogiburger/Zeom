@@ -3,10 +3,10 @@ import { test, expect } from '@playwright/test';
 /**
  * E2E: Korean Theme - Color Palette, Fonts, Responsive, Borders
  * Tests Korean traditional design system implementation:
- * - 먹색 (ink black) backgrounds
+ * - Organic Warmth dark backgrounds
  * - 금색 (gold) accent buttons
- * - Korean fonts (Noto Serif KR, Noto Sans KR)
- * - 단청 (dancheong) decorative borders
+ * - Korean fonts (Pretendard)
+ * - Surface card borders
  * - Mobile responsive design
  */
 
@@ -15,7 +15,7 @@ const BASE = 'http://localhost:3000';
 test.describe('Korean Theme: Design System', () => {
   test('1. Color palette - 먹색 background applied', async ({ page }) => {
     await page.goto(`${BASE}/login`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Check body or main container background color
     const bodyBg = await page.locator('body').evaluate((el) => {
@@ -42,7 +42,7 @@ test.describe('Korean Theme: Design System', () => {
 
   test('2. Color palette - 금색 accent on buttons', async ({ page }) => {
     await page.goto(`${BASE}/login`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Find primary button (login/submit button)
     const submitButton = page.locator('button[type="submit"]').first();
@@ -70,16 +70,16 @@ test.describe('Korean Theme: Design System', () => {
     }
   });
 
-  test('3. Korean fonts - Noto Serif KR loaded', async ({ page }) => {
+  test('3. Korean fonts - Pretendard loaded', async ({ page }) => {
     await page.goto(`${BASE}/`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
-    // Check if Noto Serif KR is in the font stack
+    // Check if Pretendard is in the font stack
     const bodyFont = await page.locator('body').evaluate((el) => {
       return window.getComputedStyle(el).fontFamily;
     });
 
-    // Also check headings which often use serif fonts
+    // Also check headings
     const heading = page.locator('h1, h2, h3').first();
     let headingFont = '';
     if (await heading.isVisible()) {
@@ -89,17 +89,17 @@ test.describe('Korean Theme: Design System', () => {
     }
 
     const hasKoreanFont =
-      bodyFont.includes('Noto') ||
-      headingFont.includes('Noto') ||
-      bodyFont.includes('KR') ||
-      headingFont.includes('KR');
+      bodyFont.includes('Pretendard') ||
+      headingFont.includes('Pretendard') ||
+      bodyFont.includes('system-ui') ||
+      headingFont.includes('system-ui');
 
     expect(hasKoreanFont || bodyFont.length > 0).toBeTruthy();
   });
 
-  test('4. Korean fonts - Noto Sans KR for UI text', async ({ page }) => {
+  test('4. Korean fonts - Pretendard for UI text', async ({ page }) => {
     await page.goto(`${BASE}/counselors`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Check button or UI element fonts
     const button = page.locator('button').first();
@@ -108,7 +108,7 @@ test.describe('Korean Theme: Design System', () => {
         return window.getComputedStyle(el).fontFamily;
       });
 
-      // Should include Noto Sans or Korean font
+      // Should include Pretendard or system font
       expect(buttonFont.length).toBeGreaterThan(0);
     }
   });
@@ -117,7 +117,7 @@ test.describe('Korean Theme: Design System', () => {
     // Set mobile viewport (iPhone SE size)
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto(`${BASE}/counselors`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Check if layout adapts to mobile
     const bodyWidth = await page.locator('body').evaluate((el) => {
@@ -139,7 +139,7 @@ test.describe('Korean Theme: Design System', () => {
   test('6. Mobile responsive - counselor cards stack vertically', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto(`${BASE}/counselors`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Get counselor cards
     const cards = page.locator('[data-testid="counselor-card"], article, .counselor-card');
@@ -159,7 +159,7 @@ test.describe('Korean Theme: Design System', () => {
 
   test('7. 단청 border on cards', async ({ page }) => {
     await page.goto(`${BASE}/counselors`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Check if cards have decorative borders
     const card = page.locator('[data-testid="counselor-card"], article, .counselor-card').first();
@@ -189,7 +189,7 @@ test.describe('Korean Theme: Design System', () => {
 
     for (const path of pages) {
       await page.goto(`${BASE}${path}`);
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
 
       // Check if Korean font is consistently applied
       const bodyFont = await page.locator('body').evaluate((el) => {
@@ -202,7 +202,7 @@ test.describe('Korean Theme: Design System', () => {
 
   test('9. Theme handles backend unavailable gracefully', async ({ page }) => {
     await page.goto(`${BASE}/`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Theme should be applied even if backend is down
     const bodyBg = await page.locator('body').evaluate((el) => {
@@ -216,7 +216,7 @@ test.describe('Korean Theme: Design System', () => {
     // Set tablet viewport (iPad size)
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto(`${BASE}/counselors`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const bodyWidth = await page.locator('body').evaluate((el) => {
       return el.clientWidth;

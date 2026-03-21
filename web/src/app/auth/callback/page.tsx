@@ -52,7 +52,7 @@ export default function OAuthCallbackPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-[#0f0d0a]">
+      <main className="min-h-[100dvh] flex items-center justify-center bg-[#0f0d0a]">
         <div className="text-center">
           <p className="text-[#a49484] mb-4">{error}</p>
           <button
@@ -67,7 +67,7 @@ export default function OAuthCallbackPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#0f0d0a]">
+    <main className="min-h-[100dvh] flex items-center justify-center bg-[#0f0d0a]">
       <div className="text-center">
         <div className="w-8 h-8 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <p className="text-[#a49484]">로그인 처리 중...</p>

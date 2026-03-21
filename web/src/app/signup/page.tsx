@@ -8,7 +8,7 @@ import { API_BASE } from '../../components/api';
 import { getDeviceId } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
 import { useToast } from '../../components/toast';
-import { ActionButton, Card, FormField } from '../../components/ui';
+import { ActionButton, FormField } from '../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { SocialLoginButtons } from '../../components/social-login-buttons';
 import { trackEvent } from '../../components/analytics';
+import { Eye, EyeOff, ChevronDown } from 'lucide-react';
 
 const YEARS = Array.from({ length: 71 }, (_, i) => 2010 - i);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -50,41 +51,33 @@ function formatPhone(value: string): string {
   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
 }
 
-function ProgressIndicator({ current, steps }: { current: number; steps: string[] }) {
+function ProgressBar({ current, steps }: { current: number; steps: string[] }) {
+  const progress = ((current + 1) / steps.length) * 100;
   return (
-    <div className="flex items-center justify-center gap-0 mb-10">
-      {steps.map((label, i) => {
-        const isCompleted = i < current;
-        const isActive = i === current;
-        const isPending = i > current;
-        return (
-          <div key={label} className="flex items-center">
-            <div className="flex flex-col items-center gap-2">
-              <div className={cn(
-                'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-heading transition-all',
-                isActive && 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a]',
-                isCompleted && 'bg-transparent border-2 border-[#C9A227] text-[#C9A227]',
-                isPending && 'bg-transparent border-2 border-[#a49484]/40 text-[#a49484]',
-              )}>
-                {isCompleted ? '\u2713' : i + 1}
-              </div>
-              <span className={cn(
-                'text-xs whitespace-nowrap tracking-wide',
-                isPending ? 'text-[#a49484]/70' : 'text-foreground',
-                isActive && 'font-bold text-[#C9A227]',
-              )}>
-                {label}
-              </span>
-            </div>
-            {i < steps.length - 1 && (
-              <div className={cn(
-                'w-12 h-0.5 mx-3 mb-7 transition-colors',
-                i < current ? 'bg-[#C9A227]' : 'bg-[#C9A227]/20',
-              )} />
+    <div className="mb-8">
+      <div className="h-1 bg-[hsl(var(--border-subtle))] rounded-full overflow-hidden">
+        <div
+          className="h-full bg-[hsl(var(--gold))] rounded-full transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div className="flex justify-between mt-3">
+        {steps.map((label, i) => (
+          <span
+            key={label}
+            className={cn(
+              'text-xs transition-colors',
+              i === current
+                ? 'text-[hsl(var(--gold))] font-bold'
+                : i < current
+                  ? 'text-[hsl(var(--text-secondary))]'
+                  : 'text-[hsl(var(--text-muted))]',
             )}
-          </div>
-        );
-      })}
+          >
+            {label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -205,22 +198,28 @@ export default function SignupPage() {
     }
   }
 
-  const selectClass = "w-full min-h-[44px] rounded-xl border border-[rgba(201,162,39,0.15)] bg-[#1a1612] px-3 py-2 text-sm text-foreground appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2712%27%20height=%2712%27%20viewBox=%270%200%2012%2012%27%3E%3Cpath%20fill=%27%23a49484%27%20d=%27M6%208L1%203h10z%27/%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] pr-8 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40";
+  const selectClass = cn(
+    "w-full min-h-[48px] rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--background))] px-3 py-2 text-sm text-[hsl(var(--text-primary))] appearance-none",
+    "bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2712%27%20height=%2712%27%20viewBox=%270%200%2012%2012%27%3E%3Cpath%20fill=%27%23C9A227%27%20d=%27M6%208L1%203h10z%27/%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] pr-8",
+    "focus:outline-none focus:ring-2 focus:ring-[hsl(var(--gold))/0.3] focus:border-[hsl(var(--border-accent))]",
+  );
+
+  const inputClass = "min-h-[48px] bg-[hsl(var(--background))] border border-[hsl(var(--border-subtle))] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))/0.3] focus:border-[hsl(var(--border-accent))]";
 
   return (
     <main
-      className="min-h-screen flex flex-col items-center justify-center py-24 px-6 bg-[#0f0d0a]"
-      style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.05) 0%, transparent 70%)' }}
+      className="min-h-[100dvh] flex flex-col items-center justify-center py-24 px-6 bg-[hsl(var(--background))]"
+      style={{ backgroundImage: 'radial-gradient(ellipse at center, hsl(var(--gold) / 0.04) 0%, transparent 70%)' }}
     >
       <div className="w-full max-w-[480px]">
-        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 sm:p-10">
+        <div className="bg-[hsl(var(--surface))] border border-[hsl(var(--border-subtle))] rounded-2xl p-8 sm:p-10">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent font-heading m-0">
+            <h1 className="text-3xl font-black tracking-tight text-[hsl(var(--gold))] font-heading m-0">
               {t('title')}
             </h1>
           </div>
 
-          <ProgressIndicator current={step} steps={STEPS} />
+          <ProgressBar current={step} steps={STEPS} />
 
           {/* Step 1: Basic Info */}
           {step === 0 && (
@@ -232,7 +231,7 @@ export default function SignupPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   autoComplete="email"
-                  className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+                  className={inputClass}
                 />
               </FormField>
 
@@ -244,7 +243,7 @@ export default function SignupPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t('passwordPlaceholder')}
                     autoComplete="new-password"
-                    className="min-h-[44px] pr-16 bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+                    className={cn(inputClass, 'pr-12')}
                   />
                   <Button
                     type="button"
@@ -252,9 +251,10 @@ export default function SignupPage() {
                     size="sm"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 text-[#a49484] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[#C9A227]"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-[hsl(var(--text-muted))] min-h-0 h-auto p-2 hover:bg-transparent hover:text-[hsl(var(--gold))]"
+                    aria-label={showPassword ? tc('hide') : tc('view')}
                   >
-                    {showPassword ? tc('hide') : tc('view')}
+                    {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                   </Button>
                 </div>
               </FormField>
@@ -267,7 +267,7 @@ export default function SignupPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder={t('passwordConfirmPlaceholder')}
                     autoComplete="new-password"
-                    className="min-h-[44px] pr-16 bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+                    className={cn(inputClass, 'pr-12')}
                   />
                   <Button
                     type="button"
@@ -275,9 +275,10 @@ export default function SignupPage() {
                     size="sm"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     tabIndex={-1}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 text-[#a49484] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[#C9A227]"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-[hsl(var(--text-muted))] min-h-0 h-auto p-2 hover:bg-transparent hover:text-[hsl(var(--gold))]"
+                    aria-label={showConfirmPassword ? tc('hide') : tc('view')}
                   >
-                    {showConfirmPassword ? tc('hide') : tc('view')}
+                    {showConfirmPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                   </Button>
                 </div>
               </FormField>
@@ -289,7 +290,7 @@ export default function SignupPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t('namePlaceholder')}
                   autoComplete="name"
-                  className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+                  className={inputClass}
                 />
               </FormField>
 
@@ -306,7 +307,7 @@ export default function SignupPage() {
           {/* Step 2: Saju Birth Info */}
           {step === 1 && (
             <div>
-              <p className="text-sm text-[#C9A227] text-center mb-6 leading-relaxed">
+              <p className="text-sm text-[hsl(var(--gold))] text-center mb-6 leading-relaxed">
                 {t('sajuInfoHeader')}
               </p>
 
@@ -346,31 +347,35 @@ export default function SignupPage() {
               </FormField>
 
               <FormField label={t('calendarType')} required>
-                <div className="flex items-center gap-6 pt-1">
-                  <label className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
-                    <input
-                      type="radio"
-                      name="calendarType"
-                      value="solar"
-                      checked={calendarType === 'solar'}
-                      onChange={() => { setCalendarType('solar'); setIsLeapMonth(false); }}
-                      className="w-[18px] h-[18px] cursor-pointer accent-[#C9A227]"
-                    />
-                    {t('calendarSolar')}
-                  </label>
-                  <label className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
-                    <input
-                      type="radio"
-                      name="calendarType"
-                      value="lunar"
-                      checked={calendarType === 'lunar'}
-                      onChange={() => setCalendarType('lunar')}
-                      className="w-[18px] h-[18px] cursor-pointer accent-[#C9A227]"
-                    />
-                    {t('calendarLunar')}
-                  </label>
+                <div className="flex items-center gap-3 pt-1">
+                  <div className="inline-flex bg-[hsl(var(--background))] rounded-full p-1 border border-[hsl(var(--border-subtle))]">
+                    <button
+                      type="button"
+                      onClick={() => { setCalendarType('solar'); setIsLeapMonth(false); }}
+                      className={cn(
+                        'rounded-full px-4 py-1.5 text-sm transition-all',
+                        calendarType === 'solar'
+                          ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-bold'
+                          : 'text-[hsl(var(--text-secondary))]',
+                      )}
+                    >
+                      {t('calendarSolar')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCalendarType('lunar')}
+                      className={cn(
+                        'rounded-full px-4 py-1.5 text-sm transition-all',
+                        calendarType === 'lunar'
+                          ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-bold'
+                          : 'text-[hsl(var(--text-secondary))]',
+                      )}
+                    >
+                      {t('calendarLunar')}
+                    </button>
+                  </div>
                   {calendarType === 'lunar' && (
-                    <label className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
+                    <label className="flex items-center gap-1 cursor-pointer text-sm text-[hsl(var(--text-primary))]">
                       <Checkbox
                         checked={isLeapMonth}
                         onCheckedChange={(checked) => setIsLeapMonth(checked === true)}
@@ -396,19 +401,21 @@ export default function SignupPage() {
               </FormField>
 
               <FormField label={t('gender')} required hint={t('genderHint')}>
-                <div className="flex gap-6 pt-1">
+                <div className="grid grid-cols-2 gap-3 pt-1">
                   {([['male', t('male')], ['female', t('female')]] as const).map(([val, label]) => (
-                    <label key={val} className="flex items-center gap-1 cursor-pointer text-sm text-foreground">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value={val}
-                        checked={gender === val}
-                        onChange={(e) => setGender(e.target.value)}
-                        className="w-[18px] h-[18px] cursor-pointer accent-[#C9A227]"
-                      />
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setGender(val)}
+                      className={cn(
+                        'flex-1 p-4 rounded-xl border-2 text-center cursor-pointer text-sm font-bold transition-all',
+                        gender === val
+                          ? 'border-[hsl(var(--gold))] bg-[hsl(var(--gold))/0.08] text-[hsl(var(--gold))]'
+                          : 'border-[hsl(var(--border-subtle))] text-[hsl(var(--text-secondary))] hover:border-[hsl(var(--border-accent))/0.4]',
+                      )}
+                    >
                       {label}
-                    </label>
+                    </button>
                   ))}
                 </div>
               </FormField>
@@ -420,7 +427,7 @@ export default function SignupPage() {
                   onChange={(e) => handlePhoneChange(e.target.value)}
                   placeholder="010-0000-0000"
                   autoComplete="tel"
-                  className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+                  className={inputClass}
                 />
               </FormField>
 
@@ -429,7 +436,7 @@ export default function SignupPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setStep(0)}
-                  className="flex-1 min-h-[44px] font-bold font-heading rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10"
+                  className="flex-1 min-h-[48px] font-bold font-heading rounded-full border-2 border-[hsl(var(--border-accent))/0.3] text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))/0.08] bg-transparent"
                 >
                   {tc('previous')}
                 </Button>
@@ -448,8 +455,8 @@ export default function SignupPage() {
           {step === 2 && (
             <div>
               {/* Agree all */}
-              <div className="border-b border-[rgba(201,162,39,0.15)] pb-4 mb-4">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-base text-foreground py-2">
+              <div className="border-b border-[hsl(var(--border-subtle))] pb-4 mb-4">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-base text-[hsl(var(--text-primary))] py-2">
                   <Checkbox
                     checked={allAgreed}
                     onCheckedChange={(checked) => handleAllTerms(checked === true)}
@@ -462,26 +469,28 @@ export default function SignupPage() {
               {/* Terms of service */}
               <div className="mb-3">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground py-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-[hsl(var(--text-primary))] py-2">
                     <Checkbox
                       checked={termsAgreed}
                       onCheckedChange={(checked) => setTermsAgreed(checked === true)}
                       className="w-5 h-5"
                     />
-                    <span><span className="text-destructive font-bold">{t('termsRequired')}</span> {t('termsOfService')}</span>
+                    <span><span className="text-[hsl(var(--destructive))] font-bold">{t('termsRequired')}</span> {t('termsOfService')}</span>
                   </label>
-                  <Button
+                  <button
                     type="button"
-                    variant="link"
-                    size="sm"
                     onClick={() => setExpandedTerm(expandedTerm === 'terms' ? null : 'terms')}
-                    className="text-[#a49484] text-xs underline min-h-0 h-auto px-1 hover:text-[#C9A227]"
+                    className="text-[hsl(var(--text-muted))] hover:text-[hsl(var(--gold))] transition-colors p-1"
+                    aria-label={tc('view')}
                   >
-                    {tc('view')}
-                  </Button>
+                    <ChevronDown className={cn(
+                      'size-4 transition-transform duration-200',
+                      expandedTerm === 'terms' && 'rotate-180',
+                    )} />
+                  </button>
                 </div>
                 {expandedTerm === 'terms' && (
-                  <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.1)] rounded-xl p-3 text-xs text-[#a49484] leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
+                  <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border-subtle))] rounded-xl p-3 text-xs text-[hsl(var(--text-secondary))] leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
                     {TERMS_DETAIL.terms}
                   </div>
                 )}
@@ -490,26 +499,28 @@ export default function SignupPage() {
               {/* Privacy policy */}
               <div className="mb-3">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground py-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-[hsl(var(--text-primary))] py-2">
                     <Checkbox
                       checked={privacyAgreed}
                       onCheckedChange={(checked) => setPrivacyAgreed(checked === true)}
                       className="w-5 h-5"
                     />
-                    <span><span className="text-destructive font-bold">{t('termsRequired')}</span> {t('privacyPolicy')}</span>
+                    <span><span className="text-[hsl(var(--destructive))] font-bold">{t('termsRequired')}</span> {t('privacyPolicy')}</span>
                   </label>
-                  <Button
+                  <button
                     type="button"
-                    variant="link"
-                    size="sm"
                     onClick={() => setExpandedTerm(expandedTerm === 'privacy' ? null : 'privacy')}
-                    className="text-[#a49484] text-xs underline min-h-0 h-auto px-1 hover:text-[#C9A227]"
+                    className="text-[hsl(var(--text-muted))] hover:text-[hsl(var(--gold))] transition-colors p-1"
+                    aria-label={tc('view')}
                   >
-                    {tc('view')}
-                  </Button>
+                    <ChevronDown className={cn(
+                      'size-4 transition-transform duration-200',
+                      expandedTerm === 'privacy' && 'rotate-180',
+                    )} />
+                  </button>
                 </div>
                 {expandedTerm === 'privacy' && (
-                  <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.1)] rounded-xl p-3 text-xs text-[#a49484] leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
+                  <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border-subtle))] rounded-xl p-3 text-xs text-[hsl(var(--text-secondary))] leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
                     {TERMS_DETAIL.privacy}
                   </div>
                 )}
@@ -518,26 +529,28 @@ export default function SignupPage() {
               {/* Marketing consent */}
               <div className="mb-6">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground py-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-[hsl(var(--text-primary))] py-2">
                     <Checkbox
                       checked={marketingAgreed}
                       onCheckedChange={(checked) => setMarketingAgreed(checked === true)}
                       className="w-5 h-5"
                     />
-                    <span><span className="text-[#a49484] font-bold">{t('termsOptional')}</span> {t('marketingConsent')}</span>
+                    <span><span className="text-[hsl(var(--text-muted))] font-bold">{t('termsOptional')}</span> {t('marketingConsent')}</span>
                   </label>
-                  <Button
+                  <button
                     type="button"
-                    variant="link"
-                    size="sm"
                     onClick={() => setExpandedTerm(expandedTerm === 'marketing' ? null : 'marketing')}
-                    className="text-[#a49484] text-xs underline min-h-0 h-auto px-1 hover:text-[#C9A227]"
+                    className="text-[hsl(var(--text-muted))] hover:text-[hsl(var(--gold))] transition-colors p-1"
+                    aria-label={tc('view')}
                   >
-                    {tc('view')}
-                  </Button>
+                    <ChevronDown className={cn(
+                      'size-4 transition-transform duration-200',
+                      expandedTerm === 'marketing' && 'rotate-180',
+                    )} />
+                  </button>
                 </div>
                 {expandedTerm === 'marketing' && (
-                  <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.1)] rounded-xl p-3 text-xs text-[#a49484] leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
+                  <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border-subtle))] rounded-xl p-3 text-xs text-[hsl(var(--text-secondary))] leading-relaxed max-h-[150px] overflow-y-auto mt-1 whitespace-pre-line">
                     {TERMS_DETAIL.marketing}
                   </div>
                 )}
@@ -545,7 +558,7 @@ export default function SignupPage() {
 
               {error && (
                 <div className="mb-3">
-                  <Alert variant="destructive">
+                  <Alert variant="destructive" className="border-[hsl(var(--destructive))]">
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 </div>
@@ -556,7 +569,7 @@ export default function SignupPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setStep(1)}
-                  className="flex-1 min-h-[44px] font-bold font-heading rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10"
+                  className="flex-1 min-h-[48px] font-bold font-heading rounded-full border-2 border-[hsl(var(--border-accent))/0.3] text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))/0.08] bg-transparent"
                 >
                   {tc('previous')}
                 </Button>
@@ -576,9 +589,9 @@ export default function SignupPage() {
           <SocialLoginButtons mode="signup" />
         </div>
 
-        <div className="text-center mt-8 text-sm text-[#a49484]">
+        <div className="text-center mt-8 text-sm text-[hsl(var(--text-secondary))]">
           {t('hasAccount')}{' '}
-          <Link href="/login" className="text-[#C9A227] font-bold hover:underline hover:text-[#D4A843] transition-colors">
+          <Link href="/login" className="text-[hsl(var(--gold))] font-bold hover:underline transition-colors">
             {t('loginLink')}
           </Link>
         </div>

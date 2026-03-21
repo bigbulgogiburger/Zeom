@@ -136,7 +136,7 @@ export default function ReferralPage() {
 
   return (
     <RequireLogin>
-      <main className="min-h-screen bg-[#0f0d0a] p-6">
+      <main className="min-h-[100dvh] bg-[#0f0d0a] p-6">
         <div className="max-w-3xl mx-auto">
           <PageTitle>친구 초대</PageTitle>
 

@@ -8,12 +8,13 @@ import { API_BASE } from '../../components/api';
 import { getDeviceId } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
 import { useToast } from '../../components/toast';
-import { ActionButton, Card, FormField } from '../../components/ui';
+import { ActionButton, FormField } from '../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SocialLoginButtons } from '../../components/social-login-buttons';
 import { trackEvent } from '../../components/analytics';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -64,16 +65,16 @@ export default function LoginPage() {
 
   return (
     <main
-      className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#0f0d0a]"
-      style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.05) 0%, transparent 70%)' }}
+      className="min-h-[100dvh] flex flex-col items-center justify-center p-6 bg-[hsl(var(--background))]"
+      style={{ backgroundImage: 'radial-gradient(ellipse at center, hsl(var(--gold) / 0.04) 0%, transparent 70%)' }}
     >
       <div className="w-full max-w-[420px]">
-        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 sm:p-10">
+        <div className="bg-[hsl(var(--surface))] border border-[hsl(var(--border-subtle))] rounded-2xl p-8 sm:p-10">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent font-heading m-0 mb-2">
+            <h1 className="text-3xl font-black tracking-tight text-[hsl(var(--gold))] font-heading m-0 mb-2">
               {t('title')}
             </h1>
-            <p className="text-sm text-[#a49484] m-0">
+            <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
               {t('subtitle')}
             </p>
           </div>
@@ -87,7 +88,7 @@ export default function LoginPage() {
                 placeholder="you@example.com"
                 required
                 autoComplete="email"
-                className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+                className="min-h-[48px] bg-[hsl(var(--background))] border border-[hsl(var(--border-subtle))] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))/0.3] focus:border-[hsl(var(--border-accent))]"
               />
             </FormField>
 
@@ -100,7 +101,7 @@ export default function LoginPage() {
                   placeholder={t('passwordPlaceholder')}
                   required
                   autoComplete="current-password"
-                  className="min-h-[44px] pr-16 bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+                  className="min-h-[48px] pr-12 bg-[hsl(var(--background))] border border-[hsl(var(--border-subtle))] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))/0.3] focus:border-[hsl(var(--border-accent))]"
                 />
                 <Button
                   type="button"
@@ -108,16 +109,17 @@ export default function LoginPage() {
                   size="sm"
                   onClick={() => setShowPassword(!showPassword)}
                   tabIndex={-1}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 text-[#a49484] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[#C9A227]"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 text-[hsl(var(--text-muted))] min-h-0 h-auto p-2 hover:bg-transparent hover:text-[hsl(var(--gold))]"
+                  aria-label={showPassword ? tc('hide') : tc('view')}
                 >
-                  {showPassword ? tc('hide') : tc('view')}
+                  {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                 </Button>
               </div>
             </FormField>
 
             {error && (
               <div className="mb-4">
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="border-[hsl(var(--destructive))]">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               </div>
@@ -138,21 +140,21 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center mt-8 flex flex-col gap-3">
-          <div className="text-sm text-[#a49484]">
-            <Link href="/forgot-password" className="text-[#a49484] hover:text-[#C9A227] hover:underline transition-colors">
+          <div className="text-sm">
+            <Link href="/forgot-password" className="text-[hsl(var(--text-muted))] hover:text-[hsl(var(--gold))] hover:underline transition-colors">
               {t('forgotPassword')}
             </Link>
           </div>
-          <div className="text-sm text-[#a49484]">
+          <div className="text-sm text-[hsl(var(--text-secondary))]">
             {t('noAccount')}{' '}
-            <Link href="/signup" className="text-[#C9A227] font-bold hover:underline hover:text-[#D4A843] transition-colors">
+            <Link href="/signup" className="text-[hsl(var(--gold))] font-bold hover:underline transition-colors">
               {t('signupLink')}
             </Link>
           </div>
           <div>
             <Link
               href="/admin/login"
-              className="text-[#a49484] text-xs font-normal hover:text-[#C9A227] hover:underline transition-colors"
+              className="text-[hsl(var(--text-muted))] text-xs font-normal opacity-60 hover:opacity-100 hover:text-[hsl(var(--gold))] hover:underline transition-all"
             >
               {t('adminLogin')}
             </Link>

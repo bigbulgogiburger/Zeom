@@ -12,13 +12,50 @@ test.describe('Auth Flows: Token Refresh & Session Expiry', () => {
   const testPassword = 'Password123!';
 
   test.beforeEach(async ({ page }) => {
-    // Signup
+    // Signup — multi-step wizard
     await page.goto(`${BASE}/signup`);
-    await page.fill('input[name="email"], input[type="email"]', testEmail);
-    await page.fill('input[name="name"]', '인증테스터');
-    await page.fill('input[name="password"], input[type="password"]', testPassword);
-    await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/counselors/, { timeout: 10000 });
+    await page.waitForLoadState('domcontentloaded');
+
+    // Step 1: Basic Info (email, password, confirm password, name)
+    await page.fill('input[type="email"]', testEmail);
+    await page.locator('input[type="password"]').first().fill(testPassword);
+    await page.locator('input[type="password"]').nth(1).fill(testPassword);
+    await page.fill('input[autocomplete="name"]', '인증테스터');
+
+    // Click "다음" to go to step 2
+    const nextButton = page.locator('button:has-text("다음"), button:has-text("Next")');
+    await nextButton.click();
+
+    // Step 2: Birth info — fill required fields
+    await page.waitForTimeout(500);
+    // Select birth year, month, day
+    await page.locator('select').nth(0).selectOption({ index: 1 }); // year
+    await page.locator('select').nth(1).selectOption({ index: 1 }); // month
+    await page.locator('select').nth(2).selectOption({ index: 1 }); // day
+    // Select birth hour
+    await page.locator('select').nth(3).selectOption({ index: 1 }); // hour
+    // Select gender (click first gender card button)
+    const genderButton = page.locator('[data-gender], button:has-text("남"), label:has-text("남")').first();
+    if (await genderButton.isVisible({ timeout: 2000 })) {
+      await genderButton.click();
+    }
+
+    // Click "다음" to go to step 3
+    const nextButton2 = page.locator('button:has-text("다음"), button:has-text("Next")');
+    await nextButton2.click();
+
+    // Step 3: Terms — agree all and submit
+    await page.waitForTimeout(500);
+    const agreeAllCheckbox = page.locator('button[role="checkbox"], input[type="checkbox"]').first();
+    if (await agreeAllCheckbox.isVisible({ timeout: 2000 })) {
+      await agreeAllCheckbox.click();
+    }
+
+    // Submit
+    const submitButton = page.locator('button:has-text("가입"), button:has-text("Sign")');
+    await submitButton.click();
+
+    await expect(page).toHaveURL(/\/counselors/, { timeout: 15000 });
   });
 
   test('1. Unauthenticated user is redirected to login from protected pages', async ({ page }) => {

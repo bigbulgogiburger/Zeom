@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 bg-[#0f0d0a] bg-[radial-gradient(ellipse_at_center,rgba(201,162,39,0.05)_0%,transparent_70%)]">
+    <main className="min-h-[100dvh] flex items-center justify-center p-6 bg-[#0f0d0a] bg-[radial-gradient(ellipse_at_center,rgba(201,162,39,0.05)_0%,transparent_70%)]">
       <div className="w-full max-w-[420px]">
         {/* Glass-morphism card */}
         <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 shadow-lg">

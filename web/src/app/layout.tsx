@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { Noto_Serif_KR, Noto_Sans_KR } from 'next/font/google';
 import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
@@ -13,22 +12,6 @@ import { ToastProvider } from '../components/toast';
 import { WebsiteJsonLd, ServiceJsonLd } from '../components/json-ld';
 import { AnalyticsProvider } from '../components/analytics-provider';
 import BottomTabBar from '../components/bottom-tab-bar';
-
-const notoSerifKr = Noto_Serif_KR({
-  subsets: ['latin'],
-  weight: ['400', '700', '900'],
-  display: 'swap',
-  preload: true,
-  variable: '--font-heading',
-});
-
-const notoSansKr = Noto_Sans_KR({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  display: 'swap',
-  preload: true,
-  variable: '--font-body',
-});
 
 export const metadata: Metadata = {
   title: {
@@ -78,8 +61,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${notoSerifKr.variable} ${notoSansKr.variable}`}>
-      <body>
+    <html lang={locale} className="font-pretendard">
+      <head>
+        <link
+          rel="stylesheet"
+          as="style"
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+      </head>
+      <body className="grain-overlay">
         {GA_ID && (
           <>
             <Script

@@ -18,7 +18,7 @@ export default function MypageLayout({ children }: { children: React.ReactNode }
   return (
     <RequireLogin>
       <main
-        className="min-h-screen bg-[#0f0d0a] py-12 px-4 sm:px-6"
+        className="min-h-[100dvh] bg-[#0f0d0a] py-12 px-4 sm:px-6"
         style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.05) 0%, transparent 70%)' }}
       >
         <div className="max-w-[720px] mx-auto">

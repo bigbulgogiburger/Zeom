@@ -17,10 +17,8 @@ export default function BottomTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[hsl(var(--background)/0.9)] backdrop-blur-xl border-t border-[hsl(var(--border-subtle))]"
       style={{
-        background: '#1a1612',
-        borderTop: '1px solid rgba(201, 162, 39, 0.15)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
@@ -32,15 +30,37 @@ export default function BottomTabBar() {
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5"
+              className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 no-underline min-w-[44px] min-h-[44px] transition-all duration-200"
               style={{
-                color: isActive ? '#C9A227' : '#8a8070',
-                textDecoration: 'none',
-                transition: 'color 150ms ease-in-out',
+                color: isActive
+                  ? 'hsl(var(--gold))'
+                  : 'hsl(var(--text-muted))',
+                transform: isActive ? 'scale(1.05)' : 'scale(1)',
               }}
             >
-              <Icon size={22} strokeWidth={isActive ? 2.2 : 1.8} />
-              <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400 }}>
+              {/* Active dot indicator */}
+              <span
+                className="rounded-full transition-all duration-200"
+                style={{
+                  width: 4,
+                  height: 4,
+                  backgroundColor: isActive
+                    ? 'hsl(var(--gold))'
+                    : 'transparent',
+                  marginBottom: 2,
+                }}
+                aria-hidden="true"
+              />
+              <Icon
+                size={22}
+                strokeWidth={isActive ? 2.2 : 1.6}
+              />
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: isActive ? 600 : 400,
+                }}
+              >
                 {label}
               </span>
             </Link>

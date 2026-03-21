@@ -68,7 +68,7 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
 
   return (
     <RequireCounselor>
-      <div className="flex min-h-screen bg-[#0f0d0a]">
+      <div className="flex min-h-[100dvh] bg-[#0f0d0a]">
         {/* Desktop sidebar */}
         <aside className="hidden md:flex flex-col w-64 border-r border-[rgba(201,162,39,0.1)] bg-[#1a1612] p-5 gap-4 shrink-0">
           <div className="font-heading font-bold text-lg bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">

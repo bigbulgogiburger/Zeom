@@ -27,13 +27,13 @@ export type CounselorListItem = {
   shortVideoUrl?: string | null;
 };
 
-function specialtyEmoji(specialty: string): string {
-  if (specialty.includes('사주')) return '🔮';
-  if (specialty.includes('타로')) return '🃏';
-  if (specialty.includes('신점')) return '🪷';
-  if (specialty.includes('꿈')) return '🌙';
-  if (specialty.includes('궁합')) return '💕';
-  return '✨';
+function specialtyIcon(specialty: string): string {
+  if (specialty.includes('사주')) return '卦';
+  if (specialty.includes('타로')) return '星';
+  if (specialty.includes('신점')) return '蓮';
+  if (specialty.includes('꿈')) return '月';
+  if (specialty.includes('궁합')) return '緣';
+  return '道';
 }
 
 function parseTags(tags: string | null | undefined): string[] {
@@ -107,7 +107,7 @@ export default function CounselorCard({
   const responseRate = c.responseRate ?? 100;
 
   return (
-    <div className="relative bg-[var(--color-bg-card)] border border-[rgba(201,162,39,0.15)] rounded-2xl p-5 sm:p-6 shadow-md hover:shadow-[0_8px_32px_rgba(201,162,39,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col">
+    <div className="relative bg-[var(--color-bg-card)] border border-[rgba(201,162,39,0.15)] rounded-2xl p-5 sm:p-6 shadow-md hover:shadow-[0_8px_32px_rgba(201,162,39,0.12)] hover:-translate-y-1 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col">
       {/* Favorite button */}
       {isLoggedIn && (
         <button
@@ -131,8 +131,8 @@ export default function CounselorCard({
               className="w-16 h-16 rounded-full object-cover border-2 border-[rgba(201,162,39,0.2)]"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-[#1a1612] border-2 border-[rgba(201,162,39,0.2)] flex items-center justify-center text-2xl">
-              {specialtyEmoji(c.specialty)}
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#1a1612] to-[#0f0d0a] border-2 border-[rgba(201,162,39,0.2)] flex items-center justify-center">
+              <span className="text-xl font-heading font-black text-[#C9A227]">{specialtyIcon(c.specialty)}</span>
             </div>
           )}
           {c.isOnline && (
