@@ -24,6 +24,7 @@ describe('apiFetch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    document.cookie = '';
   });
 
   it('makes a request to API_BASE + path', async () => {
@@ -36,18 +37,16 @@ describe('apiFetch', () => {
     expect(url).toBe('http://localhost:8080/api/v1/test');
   });
 
-  it('attaches Authorization header when access token exists', async () => {
-    localStorage.setItem('accessToken', 'my-token');
+  it('sends request with credentials include (cookie-based auth)', async () => {
     mockFetch.mockResolvedValueOnce(mockResponse('{}', 200));
 
     await apiFetch('/api/v1/test');
 
     const [, init] = mockFetch.mock.calls[0];
-    const headers = init.headers as Headers;
-    expect(headers.get('Authorization')).toBe('Bearer my-token');
+    expect(init.credentials).toBe('include');
   });
 
-  it('does not attach Authorization header when no token', async () => {
+  it('does not attach Authorization header (tokens are in cookies)', async () => {
     mockFetch.mockResolvedValueOnce(mockResponse('{}', 200));
 
     await apiFetch('/api/v1/test');
@@ -68,7 +67,6 @@ describe('apiFetch', () => {
   });
 
   it('returns 403 response without attempting refresh', async () => {
-    localStorage.setItem('accessToken', 'token');
     mockFetch.mockResolvedValueOnce(mockResponse('forbidden', 403));
 
     const res = await apiFetch('/api/v1/admin');
@@ -78,9 +76,6 @@ describe('apiFetch', () => {
   });
 
   it('attempts token refresh on 401 response', async () => {
-    localStorage.setItem('accessToken', 'old-token');
-    localStorage.setItem('refreshToken', 'refresh-token');
-
     // First call returns 401
     mockFetch.mockResolvedValueOnce(mockResponse('unauthorized', 401));
     // Refresh call succeeds
@@ -96,24 +91,16 @@ describe('apiFetch', () => {
     // Verify refresh was called
     const [refreshUrl, refreshInit] = mockFetch.mock.calls[1];
     expect(refreshUrl).toBe('http://localhost:8080/api/v1/auth/refresh');
-    expect(JSON.parse(refreshInit.body)).toMatchObject({
-      refreshToken: 'refresh-token',
-      deviceId: 'web-main',
-    });
-    // Verify tokens were updated
-    expect(localStorage.getItem('accessToken')).toBe('new-access');
-    expect(localStorage.getItem('refreshToken')).toBe('new-refresh');
-    // Verify retried request used new token
-    const [, retryInit] = mockFetch.mock.calls[2];
-    const retryHeaders = retryInit.headers as Headers;
-    expect(retryHeaders.get('Authorization')).toBe('Bearer new-access');
+    // Refresh now sends refreshToken as empty string and a UUID deviceId
+    const refreshBody = JSON.parse(refreshInit.body);
+    expect(refreshBody).toHaveProperty('refreshToken', '');
+    expect(refreshBody).toHaveProperty('deviceId');
+    expect(refreshBody.deviceId).toBeTruthy();
+    // Verify retried request was made
     expect(res.status).toBe(200);
   });
 
   it('dispatches auth:expired event when refresh fails', async () => {
-    localStorage.setItem('accessToken', 'token');
-    localStorage.setItem('refreshToken', 'refresh');
-
     const expiredHandler = jest.fn();
     window.addEventListener('auth:expired', expiredHandler);
 
@@ -125,14 +112,11 @@ describe('apiFetch', () => {
     await apiFetch('/api/v1/test');
 
     expect(expiredHandler).toHaveBeenCalledTimes(1);
-    expect(localStorage.getItem('accessToken')).toBeNull();
-    expect(localStorage.getItem('refreshToken')).toBeNull();
 
     window.removeEventListener('auth:expired', expiredHandler);
   });
 
   it('does not retry when retry=false', async () => {
-    localStorage.setItem('accessToken', 'token');
     mockFetch.mockResolvedValueOnce(mockResponse('unauthorized', 401));
 
     const res = await apiFetch('/api/v1/test', {}, false);
@@ -141,19 +125,19 @@ describe('apiFetch', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
-  it('clears tokens when no refresh token available on 401', async () => {
-    localStorage.setItem('accessToken', 'token');
-    // No refresh token set
-
+  it('clears tokens and dispatches expired event when no refresh token on 401', async () => {
     const expiredHandler = jest.fn();
     window.addEventListener('auth:expired', expiredHandler);
 
+    // The refresh endpoint will be called (refreshToken is sent as empty string)
+    // but the server will reject it
     mockFetch.mockResolvedValueOnce(mockResponse('unauthorized', 401));
+    // Refresh call fails
+    mockFetch.mockResolvedValueOnce(mockResponse('bad', 401));
 
     await apiFetch('/api/v1/test');
 
     expect(expiredHandler).toHaveBeenCalledTimes(1);
-    expect(localStorage.getItem('accessToken')).toBeNull();
 
     window.removeEventListener('auth:expired', expiredHandler);
   });

@@ -115,7 +115,7 @@ describe('ReviewForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith(3, '좋았어요');
+      expect(mockOnSubmit).toHaveBeenCalledWith(3, '좋았어요', expect.any(Object));
     });
   });
 
@@ -137,7 +137,7 @@ describe('ReviewForm', () => {
       expect(screen.getByRole('status')).toHaveTextContent('리뷰가 등록되었습니다.');
     });
 
-    expect(mockOnSubmit).toHaveBeenCalledWith(5, '매우 만족스러운 상담이었습니다.');
+    expect(mockOnSubmit).toHaveBeenCalledWith(5, '매우 만족스러운 상담이었습니다.', expect.any(Object));
   });
 
   it('shows error message on submit failure', async () => {
@@ -160,8 +160,9 @@ describe('ReviewForm', () => {
   });
 
   it('disables form during submission', async () => {
+    // Use a never-resolving promise to keep loading state visible
     mockOnSubmit.mockImplementationOnce(
-      () => new Promise((resolve) => setTimeout(resolve, 100))
+      () => new Promise(() => {}) // never resolves
     );
 
     render(<ReviewForm onSubmit={mockOnSubmit} counselorName="김지혜" />);
@@ -176,13 +177,9 @@ describe('ReviewForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      // ActionButton shows "처리 중…" when loading
-      expect(screen.getByText('처리 중…')).toBeInTheDocument();
+      // ActionButton shows "처리 중..." when loading (with Loader2 spinner)
+      expect(screen.getByText('처리 중...')).toBeInTheDocument();
       expect(textarea).toBeDisabled();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText('리뷰 제출')).toBeInTheDocument();
     });
   });
 

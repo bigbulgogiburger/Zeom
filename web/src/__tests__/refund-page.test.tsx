@@ -91,14 +91,10 @@ describe('RefundsPage', () => {
     render(<RefundsPage />);
 
     await waitFor(() => {
-      // StatusBadge component renders the status value
-      expect(screen.getByText((content, element) => {
-        return element?.getAttribute('data-value') === 'PENDING' || content === 'PENDING';
-      })).toBeInTheDocument();
-
-      expect(screen.getByText((content, element) => {
-        return element?.getAttribute('data-value') === 'APPROVED' || content === 'APPROVED';
-      })).toBeInTheDocument();
+      // StatusBadge now renders Korean labels from STATUS_CONFIG
+      // PENDING → '대기중', APPROVED → 'APPROVED' (no config entry, falls back to raw status)
+      expect(screen.getByText('대기중')).toBeInTheDocument();
+      expect(screen.getByText('APPROVED')).toBeInTheDocument();
     });
   });
 
@@ -119,7 +115,7 @@ describe('RefundsPage', () => {
     render(<RefundsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('환불 신청 내역이 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('환불 내역이 없습니다')).toBeInTheDocument();
       expect(screen.getByText('예약을 취소하거나 환불이 필요한 경우 신청할 수 있습니다.')).toBeInTheDocument();
     });
   });

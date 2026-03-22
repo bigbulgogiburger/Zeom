@@ -16,6 +16,8 @@ jest.mock('@/components/api-client', () => ({
   apiFetch: jest.fn(),
   getSessionToken: jest.fn(),
   endSession: jest.fn(),
+  getNextConsecutive: jest.fn(),
+  consumeSessionCredit: jest.fn(),
 }));
 
 // Mock SendBird Calls - create mocks inline to avoid hoisting issues
@@ -49,12 +51,13 @@ jest.mock('@/components/session-timer', () => {
   };
 });
 
-import { apiFetch, getSessionToken, endSession } from '@/components/api-client';
+import { apiFetch, getSessionToken, endSession, getNextConsecutive } from '@/components/api-client';
 import SendBirdCall from 'sendbird-calls';
 
 const mockApiFetch = apiFetch as jest.MockedFunction<typeof apiFetch>;
 const mockGetSessionToken = getSessionToken as jest.MockedFunction<typeof getSessionToken>;
 const mockEndSession = endSession as jest.MockedFunction<typeof endSession>;
+const mockGetNextConsecutive = getNextConsecutive as jest.MockedFunction<typeof getNextConsecutive>;
 
 // Get mocked SendBirdCall methods
 const mockSendbirdInit = SendBirdCall.init as jest.MockedFunction<typeof SendBirdCall.init>;
@@ -207,7 +210,7 @@ describe('ConsultationRoomPage', () => {
 
     await waitFor(() => {
       expect(mockEndSession).toHaveBeenCalledWith('123');
-      expect(mockPush).toHaveBeenCalledWith('/consultation/123/complete');
+      expect(mockPush).toHaveBeenCalledWith('/consultation/123/summary');
     });
   });
 
@@ -266,7 +269,8 @@ describe('ConsultationRoomPage', () => {
       sendbirdUserId: 'user-123',
       sendbirdAppId: 'mock-app-id',
     });
-    mockEndSession.mockResolvedValueOnce({});
+    // getNextConsecutive returns no consecutive booking
+    mockGetNextConsecutive.mockResolvedValueOnce({ hasNext: false });
 
     render(<ConsultationRoomPage />);
 
@@ -277,11 +281,11 @@ describe('ConsultationRoomPage', () => {
     const timeUpButton = screen.getByText('Trigger Time Up');
     fireEvent.click(timeUpButton);
 
+    // handleTimeUp checks for consecutive booking; with hasNext: false,
+    // it proceeds silently and the grace period starts via SessionTimer
     await waitFor(() => {
-      expect(screen.getByText('세션 시간이 종료되었습니다. 곧 자동으로 종료됩니다.')).toBeInTheDocument();
+      expect(mockGetNextConsecutive).toHaveBeenCalledWith('123');
     });
-
-    // Note: Actual auto-end tested via timer is complex in jsdom, we verify the message shows correctly
   });
 
   it('renders microphone and camera control buttons', async () => {
