@@ -865,13 +865,15 @@ export default function FortunePage() {
 
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {activeTab === 'today' && fortune && (
-        <TodayFortuneTab fortune={fortune} isLoggedIn={isLoggedIn} />
-      )}
+      <div key={activeTab} className="crossfade-enter">
+        {activeTab === 'today' && fortune && (
+          <TodayFortuneTab fortune={fortune} isLoggedIn={isLoggedIn} />
+        )}
 
-      {activeTab === 'zodiac' && <ZodiacFortuneTab />}
+        {activeTab === 'zodiac' && <ZodiacFortuneTab />}
 
-      {activeTab === 'compatibility' && <CompatibilityTab />}
+        {activeTab === 'compatibility' && <CompatibilityTab />}
+      </div>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import CounselorCard, { type CounselorListItem } from './components/CounselorCard';
 import FilterBar from './components/FilterBar';
 import SortDropdown from './components/SortDropdown';
+import { Search } from 'lucide-react';
 
 const PAGE_SIZE = 20;
 
@@ -45,6 +46,25 @@ export default function CounselorsPage() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [gridVisible, setGridVisible] = useState(false);
+  const gridRef = useRef<HTMLDivElement | null>(null);
+
+  // IntersectionObserver for stagger animation
+  useEffect(() => {
+    const node = gridRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setGridVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [loading, error, counselors.length]);
 
   const SPECIALTY_FILTERS = [
     { key: 'all', label: t('filterAll') },
@@ -84,6 +104,7 @@ export default function CounselorsPage() {
   useEffect(() => {
     setLoading(true);
     setError(false);
+    setGridVisible(false);
 
     const params = new URLSearchParams();
     const specialties = Array.from(activeFilters).filter((f) => f !== 'all');
@@ -261,7 +282,7 @@ export default function CounselorsPage() {
       ) : counselors.length === 0 ? (
         <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8">
           <div className="text-center py-6">
-            <div className="text-4xl mb-4">🔍</div>
+            <div className="mb-4"><Search className="size-10 text-[hsl(var(--text-muted))] mx-auto" /></div>
             <p className="font-bold font-heading text-xl text-[hsl(var(--text-primary))]">
               {t('noResults')}
             </p>
@@ -285,7 +306,10 @@ export default function CounselorsPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            ref={gridRef}
+            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-container${gridVisible ? ' visible' : ''}`}
+          >
             {counselors.map((c) => (
               <CounselorCard
                 key={c.id}

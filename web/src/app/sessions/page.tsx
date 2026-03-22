@@ -92,7 +92,7 @@ export default function SessionsPage() {
           />
         ) : items.length === 0 ? (
           <EmptyState
-            icon="🖥️"
+            icon="empty"
             title="세션 정보가 없어요"
             desc="활성 세션이 없습니다."
           />

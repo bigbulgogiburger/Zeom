@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState, useCallback } from 'react';
 import { apiFetch } from '@/components/api-client';
+import { Search } from 'lucide-react';
 import { useAuth } from '@/components/auth-context';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui';
@@ -351,7 +352,7 @@ export default function RecommendPage() {
 
           {results.length === 0 ? (
             <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-10 text-center">
-              <div className="text-4xl mb-4">🔍</div>
+              <div className="mb-4"><Search className="size-10 text-[hsl(var(--text-muted))] mx-auto" /></div>
               <p className="font-heading font-bold text-xl text-text-primary mb-2">
                 매칭되는 상담사가 없습니다
               </p>

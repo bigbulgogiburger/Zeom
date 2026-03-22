@@ -1,408 +1,228 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/auth-context';
-import { apiFetch } from '@/components/api-client';
-import { Eye } from 'lucide-react';
+import { Sparkles, Users, Calendar, Star, ChevronRight } from 'lucide-react';
 
-const INTERESTS = [
-  { id: 'saju', label: '사주', icon: '\u2728' },
-  { id: 'tarot', label: '타로', icon: '\uD83C\uDCCF' },
-  { id: 'sinjeom', label: '신점', icon: '\uD83D\uDD2E' },
-  { id: 'dream', label: '꿈해몽', icon: '\uD83C\uDF19' },
-];
+const STEPS = [
+  {
+    icon: Sparkles,
+    title: '천지연꽃신당에 오신 것을 환영합니다',
+    description:
+      '사주, 타로, 신점 등 다양한 상담을 통해 삶의 방향을 찾아보세요. 전문 상담사가 정성껏 안내해 드립니다.',
+  },
+  {
+    icon: Users,
+    title: '검증된 전문 상담사',
+    description:
+      '엄선된 상담사들이 풍부한 경험과 깊은 통찰력으로 여러분의 고민에 진심을 담아 답해 드립니다.',
+  },
+  {
+    icon: Calendar,
+    title: '간편한 예약 시스템',
+    description:
+      '원하는 상담사와 시간을 선택하고 간편하게 예약하세요. 화상 상담부터 채팅 상담까지 다양한 방식을 지원합니다.',
+  },
+  {
+    icon: Star,
+    title: '오늘의 무료 운세 확인',
+    description:
+      '회원가입 후 매일 무료 운세를 확인하고, 나에게 딱 맞는 상담사를 추천받아 보세요.',
+  },
+] as const;
 
-const CONCERNS = [
-  { id: 'love', label: '연애', icon: '\u2764\uFE0F' },
-  { id: 'wealth', label: '재물', icon: '\uD83D\uDCB0' },
-  { id: 'career', label: '진로', icon: '\uD83D\uDE80' },
-  { id: 'health', label: '건강', icon: '\uD83C\uDF3F' },
-  { id: 'family', label: '가정', icon: '\uD83C\uDFE0' },
-];
-
-type Counselor = {
-  id: number;
-  name: string;
-  specialty: string;
-  intro: string;
-};
-
-const MOCK_RECOMMENDED: Counselor[] = [
-  { id: 1, name: '김신명', specialty: '사주/타로', intro: '20년 경력의 전문 상담사입니다.' },
-  { id: 2, name: '이연화', specialty: '신점/꿈해몽', intro: '정확한 신점으로 길을 밝혀드립니다.' },
-  { id: 3, name: '박도윤', specialty: '사주/신점', intro: '운명의 흐름을 읽어드립니다.' },
-];
-
-function StepIndicator({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
-  return (
-    <div className="flex items-center justify-center gap-2 mb-8">
-      {Array.from({ length: totalSteps }, (_, i) => (
-        <div
-          key={i}
-          className={`h-2 rounded-full transition-all duration-300 ${
-            i === currentStep
-              ? 'w-8 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))]'
-              : i < currentStep
-                ? 'w-2 bg-[hsl(var(--gold))]'
-                : 'w-2 bg-[hsl(var(--gold)/0.2)]'
-          }`}
-        />
-      ))}
-    </div>
-  );
-}
-
-function ToggleChip({
-  selected,
-  onClick,
-  icon,
-  label,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  icon: string;
-  label: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex items-center gap-2 px-5 py-3 rounded-full border transition-all duration-200 text-sm font-medium ${
-        selected
-          ? 'border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.15)] text-[hsl(var(--gold))]'
-          : 'border-[hsl(var(--gold)/0.15)] bg-transparent text-[hsl(var(--text-secondary))] hover:border-[hsl(var(--gold)/0.3)]'
-      }`}
-    >
-      <span className="text-lg">{icon}</span>
-      {label}
-    </button>
-  );
-}
+const SWIPE_THRESHOLD = 50;
 
 export default function OnboardingPage() {
-  const { me, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [step, setStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Step 1: Birth date
-  const [birthYear, setBirthYear] = useState('');
-  const [birthMonth, setBirthMonth] = useState('');
-  const [birthDay, setBirthDay] = useState('');
-  const [birthTime, setBirthTime] = useState('');
+  // Touch swipe refs
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
-  // Step 2: Interests
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const isLastStep = currentStep === STEPS.length - 1;
 
-  // Step 3: Concerns
-  const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
+  const goToStep = useCallback(
+    (step: number) => {
+      if (isTransitioning) return;
+      if (step < 0 || step >= STEPS.length) return;
+      setIsTransitioning(true);
+      setCurrentStep(step);
+      setTimeout(() => setIsTransitioning(false), 400);
+    },
+    [isTransitioning],
+  );
 
-  // Step 4: Recommended counselors
-  const [recommended, setRecommended] = useState<Counselor[]>([]);
-  const [loadingRec, setLoadingRec] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && !me) {
-      router.push('/login');
+  const handleNext = useCallback(() => {
+    if (isLastStep) {
+      router.push('/signup');
+      return;
     }
-  }, [me, authLoading, router]);
+    goToStep(currentStep + 1);
+  }, [currentStep, isLastStep, goToStep, router]);
 
-  const toggleInterest = (id: string) => {
-    setSelectedInterests((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
+  const handleSkip = useCallback(() => {
+    router.push('/signup');
+  }, [router]);
 
-  const toggleConcern = (id: string) => {
-    setSelectedConcerns((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
+  // Touch swipe handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.changedTouches[0].screenX;
+  }, []);
 
-  const loadRecommendations = async () => {
-    setLoadingRec(true);
-    try {
-      const res = await apiFetch('/api/v1/counselors');
-      if (res.ok) {
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : data.content || [];
-        setRecommended(list.slice(0, 3));
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      touchEndX.current = e.changedTouches[0].screenX;
+      const diff = touchStartX.current - touchEndX.current;
+
+      if (Math.abs(diff) < SWIPE_THRESHOLD) return;
+
+      if (diff > 0) {
+        // Swiped left -> next
+        if (currentStep < STEPS.length - 1) {
+          goToStep(currentStep + 1);
+        }
       } else {
-        setRecommended(MOCK_RECOMMENDED);
+        // Swiped right -> previous
+        if (currentStep > 0) {
+          goToStep(currentStep - 1);
+        }
       }
-    } catch (_e) {
-      setRecommended(MOCK_RECOMMENDED);
-    } finally {
-      setLoadingRec(false);
-    }
-  };
+    },
+    [currentStep, goToStep],
+  );
 
-  const handleNext = () => {
-    if (step === 2) {
-      loadRecommendations();
-    }
-    setStep((prev) => Math.min(prev + 1, 3));
-  };
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (currentStep < STEPS.length - 1) {
+          goToStep(currentStep + 1);
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (currentStep > 0) {
+          goToStep(currentStep - 1);
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        handleNext();
+      }
+    };
 
-  const handleBack = () => {
-    setStep((prev) => Math.max(prev - 1, 0));
-  };
-
-  const handleComplete = () => {
-    router.push('/');
-  };
-
-  const canProceed = (): boolean => {
-    switch (step) {
-      case 0:
-        return birthYear.length === 4 && !!birthMonth && !!birthDay;
-      case 1:
-        return selectedInterests.length >= 1;
-      case 2:
-        return selectedConcerns.length >= 1;
-      default:
-        return true;
-    }
-  };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center">
-        <div className="skeleton w-12 h-12 rounded-full"></div>
-      </div>
-    );
-  }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentStep, goToStep, handleNext]);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-[480px]">
-        <StepIndicator currentStep={step} totalSteps={4} />
+    <div
+      className="min-h-[100dvh] bg-[hsl(var(--background))] relative overflow-hidden select-none"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      role="region"
+      aria-label="온보딩 가이드"
+      aria-roledescription="carousel"
+    >
+      {/* Skip button */}
+      {!isLastStep && (
+        <div className="absolute top-0 right-0 z-10 p-4">
+          <button
+            onClick={handleSkip}
+            className="text-[hsl(var(--text-muted))] text-sm hover:text-[hsl(var(--text-secondary))] transition-colors bg-transparent border-none px-3 py-2"
+            aria-label="온보딩 건너뛰기"
+          >
+            건너뛰기
+          </button>
+        </div>
+      )}
 
-        {/* Step 0: Birth Date */}
-        {step === 0 && (
-          <div className="glass-card p-8">
-            <div className="text-center mb-6">
-              <span className="text-4xl block mb-3">\uD83C\uDF38</span>
-              <h2 className="text-2xl font-heading font-black text-foreground m-0 mb-2">
-                생년월일 입력
-              </h2>
-              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
-                정확한 운세 분석을 위해 생년월일을 알려주세요
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div>
-                <label className="text-xs text-[hsl(var(--text-secondary))] mb-1 block">연도</label>
-                <input
-                  type="number"
-                  placeholder="1990"
-                  value={birthYear}
-                  onChange={(e) => setBirthYear(e.target.value)}
-                  className="text-center"
-                  min="1920"
-                  max="2025"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-[hsl(var(--text-secondary))] mb-1 block">월</label>
-                <select
-                  value={birthMonth}
-                  onChange={(e) => setBirthMonth(e.target.value)}
+      {/* Slide track */}
+      <div
+        className="flex transition-transform duration-400 ease-[cubic-bezier(0.33,1,0.68,1)]"
+        style={{
+          width: `${STEPS.length * 100}%`,
+          transform: `translateX(-${(currentStep * 100) / STEPS.length}%)`,
+        }}
+      >
+        {STEPS.map((step, index) => {
+          const Icon = step.icon;
+          return (
+            <div
+              key={index}
+              className="min-h-[100dvh] flex flex-col items-center justify-center px-8"
+              style={{ width: `${100 / STEPS.length}%` }}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${index + 1}/${STEPS.length}: ${step.title}`}
+              aria-hidden={index !== currentStep}
+            >
+              <div className="flex flex-col items-center text-center max-w-sm">
+                {/* Floating icon */}
+                <div
+                  className="mb-8"
+                  style={{
+                    animation:
+                      index === currentStep
+                        ? 'float 3s ease-in-out infinite'
+                        : 'none',
+                  }}
                 >
-                  <option value="">월</option>
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i + 1} value={String(i + 1)}>
-                      {i + 1}월
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-[hsl(var(--text-secondary))] mb-1 block">일</label>
-                <select
-                  value={birthDay}
-                  onChange={(e) => setBirthDay(e.target.value)}
-                >
-                  <option value="">일</option>
-                  {Array.from({ length: 31 }, (_, i) => (
-                    <option key={i + 1} value={String(i + 1)}>
-                      {i + 1}일
-                    </option>
-                  ))}
-                </select>
+                  <Icon
+                    className="size-16 text-[hsl(var(--gold))]"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                </div>
+
+                {/* Title */}
+                <h2 className="text-2xl font-black font-heading text-foreground m-0 mb-4">
+                  {step.title}
+                </h2>
+
+                {/* Description */}
+                <p className="text-[hsl(var(--text-secondary))] text-base leading-relaxed max-w-sm m-0">
+                  {step.description}
+                </p>
               </div>
             </div>
+          );
+        })}
+      </div>
 
-            <div className="mb-6">
-              <label className="text-xs text-[hsl(var(--text-secondary))] mb-1 block">태어난 시간 (선택)</label>
-              <select
-                value={birthTime}
-                onChange={(e) => setBirthTime(e.target.value)}
-              >
-                <option value="">모름 / 선택안함</option>
-                <option value="자">자시 (23:00~01:00)</option>
-                <option value="축">축시 (01:00~03:00)</option>
-                <option value="인">인시 (03:00~05:00)</option>
-                <option value="묘">묘시 (05:00~07:00)</option>
-                <option value="진">진시 (07:00~09:00)</option>
-                <option value="사">사시 (09:00~11:00)</option>
-                <option value="오">오시 (11:00~13:00)</option>
-                <option value="미">미시 (13:00~15:00)</option>
-                <option value="신">신시 (15:00~17:00)</option>
-                <option value="유">유시 (17:00~19:00)</option>
-                <option value="술">술시 (19:00~21:00)</option>
-                <option value="해">해시 (21:00~23:00)</option>
-              </select>
-            </div>
-          </div>
-        )}
-
-        {/* Step 1: Interests */}
-        {step === 1 && (
-          <div className="glass-card p-8">
-            <div className="text-center mb-6">
-              <Eye className="size-6 mx-auto mb-3" />
-              <h2 className="text-2xl font-heading font-black text-foreground m-0 mb-2">
-                관심 분야 선택
-              </h2>
-              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
-                관심 있는 상담 분야를 모두 선택해주세요
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3 justify-center">
-              {INTERESTS.map((item) => (
-                <ToggleChip
-                  key={item.id}
-                  selected={selectedInterests.includes(item.id)}
-                  onClick={() => toggleInterest(item.id)}
-                  icon={item.icon}
-                  label={item.label}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Concerns */}
-        {step === 2 && (
-          <div className="glass-card p-8">
-            <div className="text-center mb-6">
-              <span className="text-4xl block mb-3">\uD83D\uDCAD</span>
-              <h2 className="text-2xl font-heading font-black text-foreground m-0 mb-2">
-                고민 유형 선택
-              </h2>
-              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
-                현재 가장 관심 있는 고민을 모두 선택해주세요
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3 justify-center">
-              {CONCERNS.map((item) => (
-                <ToggleChip
-                  key={item.id}
-                  selected={selectedConcerns.includes(item.id)}
-                  onClick={() => toggleConcern(item.id)}
-                  icon={item.icon}
-                  label={item.label}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Recommended Counselors */}
-        {step === 3 && (
-          <div className="glass-card p-8">
-            <div className="text-center mb-6">
-              <span className="text-4xl block mb-3">{'\u{1FAB7}'}</span>
-              <h2 className="text-2xl font-heading font-black text-foreground m-0 mb-2">
-                추천 상담사
-              </h2>
-              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
-                선택하신 관심사에 맞는 상담사입니다
-              </p>
-            </div>
-
-            {loadingRec ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="skeleton h-20 rounded-xl" />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {recommended.map((c) => (
-                  <Link
-                    key={c.id}
-                    href={`/counselors/${c.id}`}
-                    className="block p-4 rounded-xl border border-[hsl(var(--gold)/0.15)] hover:border-[hsl(var(--gold)/0.3)] hover:bg-[hsl(var(--gold)/0.05)] transition-all no-underline"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] flex items-center justify-center text-[hsl(var(--background))] font-heading font-bold text-lg shrink-0">
-                        {c.name.charAt(0)}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-base font-heading font-bold text-foreground m-0">
-                          {c.name}
-                        </p>
-                        <p className="text-xs text-[hsl(var(--gold))] m-0">
-                          {c.specialty}
-                        </p>
-                        <p className="text-xs text-[hsl(var(--text-secondary))] m-0 mt-1 truncate">
-                          {c.intro}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Navigation buttons */}
-        <div className="flex gap-3 mt-6">
-          {step > 0 && (
+      {/* Bottom controls */}
+      <div className="absolute bottom-0 left-0 right-0 pb-12 px-8 flex flex-col items-center gap-8">
+        {/* Dot indicators */}
+        <div className="flex items-center gap-3" role="tablist" aria-label="온보딩 단계">
+          {STEPS.map((_, index) => (
             <button
-              onClick={handleBack}
-              className="btn-ghost flex-1 py-3"
-            >
-              이전
-            </button>
-          )}
-
-          {step < 3 ? (
-            <button
-              onClick={handleNext}
-              disabled={!canProceed()}
-              className="btn-primary-lg flex-1 py-3"
-            >
-              다음
-            </button>
-          ) : (
-            <button
-              onClick={handleComplete}
-              className="btn-primary-lg flex-1 py-3"
-            >
-              시작하기
-            </button>
-          )}
+              key={index}
+              onClick={() => goToStep(index)}
+              className={`rounded-full transition-all duration-300 border-none p-0 ${
+                index === currentStep
+                  ? 'w-8 h-2 bg-[hsl(var(--gold))]'
+                  : 'w-2 h-2 bg-[hsl(var(--text-muted))]'
+              }`}
+              role="tab"
+              aria-selected={index === currentStep}
+              aria-label={`${index + 1}단계로 이동`}
+            />
+          ))}
         </div>
 
-        {/* Skip */}
-        {step < 3 && (
-          <div className="text-center mt-4">
-            <button
-              onClick={handleComplete}
-              className="text-[hsl(var(--text-secondary))] text-sm hover:text-[hsl(var(--gold))] transition-colors bg-transparent border-none"
-            >
-              건너뛰기
-            </button>
-          </div>
-        )}
+        {/* CTA button */}
+        <button
+          onClick={handleNext}
+          className="w-full max-w-sm py-4 rounded-2xl font-heading font-bold text-base flex items-center justify-center gap-2 bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:brightness-110 active:scale-[0.98] transition-all duration-200 border-none"
+          aria-label={isLastStep ? '회원가입 시작하기' : '다음 단계로 이동'}
+        >
+          {isLastStep ? '시작하기' : '다음'}
+          {!isLastStep && <ChevronRight className="size-5" aria-hidden="true" />}
+        </button>
       </div>
+
     </div>
   );
 }

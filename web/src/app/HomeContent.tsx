@@ -554,7 +554,7 @@ export default function HomeContent({
       <section className="py-6 px-6">
         <div
           ref={statsRef}
-          className="max-w-[1200px] mx-auto px-6 sm:px-8 rounded-2xl py-10 bg-[hsl(var(--surface)/0.6)] backdrop-blur-xl border border-[hsl(var(--border-accent)/0.2)]"
+          className="max-w-[1200px] mx-auto px-6 sm:px-8 rounded-2xl py-10 bg-[hsl(var(--surface))] border border-[hsl(var(--border-accent)/0.2)]"
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
             {trustStats.map((stat, i) => (

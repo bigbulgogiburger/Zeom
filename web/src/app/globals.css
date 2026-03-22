@@ -358,6 +358,100 @@ html.js-anim .fade-up.visible {
   border-color: hsl(var(--border-accent) / 0.5);
 }
 
+/* ===== Stagger Cascade ===== */
+.stagger-container > * {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.stagger-container.visible > * {
+  animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.stagger-container.visible > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-container.visible > *:nth-child(2) { animation-delay: 80ms; }
+.stagger-container.visible > *:nth-child(3) { animation-delay: 160ms; }
+.stagger-container.visible > *:nth-child(4) { animation-delay: 240ms; }
+.stagger-container.visible > *:nth-child(5) { animation-delay: 320ms; }
+.stagger-container.visible > *:nth-child(6) { animation-delay: 400ms; }
+.stagger-container.visible > *:nth-child(7) { animation-delay: 480ms; }
+.stagger-container.visible > *:nth-child(8) { animation-delay: 560ms; }
+
+/* ===== Crossfade Tab Transition ===== */
+@keyframes crossfadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.crossfade-enter {
+  animation: crossfadeIn 0.25s ease-out forwards;
+}
+
+/* ===== List Item Animation ===== */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.4s var(--ease-spring) forwards;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.4s var(--ease-spring) forwards;
+}
+
+/* ===== Scale Pop (for modals, toasts) ===== */
+@keyframes scalePop {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.scale-pop {
+  animation: scalePop 0.2s var(--ease-spring) forwards;
+}
+
+/* ===== Progress Bar Fill ===== */
+@keyframes progressFill {
+  from { width: 0%; }
+}
+
+.progress-animate {
+  animation: progressFill 1s var(--ease-spring) forwards;
+}
+
+/* ===== Odometer Number Roll ===== */
+@keyframes rollUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.number-roll {
+  display: inline-block;
+  animation: rollUp 0.6s var(--ease-spring) forwards;
+}
+
+/* ===== Confetti burst (for payment success) ===== */
+@keyframes confettiFall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  z-index: 200;
+  pointer-events: none;
+  animation: confettiFall 3s ease-in forwards;
+}
+
 /* ===== Screen Reader Only ===== */
 .sr-only {
   position: absolute;
