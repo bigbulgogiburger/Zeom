@@ -5,6 +5,16 @@ import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/components/api-client';
 import { useAuth } from '@/components/auth-context';
 import { Button } from '@/components/ui/button';
+import { EmptyStateCard } from '@/components/empty-state';
+import {
+  Calendar,
+  CreditCard,
+  Video,
+  Bell,
+  Star,
+  CheckCheck,
+  ChevronRight,
+} from 'lucide-react';
 
 type Notification = {
   id: number;
@@ -16,7 +26,7 @@ type Notification = {
   createdAt: string;
 };
 
-function formatTime(dateStr: string): string {
+function getRelativeTime(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -26,8 +36,20 @@ function formatTime(dateStr: string): string {
   const diffHour = Math.floor(diffMin / 60);
   if (diffHour < 24) return `${diffHour}시간 전`;
   const diffDay = Math.floor(diffHour / 24);
+  if (diffDay === 1) return '어제';
   if (diffDay < 7) return `${diffDay}일 전`;
   return date.toLocaleDateString('ko-KR');
+}
+
+function formatFullDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 function typeLabel(type: string): string {
@@ -42,6 +64,23 @@ function typeLabel(type: string): string {
     NEW_BOOKING: '새 예약',
   };
   return labels[type] || type;
+}
+
+function getTypeIcon(type: string) {
+  // Map notification types to icon categories
+  if (type.includes('BOOKING') || type.includes('NEW_BOOKING')) {
+    return Calendar;
+  }
+  if (type.includes('SETTLEMENT') || type.includes('PAYMENT')) {
+    return CreditCard;
+  }
+  if (type.includes('CONSULTATION') || type.includes('SESSION')) {
+    return Video;
+  }
+  if (type.includes('REVIEW')) {
+    return Star;
+  }
+  return Bell;
 }
 
 export default function NotificationsPage() {
@@ -134,15 +173,14 @@ export default function NotificationsPage() {
         </h1>
         <div className="flex gap-2">
           {hasUnread && (
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={handleMarkAllAsRead}
               disabled={markingAll}
-              className="rounded-full border border-[hsl(var(--gold)/0.2)] text-[hsl(var(--text-secondary))] bg-transparent font-medium hover:border-[hsl(var(--gold))] hover:text-[hsl(var(--gold))] hover:bg-transparent text-xs"
+              className="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] transition-colors disabled:opacity-50 bg-transparent border-none cursor-pointer"
             >
-              {markingAll ? '처리 중...' : '모두 읽음'}
-            </Button>
+              <CheckCheck className="w-4 h-4" />
+              {markingAll ? '처리 중...' : '모두 읽음 처리'}
+            </button>
           )}
           <Button
             variant="outline"
@@ -160,78 +198,81 @@ export default function NotificationsPage() {
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
             <div key={i} className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-xl p-5 animate-pulse">
-              <div className="h-5 w-2/3 bg-[hsl(var(--surface))] rounded-lg mb-2" />
-              <div className="h-4 w-4/5 bg-[hsl(var(--surface))] rounded-lg" />
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[hsl(var(--surface))]" />
+                <div className="flex-1">
+                  <div className="h-5 w-2/3 bg-[hsl(var(--surface))] rounded-lg mb-2" />
+                  <div className="h-4 w-4/5 bg-[hsl(var(--surface))] rounded-lg" />
+                </div>
+              </div>
             </div>
           ))}
         </div>
       ) : notifications.length === 0 ? (
-        <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8">
-          <div className="text-center py-8">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b5c4d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-4">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            <p className="font-bold font-heading text-xl text-[hsl(var(--text-primary))]">
-              알림이 없습니다
-            </p>
-            <p className="text-[hsl(var(--text-secondary))] text-sm mt-2">
-              새로운 알림이 생기면 여기에 표시됩니다.
-            </p>
-          </div>
-        </div>
+        <EmptyStateCard
+          icon="📭"
+          title="알림이 없습니다"
+          description="새로운 알림이 오면 여기에 표시됩니다"
+          variant="empty"
+        />
       ) : (
         <>
           <div className="space-y-2">
-            {notifications.map(n => (
-              <div
-                key={n.id}
-                onClick={() => handleNotificationClick(n)}
-                className={`rounded-xl border cursor-pointer transition-all duration-200 hover:-translate-y-0.5 ${
-                  n.isRead
-                    ? 'bg-black/20 border-[hsl(var(--gold)/0.05)]'
-                    : 'bg-[hsl(var(--gold)/0.06)] border-[hsl(var(--gold)/0.15)]'
-                }`}
-              >
-                <div className="px-5 py-4 flex items-start gap-3">
-                  {/* Unread indicator */}
-                  <div className="pt-1.5 w-3 flex-shrink-0">
-                    {!n.isRead && (
-                      <span className="block w-2.5 h-2.5 rounded-full bg-[hsl(var(--gold))]" />
-                    )}
-                  </div>
+            {notifications.map(n => {
+              const TypeIcon = getTypeIcon(n.type);
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-bold font-heading text-[hsl(var(--gold))] uppercase tracking-wider">
-                        {typeLabel(n.type)}
-                      </span>
-                      <span className="text-[10px] text-[#6b5c4d]">
-                        {formatTime(n.createdAt)}
-                      </span>
+              return (
+                <div
+                  key={n.id}
+                  onClick={() => handleNotificationClick(n)}
+                  className={`rounded-xl cursor-pointer transition-all duration-200 hover:-translate-y-0.5 ${
+                    n.isRead
+                      ? 'bg-black/20 border border-[hsl(var(--gold)/0.05)]'
+                      : 'bg-[hsl(var(--surface-hover))] border-l-2 border border-l-[hsl(var(--gold))] border-[hsl(var(--gold)/0.15)]'
+                  }`}
+                >
+                  <div className="px-5 py-4 flex items-start gap-3">
+                    {/* Type icon */}
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(var(--gold)/0.08)] flex items-center justify-center shrink-0">
+                      <TypeIcon className="w-5 h-5 text-[hsl(var(--gold))]" />
                     </div>
-                    <p className={`text-sm font-medium ${
-                      n.isRead ? 'text-[hsl(var(--text-secondary))]' : 'text-[hsl(var(--text-primary))]'
-                    }`}>
-                      {n.title}
-                    </p>
-                    {n.body && (
-                      <p className="text-xs text-[#6b5c4d] mt-1 line-clamp-2">
-                        {n.body}
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-bold font-heading text-[hsl(var(--gold))] uppercase tracking-wider">
+                          {typeLabel(n.type)}
+                        </span>
+                        {!n.isRead && (
+                          <span className="block w-2 h-2 rounded-full bg-[hsl(var(--gold))]" />
+                        )}
+                        <span
+                          className="text-[10px] text-[#6b5c4d]"
+                          title={formatFullDate(n.createdAt)}
+                        >
+                          {getRelativeTime(n.createdAt)}
+                        </span>
+                      </div>
+                      <p className={`text-sm font-medium ${
+                        n.isRead ? 'text-[hsl(var(--text-secondary))]' : 'text-[hsl(var(--text-primary))]'
+                      }`}>
+                        {n.title}
                       </p>
+                      {n.body && (
+                        <p className="text-xs text-[#6b5c4d] mt-1 line-clamp-2">
+                          {n.body}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Arrow */}
+                    {n.link && (
+                      <ChevronRight className="w-4 h-4 text-[#6b5c4d] shrink-0 mt-1" />
                     )}
                   </div>
-
-                  {/* Arrow */}
-                  {n.link && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b5c4d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-1">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Pagination */}

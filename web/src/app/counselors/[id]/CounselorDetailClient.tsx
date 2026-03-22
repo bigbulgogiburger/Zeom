@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { ArrowLeft, Star, Video, MessageSquare } from 'lucide-react';
 import { API_BASE } from '../../../components/api';
 import { apiFetch, getCreditBalance } from '../../../components/api-client';
 import { useAuth } from '../../../components/auth-context';
@@ -189,6 +190,9 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   const [reviewPage, setReviewPage] = useState(0);
   const [reviewTotalPages, setReviewTotalPages] = useState(0);
   const [reviewTotal, setReviewTotal] = useState(0);
+  const [introExpanded, setIntroExpanded] = useState(false);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/counselors/${id}`, { cache: 'no-store' })
@@ -259,6 +263,18 @@ export default function CounselorDetailClient({ id }: { id: string }) {
       .then((data) => setCreditBalance(data.remainingCredits ?? 0))
       .catch(() => setCreditBalance(null));
   }, [me]);
+
+  // Show sticky CTA when hero scrolls out of view (mobile only)
+  useEffect(() => {
+    const heroEl = heroRef.current;
+    if (!heroEl) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyCta(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(heroEl);
+    return () => observer.disconnect();
+  }, [counselor]);
 
   const toggleFavorite = useCallback(async () => {
     if (!me || togglingFavorite) return;
@@ -422,39 +438,49 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   };
 
   return (
-    <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 space-y-8 pb-20 md:pb-10">
       {/* JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Counselor Info Header */}
+      {/* Back Button */}
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-1.5 text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] p-2 -ml-2 rounded-lg hover:bg-[hsl(var(--gold)/0.08)] transition-all duration-200"
+        aria-label="뒤로가기"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="text-sm font-medium">뒤로</span>
+      </button>
+
+      {/* Enhanced Profile Hero Section */}
       <Card>
-        <div className="flex flex-col items-center text-center gap-5 py-4">
-          {/* Profile image */}
+        <div ref={heroRef} className="flex flex-col items-center text-center gap-5 py-6">
+          {/* Profile avatar */}
           <div className="relative">
             {counselor.profileImageUrl ? (
               <Image
                 src={counselor.profileImageUrl}
                 alt={`${counselor.name} 프로필`}
-                width={96}
-                height={96}
-                className="w-24 h-24 rounded-full object-cover border-3 border-[hsl(var(--gold)/0.2)]"
+                width={80}
+                height={80}
+                className="w-20 h-20 rounded-full object-cover border-3 border-[hsl(var(--gold)/0.3)] shadow-[0_0_20px_hsl(var(--gold)/0.15)]"
               />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-[hsl(var(--surface))] border-3 border-[hsl(var(--gold)/0.2)] flex items-center justify-center text-[2.5rem]">
-                {specialtyEmoji(counselor.specialty)}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] border-3 border-[hsl(var(--gold)/0.3)] flex items-center justify-center text-2xl font-black text-[hsl(var(--background))] shadow-[0_0_20px_hsl(var(--gold)/0.15)]">
+                {counselor.name.charAt(0)}
               </div>
             )}
             {counselor.isOnline && (
-              <span className="absolute bottom-1 right-1 w-5 h-5 bg-[#22c55e] border-3 border-[hsl(var(--surface))] rounded-full" />
+              <span className="absolute bottom-0.5 right-0.5 w-5 h-5 bg-[#22c55e] border-3 border-[hsl(var(--surface))] rounded-full" />
             )}
           </div>
 
           <div>
             <div className="flex items-center justify-center gap-3">
-              <h2 className="m-0 font-heading font-black text-3xl tracking-tight text-card-foreground">
+              <h2 className="m-0 font-heading font-black text-2xl tracking-tight text-card-foreground">
                 {counselor.name}
               </h2>
               {me && (
@@ -469,44 +495,54 @@ export default function CounselorDetailClient({ id }: { id: string }) {
               )}
             </div>
 
-            {/* Rating + Career */}
-            <div className="flex items-center justify-center gap-3 mt-2">
-              <StarRating rating={rating} size="md" />
-              <span className="font-bold text-lg text-card-foreground">
-                {rating.toFixed(1)}
+            {/* Online status text */}
+            {counselor.isOnline && (
+              <div className="flex items-center justify-center gap-1.5 mt-2">
+                <span className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" />
+                <span className="text-sm font-medium text-[#22c55e]">지금 상담 가능</span>
+              </div>
+            )}
+
+            {/* Specialty tags as pills */}
+            <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
+              <span className="bg-[hsl(var(--gold)/0.1)] text-[hsl(var(--gold))] text-xs rounded-full px-3 py-1 font-heading font-bold">
+                {counselor.specialty}
               </span>
-              <span className="text-sm text-muted-foreground">
-                ({reviewCount}건)
-              </span>
-              {career > 0 && (
-                <>
-                  <span className="text-muted-foreground">|</span>
-                  <span className="text-sm text-muted-foreground">
-                    경력 {career}년
-                  </span>
-                </>
+              {counselor.supportedConsultationTypes?.includes('VIDEO') && (
+                <span className="bg-[hsl(var(--gold)/0.1)] text-[hsl(var(--gold))] text-xs rounded-full px-3 py-1 font-heading font-bold inline-flex items-center gap-1">
+                  <Video className="w-3 h-3" />
+                  화상상담
+                </span>
+              )}
+              {counselor.supportedConsultationTypes?.includes('CHAT') && (
+                <span className="bg-[#4A90D9]/10 text-[#4A90D9] text-xs rounded-full px-3 py-1 font-heading font-bold inline-flex items-center gap-1">
+                  <MessageSquare className="w-3 h-3" />
+                  채팅상담
+                </span>
               )}
             </div>
 
-            {/* Badges */}
-            <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
-              <Badge variant="secondary" className="font-heading font-bold text-xs rounded-full px-3 py-1">
-                {counselor.specialty}
-              </Badge>
-              {counselor.supportedConsultationTypes?.includes('VIDEO') && (
-                <Badge variant="outline" className="font-heading font-bold text-xs rounded-full px-3 py-1 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]">
-                  화상상담
-                </Badge>
+            {/* Rating — larger and more prominent */}
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <Star className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" />
+              <span className="font-black text-xl text-card-foreground">
+                {rating.toFixed(1)}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                ({reviewCount.toLocaleString()}건의 리뷰)
+              </span>
+            </div>
+
+            {/* Stats row */}
+            <div className="flex items-center justify-center gap-2 mt-2 text-sm text-muted-foreground">
+              {consultations > 0 && (
+                <span>상담 횟수: {consultations.toLocaleString()}건</span>
               )}
-              {counselor.supportedConsultationTypes?.includes('CHAT') && (
-                <Badge variant="outline" className="font-heading font-bold text-xs rounded-full px-3 py-1 border-[#4A90D9]/30 text-[#4A90D9]">
-                  채팅상담
-                </Badge>
+              {consultations > 0 && career > 0 && (
+                <span className="text-muted-foreground">|</span>
               )}
-              {counselor.isOnline && (
-                <Badge variant="outline" className="font-heading font-bold text-xs rounded-full px-3 py-1 border-[#22c55e]/30 text-[#22c55e]">
-                  온라인
-                </Badge>
+              {career > 0 && (
+                <span>경력: {career}년</span>
               )}
             </div>
 
@@ -525,11 +561,26 @@ export default function CounselorDetailClient({ id }: { id: string }) {
             )}
           </div>
 
-          <p className="text-muted-foreground text-lg leading-relaxed max-w-[500px]">
-            {counselor.intro}
-          </p>
+          {/* Intro with "more" toggle */}
+          {counselor.intro && (
+            <div className="max-w-[500px]">
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                {counselor.intro.length > 150 && !introExpanded
+                  ? `${counselor.intro.slice(0, 150)}...`
+                  : counselor.intro}
+                {counselor.intro.length > 150 && (
+                  <button
+                    onClick={() => setIntroExpanded(!introExpanded)}
+                    className="ml-1 text-[hsl(var(--gold))] text-sm font-bold hover:underline"
+                  >
+                    {introExpanded ? '접기' : '더 보기'}
+                  </button>
+                )}
+              </p>
+            </div>
+          )}
 
-          {/* Stats row */}
+          {/* Key metrics row */}
           <div className="flex flex-wrap justify-center gap-6 text-sm">
             <div className="text-center">
               <div className="font-bold text-xl text-card-foreground">{responseRate}%</div>
@@ -600,7 +651,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
       )}
 
       {/* Available Slots Section */}
-      <div>
+      <div data-section="slots">
         <h3 className="m-0 mb-8 font-heading text-xl font-bold text-[hsl(var(--text-primary))] text-center">
           예약 가능 슬롯
         </h3>
@@ -766,6 +817,30 @@ export default function CounselorDetailClient({ id }: { id: string }) {
         <h3 className="m-0 mb-4 font-heading text-xl font-bold text-[hsl(var(--text-primary))] text-center">
           리뷰 ({reviewTotal}건)
         </h3>
+
+        {/* Rating Distribution Bar Chart */}
+        {reviewTotal > 0 && (
+          <div className="mb-6 px-2">
+            <div className="grid gap-2">
+              {[5, 4, 3, 2, 1].map((starLevel) => {
+                const count = reviews.filter((r) => Math.round(r.rating) === starLevel).length;
+                const percent = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                return (
+                  <div key={starLevel} className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground w-8 text-right font-heading font-bold shrink-0">{starLevel}점</span>
+                    <div className="flex-1 h-2 rounded-full bg-[hsl(var(--surface))] overflow-hidden">
+                      <div
+                        className="h-2 rounded-full bg-[hsl(var(--gold))] transition-all duration-500"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground w-8 shrink-0">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Filter & Sort Controls */}
         <div className="flex flex-wrap items-center gap-2 mb-4 justify-center">
@@ -948,6 +1023,30 @@ export default function CounselorDetailClient({ id }: { id: string }) {
           </div>
         )}
       </div>
+
+      {/* Sticky Bottom CTA Bar (Mobile) */}
+      {showStickyCta && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-[hsl(var(--surface))] border-t border-[hsl(var(--border-subtle))] px-4 py-3 flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.3)]"
+          style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
+        >
+          <div>
+            <span className="text-sm text-[hsl(var(--text-secondary))]">30분 상담</span>
+            <span className="text-lg font-bold text-[hsl(var(--text-primary))] ml-2">
+              {(price * 30).toLocaleString()}원
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              const slotsSection = document.querySelector('[data-section="slots"]');
+              if (slotsSection) slotsSection.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="rounded-full bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold px-6 py-2.5 text-sm transition-all duration-200 hover:shadow-[0_0_16px_hsl(var(--gold)/0.3)]"
+          >
+            예약하기
+          </button>
+        </div>
+      )}
 
       {/* Insufficient Credit Modal */}
       {showCreditModal && (

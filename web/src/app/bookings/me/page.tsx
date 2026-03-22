@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, startSession } from '@/components/api-client';
 import { RequireLogin } from '@/components/route-guard';
@@ -18,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { EmptyStateCard } from '@/components/empty-state';
+import { Clock } from 'lucide-react';
 
 type BookingSlot = { slotId: number; startAt: string; endAt: string };
 
@@ -43,6 +43,48 @@ const CANCEL_REASONS = [
 ] as const;
 
 const MAX_PAYMENT_RETRIES = 3;
+
+type TabKey = 'all' | 'upcoming' | 'in_progress' | 'completed' | 'canceled';
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'all', label: '전체' },
+  { key: 'upcoming', label: '예정' },
+  { key: 'in_progress', label: '진행중' },
+  { key: 'completed', label: '완료' },
+  { key: 'canceled', label: '취소' },
+];
+
+function matchesTab(status: string, tab: TabKey): boolean {
+  switch (tab) {
+    case 'all':
+      return true;
+    case 'upcoming':
+      return status === 'BOOKED' || status === 'PAID';
+    case 'in_progress':
+      return status === 'IN_PROGRESS';
+    case 'completed':
+      return status === 'COMPLETED';
+    case 'canceled':
+      return status === 'CANCELED' || status === 'CANCELLED';
+    default:
+      return true;
+  }
+}
+
+function getTabEmptyMessage(tab: TabKey): string {
+  switch (tab) {
+    case 'upcoming':
+      return '예정된 상담이 없습니다';
+    case 'in_progress':
+      return '진행 중인 상담이 없습니다';
+    case 'completed':
+      return '완료된 상담이 없습니다';
+    case 'canceled':
+      return '취소된 상담이 없습니다';
+    default:
+      return '예약 내역이 없습니다';
+  }
+}
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -166,6 +208,92 @@ function canReschedule(slots: BookingSlot[]): boolean {
   return hoursUntilStart >= 24;
 }
 
+/** Get the earliest slot start time for a booking */
+function getEarliestSlotTime(b: Booking): number {
+  const slots = normalizeSlots(b);
+  if (slots.length === 0) return 0;
+  const sorted = [...slots].sort((a, bb) => new Date(a.startAt).getTime() - new Date(bb.startAt).getTime());
+  return new Date(sorted[0].startAt).getTime();
+}
+
+type DateGroup = 'today' | 'this_week' | 'last_month' | 'older';
+
+function getDateGroup(slotTime: number, now: number): DateGroup {
+  const slotDate = new Date(slotTime);
+  const nowDate = new Date(now);
+
+  // Today check
+  if (
+    slotDate.getFullYear() === nowDate.getFullYear() &&
+    slotDate.getMonth() === nowDate.getMonth() &&
+    slotDate.getDate() === nowDate.getDate()
+  ) {
+    return 'today';
+  }
+
+  // This week: within the same week (Mon-Sun)
+  const startOfWeek = new Date(nowDate);
+  const dayOfWeek = startOfWeek.getDay();
+  const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday as start
+  startOfWeek.setDate(startOfWeek.getDate() - diff);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+  if (slotTime >= startOfWeek.getTime() && slotTime < endOfWeek.getTime()) {
+    return 'this_week';
+  }
+
+  // Last month
+  const startOfThisMonth = new Date(nowDate.getFullYear(), nowDate.getMonth(), 1);
+  const startOfLastMonth = new Date(nowDate.getFullYear(), nowDate.getMonth() - 1, 1);
+
+  if (slotTime >= startOfLastMonth.getTime() && slotTime < startOfThisMonth.getTime()) {
+    return 'last_month';
+  }
+
+  return 'older';
+}
+
+const DATE_GROUP_LABELS: Record<DateGroup, string> = {
+  today: '오늘',
+  this_week: '이번 주',
+  last_month: '지난 달',
+  older: '이전',
+};
+
+const DATE_GROUP_ORDER: DateGroup[] = ['today', 'this_week', 'last_month', 'older'];
+
+/** Compute countdown text for bookings within 24 hours */
+function getCountdownText(slots: BookingSlot[], now: number): string | null {
+  if (slots.length === 0) return null;
+  const sorted = [...slots].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+  const earliestStart = new Date(sorted[0].startAt).getTime();
+  const diffMs = earliestStart - now;
+
+  if (diffMs <= 0 || diffMs > 24 * 60 * 60 * 1000) return null;
+
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0) {
+    return `${hours}시간 ${minutes}분 후 시작`;
+  }
+  return `${minutes}분 후 시작`;
+}
+
+/** Counselor avatar with initial */
+function CounselorAvatar({ name }: { name: string }) {
+  const initial = name.charAt(0);
+  return (
+    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[hsl(var(--gold)/0.2)] to-[hsl(var(--dancheong)/0.1)] flex items-center justify-center flex-shrink-0">
+      <span className="text-sm font-bold text-[hsl(var(--gold))]">{initial}</span>
+    </div>
+  );
+}
+
 export default function MyBookingsPage() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -175,6 +303,7 @@ export default function MyBookingsPage() {
   const [now, setNow] = useState(Date.now());
   const [retryingId, setRetryingId] = useState<number | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabKey>('all');
 
   // Cancel modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -183,12 +312,13 @@ export default function MyBookingsPage() {
   const [cancelOtherText, setCancelOtherText] = useState('');
   const [cancelling, setCancelling] = useState(false);
 
+  // Update time every 60 seconds for countdown (also used by entry state)
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setLoadError(false);
     try {
@@ -208,11 +338,52 @@ export default function MyBookingsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
+
+  // Compute tab counts
+  const tabCounts = useMemo(() => {
+    const counts: Record<TabKey, number> = {
+      all: bookings.length,
+      upcoming: 0,
+      in_progress: 0,
+      completed: 0,
+      canceled: 0,
+    };
+    for (const b of bookings) {
+      if (matchesTab(b.status, 'upcoming')) counts.upcoming++;
+      if (matchesTab(b.status, 'in_progress')) counts.in_progress++;
+      if (matchesTab(b.status, 'completed')) counts.completed++;
+      if (matchesTab(b.status, 'canceled')) counts.canceled++;
+    }
+    return counts;
+  }, [bookings]);
+
+  // Filtered bookings
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((b) => matchesTab(b.status, activeTab));
+  }, [bookings, activeTab]);
+
+  // Group filtered bookings by date
+  const groupedBookings = useMemo(() => {
+    const groups: Record<DateGroup, Booking[]> = {
+      today: [],
+      this_week: [],
+      last_month: [],
+      older: [],
+    };
+
+    for (const b of filteredBookings) {
+      const slotTime = getEarliestSlotTime(b);
+      const group = slotTime > 0 ? getDateGroup(slotTime, now) : 'older';
+      groups[group].push(b);
+    }
+
+    return groups;
+  }, [filteredBookings, now]);
 
   function openCancelModal(bookingId: number) {
     setCancelBookingId(bookingId);
@@ -366,11 +537,98 @@ export default function MyBookingsPage() {
     );
   }
 
+  function renderCountdown(b: Booking, slots: BookingSlot[]) {
+    if (b.status !== 'BOOKED' && b.status !== 'PAID') return null;
+    const text = getCountdownText(slots, now);
+    if (!text) return null;
+
+    return (
+      <div className="flex items-center gap-1.5 mt-1">
+        <Clock className="w-3.5 h-3.5 text-[hsl(var(--gold))]" />
+        <span className="text-sm text-[hsl(var(--gold))] font-medium">{text}</span>
+      </div>
+    );
+  }
+
+  function renderBookingCard(b: Booking) {
+    const slots = normalizeSlots(b);
+    const slotCount = slots.length;
+    const ranges = groupConsecutiveSlots(slots);
+    const showReschedule = b.status === 'BOOKED' && canReschedule(slots);
+
+    return (
+      <Card key={b.id}>
+        <CardHeader className="pb-0">
+          <div className="flex justify-between items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-3">
+              <CounselorAvatar name={b.counselorName} />
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-lg">{b.counselorName}</span>
+                {slotCount > 1 && (
+                  <Badge variant="outline" className="text-xs">
+                    30분 x {slotCount}회
+                  </Badge>
+                )}
+              </div>
+            </div>
+            <Badge variant={getStatusBadgeVariant(b.status)}>
+              {getStatusLabel(b.status)}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="text-muted-foreground text-sm grid gap-0.5 ml-[52px]">
+            {ranges.map((range, i) => (
+              <div key={i}>
+                {formatDate(range.startAt)} {formatTime(range.startAt)} ~ {formatTime(range.endAt)}
+              </div>
+            ))}
+          </div>
+          <div className="ml-[52px]">
+            {renderCountdown(b, slots)}
+          </div>
+          {b.cancelReason && (b.status === 'CANCELED' || b.status === 'CANCELLED') && (
+            <div className="mt-2 text-xs text-muted-foreground ml-[52px]">
+              취소 사유: {b.cancelReason}
+            </div>
+          )}
+          {renderPaymentFailedActions(b)}
+        </CardContent>
+        {(b.status === 'BOOKED' || b.status === 'PAID') && (
+          <CardFooter className="gap-2 flex-wrap">
+            {renderEntryButton(b, slots)}
+            {showReschedule && (
+              <Button
+                variant="outline"
+                onClick={() => router.push(`/counselors/${b.counselorId}`)}
+                className="rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]"
+              >
+                예약 변경
+              </Button>
+            )}
+            {b.status === 'BOOKED' && (
+              <Button
+                variant="destructive"
+                onClick={() => openCancelModal(b.id)}
+                className="rounded-full"
+              >
+                예약 취소
+              </Button>
+            )}
+          </CardFooter>
+        )}
+      </Card>
+    );
+  }
+
   const cancelBooking = cancelBookingId !== null
     ? bookings.find((b) => b.id === cancelBookingId)
     : null;
   const cancelSlots = cancelBooking ? normalizeSlots(cancelBooking) : [];
   const cancelPolicy = cancelSlots.length > 0 ? getCancelPolicyInfo(cancelSlots) : null;
+
+  // Check if there are any date groups with bookings
+  const hasGroupedBookings = filteredBookings.length > 0;
 
   return (
     <RequireLogin>
@@ -381,6 +639,29 @@ export default function MyBookingsPage() {
           <Alert variant={message.includes('취소되었습니다') || message.includes('다시 시도') ? 'default' : 'destructive'}>
             <AlertDescription>{message}</AlertDescription>
           </Alert>
+        )}
+
+        {/* Status Tab Filter */}
+        {!loading && !loadError && bookings.length > 0 && (
+          <div className="inline-flex items-center rounded-full bg-[hsl(var(--surface))] border border-[hsl(var(--border-subtle))] p-1 gap-0.5 overflow-x-auto">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              const count = tabCounts[tab.key];
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-all duration-200 ${
+                    isActive
+                      ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-bold'
+                      : 'text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))]'
+                  }`}
+                >
+                  {tab.label}{count > 0 ? ` (${count})` : ''}
+                </button>
+              );
+            })}
+          </div>
         )}
 
         {loading ? (
@@ -406,70 +687,29 @@ export default function MyBookingsPage() {
             actionLabel="상담사 둘러보기"
             actionHref="/counselors"
           />
+        ) : !hasGroupedBookings ? (
+          /* Empty state per filtered tab */
+          <EmptyStateCard
+            title={getTabEmptyMessage(activeTab)}
+            description={activeTab === 'upcoming' ? '상담사를 둘러보고 새로운 상담을 예약해보세요.' : undefined}
+            actionLabel={activeTab === 'upcoming' ? '상담사 둘러보기' : undefined}
+            actionHref={activeTab === 'upcoming' ? '/counselors' : undefined}
+          />
         ) : (
-          <div className="grid gap-6">
-            {bookings.map((b) => {
-              const slots = normalizeSlots(b);
-              const slotCount = slots.length;
-              const ranges = groupConsecutiveSlots(slots);
-              const showReschedule = b.status === 'BOOKED' && canReschedule(slots);
+          <div className="space-y-2">
+            {DATE_GROUP_ORDER.map((groupKey) => {
+              const groupBookings = groupedBookings[groupKey];
+              if (groupBookings.length === 0) return null;
 
               return (
-                <Card key={b.id}>
-                  <CardHeader className="pb-0">
-                    <div className="flex justify-between items-center gap-2 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-lg">{b.counselorName}</span>
-                        {slotCount > 1 && (
-                          <Badge variant="outline" className="text-xs">
-                            30분 x {slotCount}회
-                          </Badge>
-                        )}
-                      </div>
-                      <Badge variant={getStatusBadgeVariant(b.status)}>
-                        {getStatusLabel(b.status)}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-muted-foreground text-sm grid gap-0.5">
-                      {ranges.map((range, i) => (
-                        <div key={i}>
-                          {formatDate(range.startAt)} {formatTime(range.startAt)} ~ {formatTime(range.endAt)}
-                        </div>
-                      ))}
-                    </div>
-                    {b.cancelReason && (b.status === 'CANCELED' || b.status === 'CANCELLED') && (
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        취소 사유: {b.cancelReason}
-                      </div>
-                    )}
-                    {renderPaymentFailedActions(b)}
-                  </CardContent>
-                  {(b.status === 'BOOKED' || b.status === 'PAID') && (
-                    <CardFooter className="gap-2 flex-wrap">
-                      {renderEntryButton(b, slots)}
-                      {showReschedule && (
-                        <Button
-                          variant="outline"
-                          onClick={() => router.push(`/counselors/${b.counselorId}`)}
-                          className="rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]"
-                        >
-                          예약 변경
-                        </Button>
-                      )}
-                      {b.status === 'BOOKED' && (
-                        <Button
-                          variant="destructive"
-                          onClick={() => openCancelModal(b.id)}
-                          className="rounded-full"
-                        >
-                          예약 취소
-                        </Button>
-                      )}
-                    </CardFooter>
-                  )}
-                </Card>
+                <div key={groupKey}>
+                  <h2 className="text-sm font-bold text-[hsl(var(--text-secondary))] mb-3 mt-6">
+                    {DATE_GROUP_LABELS[groupKey]}
+                  </h2>
+                  <div className="grid gap-4">
+                    {groupBookings.map((b) => renderBookingCard(b))}
+                  </div>
+                </div>
               );
             })}
           </div>

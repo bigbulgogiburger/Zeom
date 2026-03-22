@@ -2,11 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useCallback, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { apiFetch } from '../../../components/api-client';
 
 export type CounselorListItem = {
   id: number;
@@ -22,19 +20,14 @@ export type CounselorListItem = {
   totalConsultations?: number;
   responseRate?: number;
   pricePerMinute?: number;
+  pricePerSession?: number;
+  sessionMinutes?: number;
   isOnline?: boolean;
   tags?: string | null;
   shortVideoUrl?: string | null;
+  latestReviewSnippet?: string | null;
+  latestReviewerName?: string | null;
 };
-
-function specialtyIcon(specialty: string): string {
-  if (specialty.includes('사주')) return '卦';
-  if (specialty.includes('타로')) return '星';
-  if (specialty.includes('신점')) return '蓮';
-  if (specialty.includes('꿈')) return '月';
-  if (specialty.includes('궁합')) return '緣';
-  return '道';
-}
 
 function parseTags(tags: string | null | undefined): string[] {
   if (!tags) return [];
@@ -105,6 +98,9 @@ export default function CounselorCard({
   const career = c.careerYears ?? 0;
   const price = c.pricePerMinute ?? 3000;
   const responseRate = c.responseRate ?? 100;
+  const sessionPrice = c.pricePerSession;
+  const sessionMinutes = c.sessionMinutes ?? 30;
+  const nameInitial = c.name.charAt(0);
 
   return (
     <div className="relative bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-2xl p-5 sm:p-6 shadow-md hover:shadow-[0_8px_32px_hsl(var(--gold)/0.12)] hover:-translate-y-1 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col">
@@ -119,7 +115,7 @@ export default function CounselorCard({
         </button>
       )}
 
-      {/* Top section: photo + online indicator */}
+      {/* Top section: avatar + info */}
       <div className="flex items-start gap-4 mb-4">
         <div className="relative shrink-0">
           {c.profileImageUrl ? (
@@ -131,36 +127,55 @@ export default function CounselorCard({
               className="w-16 h-16 rounded-full object-cover border-2 border-[hsl(var(--gold)/0.2)]"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[hsl(var(--surface))] to-[hsl(var(--background))] border-2 border-[hsl(var(--gold)/0.2)] flex items-center justify-center">
-              <span className="text-xl font-heading font-black text-[hsl(var(--gold))]">{specialtyIcon(c.specialty)}</span>
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[hsl(var(--gold)/0.2)] to-[hsl(var(--dancheong)/0.1)] border-2 border-[hsl(var(--gold)/0.2)] flex items-center justify-center">
+              <span className="text-2xl font-heading font-black text-[hsl(var(--gold))]">{nameInitial}</span>
             </div>
           )}
           {c.isOnline && (
-            <span className="absolute bottom-0 right-0 w-4 h-4 bg-[#22c55e] border-2 border-[hsl(var(--surface))] rounded-full" />
+            <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[hsl(var(--success))] opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-[hsl(var(--success))] border border-[hsl(var(--surface))]" />
+            </span>
           )}
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="m-0 font-heading font-bold text-lg text-[hsl(var(--text-primary))] truncate">
-            {c.name} 선생님
-          </h3>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <StarRating rating={rating} />
-            <span className="text-sm font-bold text-[hsl(var(--text-primary))]">
-              {rating.toFixed(1)}
-            </span>
-            <span className="text-xs text-[hsl(var(--text-secondary))]">
-              ({reviews}건)
-            </span>
-            {career > 0 && (
-              <>
-                <span className="text-[hsl(var(--text-secondary))]">|</span>
-                <span className="text-xs text-[hsl(var(--text-secondary))]">
-                  경력 {career}년
-                </span>
-              </>
+          <div className="flex items-center gap-2">
+            <h3 className="m-0 font-heading font-bold text-lg text-[hsl(var(--text-primary))] truncate">
+              {c.name} 선생님
+            </h3>
+            {c.isOnline && (
+              <span className="shrink-0 text-xs font-medium text-[hsl(var(--success))]">
+                지금 상담 가능
+              </span>
             )}
           </div>
+          {reviews > 0 && (
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <StarRating rating={rating} />
+              <span className="text-sm font-bold text-[hsl(var(--text-primary))]">
+                {rating.toFixed(1)}
+              </span>
+              <span className="text-xs text-[hsl(var(--text-secondary))]">
+                ({reviews}건)
+              </span>
+              {career > 0 && (
+                <>
+                  <span className="text-[hsl(var(--text-secondary))]">|</span>
+                  <span className="text-xs text-[hsl(var(--text-secondary))]">
+                    경력 {career}년
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+          {reviews === 0 && career > 0 && (
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-[hsl(var(--text-secondary))]">
+                경력 {career}년
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -179,12 +194,33 @@ export default function CounselorCard({
         ))}
       </div>
 
-      {/* Stats row */}
-      <div className="flex items-center gap-3 text-xs text-[hsl(var(--text-secondary))] mb-4">
-        <span>응답률 {responseRate}%</span>
-        <span className="text-[hsl(var(--text-secondary))]">|</span>
-        <span>분당 {price.toLocaleString()}원</span>
+      {/* Price + stats row */}
+      <div className="flex items-center gap-3 mb-3">
+        {sessionPrice != null && (
+          <span className="text-sm text-[hsl(var(--text-secondary))] font-medium">
+            {sessionMinutes}분 ₩{sessionPrice.toLocaleString()}
+          </span>
+        )}
+        {sessionPrice == null && (
+          <span className="text-sm text-[hsl(var(--text-secondary))] font-medium">
+            분당 ₩{price.toLocaleString()}
+          </span>
+        )}
+        <span className="text-[hsl(var(--border-subtle))]">|</span>
+        <span className="text-xs text-[hsl(var(--text-muted))]">응답률 {responseRate}%</span>
       </div>
+
+      {/* Review snippet */}
+      {c.latestReviewSnippet && (
+        <div className="mb-4 px-3 py-2 rounded-lg bg-[hsl(var(--background)/0.5)] border border-[hsl(var(--border-subtle)/0.5)]">
+          <p className="text-sm italic text-[hsl(var(--text-secondary))] leading-relaxed line-clamp-1">
+            &ldquo;{c.latestReviewSnippet}&rdquo;
+            {c.latestReviewerName && (
+              <span className="not-italic text-[hsl(var(--text-muted))]"> — {c.latestReviewerName}</span>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-2 mt-auto">
