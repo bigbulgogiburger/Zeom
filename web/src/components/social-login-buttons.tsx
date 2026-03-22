@@ -66,9 +66,9 @@ export function SocialLoginButtons({ mode }: SocialLoginButtonsProps) {
   return (
     <div className="mt-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="flex-1 h-px bg-[rgba(201,162,39,0.15)]" />
-        <span className="text-xs text-[#a49484]">{tc('or')}</span>
-        <div className="flex-1 h-px bg-[rgba(201,162,39,0.15)]" />
+        <div className="flex-1 h-px bg-[hsl(var(--gold)/0.15)]" />
+        <span className="text-xs text-[hsl(var(--text-secondary))]">{tc('or')}</span>
+        <div className="flex-1 h-px bg-[hsl(var(--gold)/0.15)]" />
       </div>
 
       {error && (

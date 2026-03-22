@@ -63,7 +63,7 @@ export default function ChangePasswordPage() {
               placeholder="현재 비밀번호"
               required
               autoComplete="current-password"
-              className="min-h-[44px] pr-16 bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+              className="min-h-[44px] pr-16 bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
             />
             <Button
               type="button"
@@ -71,7 +71,7 @@ export default function ChangePasswordPage() {
               size="sm"
               onClick={() => setShowCurrent(!showCurrent)}
               tabIndex={-1}
-              className="absolute right-1 top-1/2 -translate-y-1/2 text-[#a49484] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[#C9A227]"
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-[hsl(var(--text-secondary))] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[hsl(var(--gold))]"
             >
               {showCurrent ? '숨기기' : '보기'}
             </Button>
@@ -89,7 +89,7 @@ export default function ChangePasswordPage() {
               placeholder="새 비밀번호"
               required
               autoComplete="new-password"
-              className="min-h-[44px] pr-16 bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+              className="min-h-[44px] pr-16 bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
             />
             <Button
               type="button"
@@ -97,7 +97,7 @@ export default function ChangePasswordPage() {
               size="sm"
               onClick={() => setShowNew(!showNew)}
               tabIndex={-1}
-              className="absolute right-1 top-1/2 -translate-y-1/2 text-[#a49484] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[#C9A227]"
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-[hsl(var(--text-secondary))] text-sm min-h-0 h-auto px-2 py-1 hover:bg-transparent hover:text-[hsl(var(--gold))]"
             >
               {showNew ? '숨기기' : '보기'}
             </Button>
@@ -116,7 +116,7 @@ export default function ChangePasswordPage() {
             placeholder="새 비밀번호 확인"
             required
             autoComplete="new-password"
-            className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+            className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
           />
         </FormField>
 

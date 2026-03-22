@@ -217,7 +217,7 @@ export default function AdminSettlementsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm font-heading min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm font-heading min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none"
             >
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>{STATUS_LABELS[opt]}</option>
@@ -228,26 +228,26 @@ export default function AdminSettlementsPage() {
               placeholder="상담사 이름"
               value={counselorFilter}
               onChange={(e) => { setCounselorFilter(e.target.value); setPage(1); }}
-              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm font-heading min-h-[44px] placeholder:text-[#a49484] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm font-heading min-h-[44px] placeholder:text-[hsl(var(--text-secondary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none"
             />
 
-            <label className="text-sm text-[#a49484] flex items-center gap-1.5">
+            <label className="text-sm text-[hsl(var(--text-secondary))] flex items-center gap-1.5">
               시작
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
+                className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none"
               />
             </label>
 
-            <label className="text-sm text-[#a49484] flex items-center gap-1.5">
+            <label className="text-sm text-[hsl(var(--text-secondary))] flex items-center gap-1.5">
               종료
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
+                className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none"
               />
             </label>
 
@@ -263,35 +263,35 @@ export default function AdminSettlementsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">ID</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">상담사</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">고객</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227] text-right">정산액</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">상태</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">생성일</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227] text-right">관리</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">ID</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">상담사</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">고객</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">정산액</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">상태</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">생성일</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paged.map((s) => (
-                  <TableRow key={s.id} className="hover:bg-[rgba(201,162,39,0.03)] transition-colors">
+                  <TableRow key={s.id} className="hover:bg-[hsl(var(--gold)/0.03)] transition-colors">
                     <TableCell
-                      className="font-mono text-sm cursor-pointer hover:underline text-[#C9A227]"
+                      className="font-mono text-sm cursor-pointer hover:underline text-[hsl(var(--gold))]"
                       onClick={() => setSelectedSettlement(s)}
                     >
                       #{s.id}
                     </TableCell>
                     <TableCell className="font-medium">{s.counselorName}</TableCell>
-                    <TableCell className="text-[#a49484]">{s.customerName}</TableCell>
+                    <TableCell className="text-[hsl(var(--text-secondary))]">{s.customerName}</TableCell>
                     <TableCell className="text-right font-bold">{formatCurrency(s.counselorAmount)}</TableCell>
                     <TableCell><StatusBadge value={s.status} /></TableCell>
-                    <TableCell className="text-[#a49484]">{formatDate(s.createdAt)}</TableCell>
+                    <TableCell className="text-[hsl(var(--text-secondary))]">{formatDate(s.createdAt)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
                         {s.status === 'PENDING' && (
                           <button
                             onClick={() => setConfirmAction({ type: 'confirm', settlement: s })}
-                            className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:from-[#b08d1f] hover:to-[#C9A227] transition-all"
+                            className="rounded-full bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:from-[hsl(var(--gold))/0.85] hover:to-[hsl(var(--gold))] transition-all"
                           >
                             확정
                           </button>
@@ -306,7 +306,7 @@ export default function AdminSettlementsPage() {
                         )}
                         <button
                           onClick={() => setSelectedSettlement(s)}
-                          className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] bg-transparent hover:bg-[#C9A227]/10 transition-colors"
+                          className="rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] bg-transparent hover:bg-[hsl(var(--gold))]/10 transition-colors"
                         >
                           상세
                         </button>
@@ -325,15 +325,15 @@ export default function AdminSettlementsPage() {
             <ActionButton
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
-              className="!bg-transparent border-2 border-[#C9A227] !text-[#C9A227] hover:!bg-[#C9A227]/10 !min-h-[36px] !px-5 !py-1.5"
+              className="!bg-transparent border-2 border-[hsl(var(--gold))] !text-[hsl(var(--gold))] hover:!bg-[hsl(var(--gold))]/10 !min-h-[36px] !px-5 !py-1.5"
             >
               이전
             </ActionButton>
-            <span className="font-heading font-bold text-[#f9f5ed]">{page} / {totalPages}</span>
+            <span className="font-heading font-bold text-[hsl(var(--text-primary))]">{page} / {totalPages}</span>
             <ActionButton
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="!bg-transparent border-2 border-[#C9A227] !text-[#C9A227] hover:!bg-[#C9A227]/10 !min-h-[36px] !px-5 !py-1.5"
+              className="!bg-transparent border-2 border-[hsl(var(--gold))] !text-[hsl(var(--gold))] hover:!bg-[hsl(var(--gold))]/10 !min-h-[36px] !px-5 !py-1.5"
             >
               다음
             </ActionButton>
@@ -342,9 +342,9 @@ export default function AdminSettlementsPage() {
 
         {/* Detail modal */}
         <Dialog open={!!selectedSettlement} onOpenChange={(open) => { if (!open) setSelectedSettlement(null); }}>
-          <DialogContent className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl text-[#f9f5ed] max-w-[520px]">
+          <DialogContent className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl text-[hsl(var(--text-primary))] max-w-[520px]">
             <DialogHeader>
-              <DialogTitle className="font-heading font-bold text-lg text-[#f9f5ed]">
+              <DialogTitle className="font-heading font-bold text-lg text-[hsl(var(--text-primary))]">
                 정산 상세 #{selectedSettlement?.id}
               </DialogTitle>
             </DialogHeader>
@@ -352,72 +352,72 @@ export default function AdminSettlementsPage() {
               <div className="grid gap-3 text-sm">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[#a49484]">상담사: </span>
-                    <span className="font-bold text-[#f9f5ed]">{selectedSettlement.counselorName}</span>
+                    <span className="text-[hsl(var(--text-secondary))]">상담사: </span>
+                    <span className="font-bold text-[hsl(var(--text-primary))]">{selectedSettlement.counselorName}</span>
                   </div>
                   <div>
-                    <span className="text-[#a49484]">고객: </span>
-                    <span className="font-bold text-[#f9f5ed]">{selectedSettlement.customerName}</span>
+                    <span className="text-[hsl(var(--text-secondary))]">고객: </span>
+                    <span className="font-bold text-[hsl(var(--text-primary))]">{selectedSettlement.customerName}</span>
                   </div>
                 </div>
 
-                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3">
+                <div className="border-t border-[hsl(var(--gold)/0.15)] pt-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <span className="text-[#a49484]">총액: </span>
-                      <span className="font-bold text-[#f9f5ed]">{formatCurrency(selectedSettlement.totalAmount)}</span>
+                      <span className="text-[hsl(var(--text-secondary))]">총액: </span>
+                      <span className="font-bold text-[hsl(var(--text-primary))]">{formatCurrency(selectedSettlement.totalAmount)}</span>
                     </div>
                     <div>
-                      <span className="text-[#a49484]">플랫폼 수수료: </span>
-                      <span className="text-[#f9f5ed]">{formatCurrency(selectedSettlement.platformFee)}</span>
+                      <span className="text-[hsl(var(--text-secondary))]">플랫폼 수수료: </span>
+                      <span className="text-[hsl(var(--text-primary))]">{formatCurrency(selectedSettlement.platformFee)}</span>
                     </div>
                     <div>
-                      <span className="text-[#a49484]">상담사 정산액: </span>
-                      <span className="font-bold text-[#C9A227]">
+                      <span className="text-[hsl(var(--text-secondary))]">상담사 정산액: </span>
+                      <span className="font-bold text-[hsl(var(--gold))]">
                         {formatCurrency(selectedSettlement.counselorAmount)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[#a49484]">상태: </span>
+                      <span className="text-[hsl(var(--text-secondary))]">상태: </span>
                       <StatusBadge value={selectedSettlement.status} />
                     </div>
                   </div>
                 </div>
 
-                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3">
+                <div className="border-t border-[hsl(var(--gold)/0.15)] pt-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <span className="text-[#a49484]">세션 ID: </span>
-                      <span className="font-mono text-[#f9f5ed]">#{selectedSettlement.sessionId}</span>
+                      <span className="text-[hsl(var(--text-secondary))]">세션 ID: </span>
+                      <span className="font-mono text-[hsl(var(--text-primary))]">#{selectedSettlement.sessionId}</span>
                     </div>
                     {selectedSettlement.creditsUsed != null && (
                       <div>
-                        <span className="text-[#a49484]">사용 크레딧: </span>
-                        <span className="text-[#f9f5ed]">{selectedSettlement.creditsUsed}개</span>
+                        <span className="text-[hsl(var(--text-secondary))]">사용 크레딧: </span>
+                        <span className="text-[hsl(var(--text-primary))]">{selectedSettlement.creditsUsed}개</span>
                       </div>
                     )}
                     {selectedSettlement.durationMinutes != null && (
                       <div>
-                        <span className="text-[#a49484]">상담 시간: </span>
-                        <span className="text-[#f9f5ed]">{selectedSettlement.durationMinutes}분</span>
+                        <span className="text-[hsl(var(--text-secondary))]">상담 시간: </span>
+                        <span className="text-[hsl(var(--text-primary))]">{selectedSettlement.durationMinutes}분</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3">
+                <div className="border-t border-[hsl(var(--gold)/0.15)] pt-3">
                   <div className="grid grid-cols-1 gap-1">
                     <div>
-                      <span className="text-[#a49484]">생성일: </span>
-                      <span className="text-[#f9f5ed]">{formatDateTime(selectedSettlement.createdAt)}</span>
+                      <span className="text-[hsl(var(--text-secondary))]">생성일: </span>
+                      <span className="text-[hsl(var(--text-primary))]">{formatDateTime(selectedSettlement.createdAt)}</span>
                     </div>
                     <div>
-                      <span className="text-[#a49484]">확정일: </span>
-                      <span className="text-[#f9f5ed]">{formatDateTime(selectedSettlement.confirmedAt)}</span>
+                      <span className="text-[hsl(var(--text-secondary))]">확정일: </span>
+                      <span className="text-[hsl(var(--text-primary))]">{formatDateTime(selectedSettlement.confirmedAt)}</span>
                     </div>
                     <div>
-                      <span className="text-[#a49484]">지급일: </span>
-                      <span className="text-[#f9f5ed]">{formatDateTime(selectedSettlement.paidAt)}</span>
+                      <span className="text-[hsl(var(--text-secondary))]">지급일: </span>
+                      <span className="text-[hsl(var(--text-primary))]">{formatDateTime(selectedSettlement.paidAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -430,7 +430,7 @@ export default function AdminSettlementsPage() {
                         setConfirmAction({ type: 'confirm', settlement: selectedSettlement });
                         setSelectedSettlement(null);
                       }}
-                      className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading px-6 py-2.5 hover:from-[#b08d1f] hover:to-[#C9A227] transition-all"
+                      className="rounded-full bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold font-heading px-6 py-2.5 hover:from-[hsl(var(--gold))/0.85] hover:to-[hsl(var(--gold))] transition-all"
                     >
                       확정
                     </button>

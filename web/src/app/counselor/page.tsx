@@ -68,26 +68,26 @@ export default function CounselorDashboardPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <Card>
-          <div className="text-[#C9A227] text-sm font-medium mb-1 font-heading">
+          <div className="text-[hsl(var(--gold))] text-sm font-medium mb-1 font-heading">
             오늘 전체 상담
           </div>
-          <div className="text-2xl font-black leading-tight font-heading text-[#f9f5ed]">
+          <div className="text-2xl font-black leading-tight font-heading text-[hsl(var(--text-primary))]">
             {bookings.length}건
           </div>
         </Card>
         <Card>
-          <div className="text-[#C9A227] text-sm font-medium mb-1 font-heading">
+          <div className="text-[hsl(var(--gold))] text-sm font-medium mb-1 font-heading">
             대기 중
           </div>
-          <div className="text-2xl font-black leading-tight font-heading text-[#f9f5ed]">
+          <div className="text-2xl font-black leading-tight font-heading text-[hsl(var(--text-primary))]">
             {upcomingBookings.length}건
           </div>
         </Card>
         <Card>
-          <div className="text-[#C9A227] text-sm font-medium mb-1 font-heading">
+          <div className="text-[hsl(var(--gold))] text-sm font-medium mb-1 font-heading">
             완료
           </div>
-          <div className="text-2xl font-black leading-tight font-heading text-[#f9f5ed]">
+          <div className="text-2xl font-black leading-tight font-heading text-[hsl(var(--text-primary))]">
             {completedBookings.length}건
           </div>
         </Card>
@@ -97,7 +97,7 @@ export default function CounselorDashboardPage() {
 
       {/* Today's bookings */}
       <div>
-        <h3 className="text-lg font-bold font-heading text-[#f9f5ed] mb-4">
+        <h3 className="text-lg font-bold font-heading text-[hsl(var(--text-primary))] mb-4">
           오늘 상담 목록
         </h3>
 
@@ -106,10 +106,10 @@ export default function CounselorDashboardPage() {
             {[1, 2, 3].map(i => (
               <Card key={i}>
                 <div className="animate-pulse flex items-center gap-4">
-                  <div className="h-10 w-10 bg-[#1a1612] rounded-full" />
+                  <div className="h-10 w-10 bg-[hsl(var(--surface))] rounded-full" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 w-1/3 bg-[#1a1612] rounded" />
-                    <div className="h-3 w-1/4 bg-[#1a1612] rounded" />
+                    <div className="h-4 w-1/3 bg-[hsl(var(--surface))] rounded" />
+                    <div className="h-3 w-1/4 bg-[hsl(var(--surface))] rounded" />
                   </div>
                 </div>
               </Card>
@@ -132,7 +132,7 @@ export default function CounselorDashboardPage() {
                       </span>
                       <StatusBadge value={booking.status} />
                     </div>
-                    <div className="text-sm text-[#a49484]">
+                    <div className="text-sm text-[hsl(var(--text-secondary))]">
                       {formatTime(booking.startTime)} ~ {formatTime(booking.endTime)}
                       {booking.durationMinutes && ` (${booking.durationMinutes}분)`}
                     </div>

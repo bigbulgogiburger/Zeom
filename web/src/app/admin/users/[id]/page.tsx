@@ -152,7 +152,7 @@ export default function AdminUserDetailPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push('/admin/users')}
-            className="text-[#C9A227] font-heading font-bold text-sm hover:underline"
+            className="text-[hsl(var(--gold))] font-heading font-bold text-sm hover:underline"
           >
             &larr; 목록으로
           </button>
@@ -173,19 +173,19 @@ export default function AdminUserDetailPage() {
                     <StatusBadge value={user.status} />
                     <StatusBadge value={user.role} />
                   </div>
-                  <div className="text-[#a49484] text-sm space-y-1">
+                  <div className="text-[hsl(var(--text-secondary))] text-sm space-y-1">
                     <p>이메일: {user.email}</p>
                     {user.phone && <p>전화번호: {user.phone}</p>}
                     {user.gender && <p>성별: {user.gender}</p>}
                   </div>
                   {user.status === 'SUSPENDED' && (
-                    <div className="mt-3 p-3 bg-[rgba(139,0,0,0.1)] border border-[rgba(139,0,0,0.3)] rounded-xl">
+                    <div className="mt-3 p-3 bg-[hsl(var(--dancheong)/0.1)] border border-[hsl(var(--dancheong)/0.3)] rounded-xl">
                       <p className="text-[#ff6b6b] text-sm font-bold">정지됨</p>
                       {user.suspendedReason && (
-                        <p className="text-[#a49484] text-sm mt-1">사유: {user.suspendedReason}</p>
+                        <p className="text-[hsl(var(--text-secondary))] text-sm mt-1">사유: {user.suspendedReason}</p>
                       )}
                       {user.suspendedAt && (
-                        <p className="text-[#a49484] text-xs mt-1">
+                        <p className="text-[hsl(var(--text-secondary))] text-xs mt-1">
                           정지일: {new Date(user.suspendedAt).toLocaleString('ko-KR')}
                         </p>
                       )}
@@ -200,7 +200,7 @@ export default function AdminUserDetailPage() {
                   ) : (
                     <button
                       onClick={() => setShowSuspendForm(!showSuspendForm)}
-                      className="rounded-full bg-[#8B0000] text-white text-sm font-bold font-heading px-6 py-2.5 hover:bg-[#6d0000] transition-colors"
+                      className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-6 py-2.5 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors"
                     >
                       계정 정지
                     </button>
@@ -209,24 +209,24 @@ export default function AdminUserDetailPage() {
               </div>
 
               {showSuspendForm && (
-                <div className="mt-4 p-4 border border-[rgba(201,162,39,0.15)] rounded-xl space-y-3">
+                <div className="mt-4 p-4 border border-[hsl(var(--gold)/0.15)] rounded-xl space-y-3">
                   <textarea
                     placeholder="정지 사유를 입력하세요 (필수)"
                     value={suspendReason}
                     onChange={(e) => setSuspendReason(e.target.value)}
-                    className="w-full bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[80px] placeholder:text-[#a49484] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none resize-none"
+                    className="w-full bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[80px] placeholder:text-[hsl(var(--text-secondary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none resize-none"
                   />
                   <div className="flex gap-3 justify-end">
                     <button
                       onClick={() => { setShowSuspendForm(false); setSuspendReason(''); }}
-                      className="rounded-full border-2 border-[rgba(201,162,39,0.3)] text-[#f9f5ed] text-sm font-bold font-heading px-5 py-2 hover:bg-[rgba(201,162,39,0.1)] transition-colors"
+                      className="rounded-full border-2 border-[hsl(var(--gold)/0.3)] text-[hsl(var(--text-primary))] text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--gold)/0.1)] transition-colors"
                     >
                       취소
                     </button>
                     <button
                       onClick={handleSuspend}
                       disabled={processing || !suspendReason.trim()}
-                      className="rounded-full bg-[#8B0000] text-white text-sm font-bold font-heading px-5 py-2 hover:bg-[#6d0000] transition-colors disabled:opacity-50"
+                      className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
                     >
                       {processing ? '처리 중...' : '정지 확인'}
                     </button>
@@ -237,37 +237,37 @@ export default function AdminUserDetailPage() {
 
             {/* Wallet balance */}
             <Card>
-              <h3 className="font-heading font-bold text-[#C9A227] mb-3">지갑 잔액</h3>
+              <h3 className="font-heading font-bold text-[hsl(var(--gold))] mb-3">지갑 잔액</h3>
               <p className="text-2xl font-heading font-bold">{formatCurrency(walletBalance)}</p>
             </Card>
 
             {/* Recent bookings */}
             <div>
-              <h3 className="font-heading font-bold text-[#f9f5ed] mb-5 text-lg">
+              <h3 className="font-heading font-bold text-[hsl(var(--text-primary))] mb-5 text-lg">
                 최근 예약 ({bookings.length}건)
               </h3>
               {bookings.length === 0 ? (
                 <Card>
-                  <p className="text-[#a49484] text-sm text-center py-4">예약 내역이 없습니다.</p>
+                  <p className="text-[hsl(var(--text-secondary))] text-sm text-center py-4">예약 내역이 없습니다.</p>
                 </Card>
               ) : (
                 <Card>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="font-heading font-bold text-[#C9A227]">ID</TableHead>
-                        <TableHead className="font-heading font-bold text-[#C9A227]">상태</TableHead>
-                        <TableHead className="font-heading font-bold text-[#C9A227]">사용 크레딧</TableHead>
-                        <TableHead className="font-heading font-bold text-[#C9A227]">예약일</TableHead>
+                        <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">ID</TableHead>
+                        <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">상태</TableHead>
+                        <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">사용 크레딧</TableHead>
+                        <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">예약일</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {bookings.map((b) => (
-                        <TableRow key={b.id} className="hover:bg-[rgba(201,162,39,0.03)] transition-colors">
+                        <TableRow key={b.id} className="hover:bg-[hsl(var(--gold)/0.03)] transition-colors">
                           <TableCell className="font-mono text-sm">#{b.id}</TableCell>
                           <TableCell><StatusBadge value={b.status} /></TableCell>
                           <TableCell>{b.creditsUsed}</TableCell>
-                          <TableCell className="text-[#a49484]">
+                          <TableCell className="text-[hsl(var(--text-secondary))]">
                             {new Date(b.createdAt).toLocaleString('ko-KR')}
                           </TableCell>
                         </TableRow>

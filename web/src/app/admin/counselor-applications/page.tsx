@@ -150,7 +150,7 @@ export default function AdminCounselorApplicationsPage() {
             <select
               value={statusFilter}
               onChange={(e) => handleFilterChange(e.target.value)}
-              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:outline-none"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:outline-none"
             >
               <option value="">상태: 전체</option>
               <option value="PENDING">대기</option>
@@ -172,25 +172,25 @@ export default function AdminCounselorApplicationsPage() {
                 <div className="flex items-start justify-between flex-wrap gap-4">
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-3">
-                      <span className="font-heading font-bold text-[#C9A227]">#{app.id}</span>
+                      <span className="font-heading font-bold text-[hsl(var(--gold))]">#{app.id}</span>
                       <StatusBadge value={app.status} />
-                      <span className="text-[#a49484] text-sm">
+                      <span className="text-[hsl(var(--text-secondary))] text-sm">
                         {new Date(app.createdAt).toLocaleDateString('ko-KR')}
                       </span>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm">
-                        <span className="text-[#a49484]">분야:</span>{' '}
+                        <span className="text-[hsl(var(--text-secondary))]">분야:</span>{' '}
                         <span className="font-medium">{app.specialty}</span>
                       </p>
                       {app.experience && (
                         <p className="text-sm">
-                          <span className="text-[#a49484]">경력:</span>{' '}
+                          <span className="text-[hsl(var(--text-secondary))]">경력:</span>{' '}
                           <span>{app.experience}</span>
                         </p>
                       )}
                       {app.intro && (
-                        <p className="text-sm text-[#a49484] mt-2 leading-relaxed">
+                        <p className="text-sm text-[hsl(var(--text-secondary))] mt-2 leading-relaxed">
                           {app.intro}
                         </p>
                       )}
@@ -202,14 +202,14 @@ export default function AdminCounselorApplicationsPage() {
                       <button
                         onClick={() => handleApprove(app)}
                         disabled={processing}
-                        className="rounded-full bg-[#C9A227] text-[#0f0d0a] text-sm font-bold font-heading px-4 py-2 hover:bg-[#b08d1f] transition-colors disabled:opacity-50"
+                        className="rounded-full bg-[hsl(var(--gold))] text-[hsl(var(--background))] text-sm font-bold font-heading px-4 py-2 hover:bg-[hsl(var(--gold))/0.85] transition-colors disabled:opacity-50"
                       >
                         승인
                       </button>
                       <button
                         onClick={() => { setRejectTarget(app); setRejectReason(''); }}
                         disabled={processing}
-                        className="rounded-full bg-[#8B0000] text-white text-sm font-bold font-heading px-4 py-2 hover:bg-[#6d0000] transition-colors disabled:opacity-50"
+                        className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-4 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
                       >
                         거절
                       </button>
@@ -226,28 +226,28 @@ export default function AdminCounselorApplicationsPage() {
         {/* Reject dialog */}
         {rejectTarget && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
-            <div className="bg-[var(--color-bg-card)] border border-[rgba(201,162,39,0.15)] rounded-2xl p-6 max-w-[420px] w-full mx-4 space-y-4">
+            <div className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-2xl p-6 max-w-[420px] w-full mx-4 space-y-4">
               <h3 className="font-heading font-bold text-lg">신청 거절</h3>
-              <p className="text-[#a49484] text-sm">
+              <p className="text-[hsl(var(--text-secondary))] text-sm">
                 신청 #{rejectTarget.id} ({rejectTarget.specialty})을 거절합니다.
               </p>
               <textarea
                 placeholder="거절 사유를 입력하세요 (필수)"
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[80px] placeholder:text-[#a49484] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none resize-none"
+                className="w-full bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[80px] placeholder:text-[hsl(var(--text-secondary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none resize-none"
               />
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => { setRejectTarget(null); setRejectReason(''); }}
-                  className="rounded-full border-2 border-[rgba(201,162,39,0.3)] text-[#f9f5ed] text-sm font-bold font-heading px-5 py-2 hover:bg-[rgba(201,162,39,0.1)] transition-colors"
+                  className="rounded-full border-2 border-[hsl(var(--gold)/0.3)] text-[hsl(var(--text-primary))] text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--gold)/0.1)] transition-colors"
                 >
                   취소
                 </button>
                 <button
                   onClick={handleReject}
                   disabled={processing || !rejectReason.trim()}
-                  className="rounded-full bg-[#8B0000] text-white text-sm font-bold font-heading px-5 py-2 hover:bg-[#6d0000] transition-colors disabled:opacity-50"
+                  className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
                 >
                   {processing ? '처리 중...' : '거절'}
                 </button>

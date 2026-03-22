@@ -39,13 +39,13 @@ export default function DeleteAccountPage() {
   return (
     <>
       <Card>
-        <h2 className="text-xl font-bold font-heading mb-4 text-[var(--color-danger)]">계정 탈퇴</h2>
+        <h2 className="text-xl font-bold font-heading mb-4 text-[hsl(var(--dancheong))]">계정 탈퇴</h2>
 
-        <div className="space-y-4 text-sm text-[#a49484] leading-relaxed">
+        <div className="space-y-4 text-sm text-[hsl(var(--text-secondary))] leading-relaxed">
           <p>
             계정 탈퇴를 요청하시면 <span className="text-foreground font-bold">30일의 유예 기간</span> 후에 계정이 완전히 삭제됩니다.
           </p>
-          <div className="p-4 rounded-xl bg-[#1a1612] border border-[rgba(201,162,39,0.15)]">
+          <div className="p-4 rounded-xl bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)]">
             <p className="font-bold text-foreground mb-2">탈퇴 시 삭제되는 정보:</p>
             <ul className="list-disc list-inside space-y-1 text-xs">
               <li>계정 정보 (이메일, 이름, 전화번호)</li>
@@ -70,7 +70,7 @@ export default function DeleteAccountPage() {
         <ActionButton
           onClick={() => setShowConfirm(true)}
           loading={loading}
-          className="w-full mt-6 !bg-[var(--color-danger)] !from-transparent !to-transparent hover:!bg-[var(--color-danger)]/80"
+          className="w-full mt-6 !bg-[hsl(var(--dancheong))] !from-transparent !to-transparent hover:!bg-[hsl(var(--dancheong))]/80"
         >
           계정 탈퇴 요청
         </ActionButton>

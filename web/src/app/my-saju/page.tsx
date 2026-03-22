@@ -71,21 +71,21 @@ const ANIMAL_MAP: Record<string, string> = {
 };
 
 function getOhaengColor(ohaeng: string): string {
-  return OHAENG_COLORS[ohaeng] || '#C9A227';
+  return OHAENG_COLORS[ohaeng] || 'hsl(var(--gold))';
 }
 
 function PillarCell({ label, pillar }: { label: string; pillar: SajuPillar | null }) {
   if (!pillar) {
     return (
       <div className="flex flex-col items-center">
-        <p className="text-xs text-[#a49484] font-bold m-0 mb-2">{label}</p>
-        <div className="rounded-xl border border-[rgba(201,162,39,0.15)] bg-[#1a1612] p-3 w-full text-center">
-          <p className="text-2xl font-heading font-black text-[#a49484]/50 m-0">?</p>
-          <p className="text-xs text-[#a49484]/50 m-0">\uBBF8\uC785\uB825</p>
+        <p className="text-xs text-[hsl(var(--text-secondary))] font-bold m-0 mb-2">{label}</p>
+        <div className="rounded-xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] p-3 w-full text-center">
+          <p className="text-2xl font-heading font-black text-[hsl(var(--text-secondary))]/50 m-0">?</p>
+          <p className="text-xs text-[hsl(var(--text-secondary))]/50 m-0">\uBBF8\uC785\uB825</p>
         </div>
-        <div className="mt-2 rounded-xl border border-[rgba(201,162,39,0.15)] bg-[#1a1612] p-3 w-full text-center">
-          <p className="text-2xl font-heading font-black text-[#a49484]/50 m-0">?</p>
-          <p className="text-xs text-[#a49484]/50 m-0">\uBBF8\uC785\uB825</p>
+        <div className="mt-2 rounded-xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] p-3 w-full text-center">
+          <p className="text-2xl font-heading font-black text-[hsl(var(--text-secondary))]/50 m-0">?</p>
+          <p className="text-xs text-[hsl(var(--text-secondary))]/50 m-0">\uBBF8\uC785\uB825</p>
         </div>
       </div>
     );
@@ -97,7 +97,7 @@ function PillarCell({ label, pillar }: { label: string; pillar: SajuPillar | nul
 
   return (
     <div className="flex flex-col items-center">
-      <p className="text-xs text-[#a49484] font-bold m-0 mb-2">{label}</p>
+      <p className="text-xs text-[hsl(var(--text-secondary))] font-bold m-0 mb-2">{label}</p>
       {/* Cheongan (Heavenly Stem) */}
       <div
         className="rounded-xl border p-3 w-full text-center"
@@ -106,7 +106,7 @@ function PillarCell({ label, pillar }: { label: string; pillar: SajuPillar | nul
         <p className="text-2xl font-heading font-black text-foreground m-0">
           {pillar.ganHanja}
         </p>
-        <p className="text-xs text-[#a49484] m-0">{pillar.gan}</p>
+        <p className="text-xs text-[hsl(var(--text-secondary))] m-0">{pillar.gan}</p>
       </div>
       {/* Jiji (Earthly Branch) */}
       <div
@@ -116,9 +116,9 @@ function PillarCell({ label, pillar }: { label: string; pillar: SajuPillar | nul
         <p className="text-2xl font-heading font-black text-foreground m-0">
           {pillar.jiHanja}
         </p>
-        <p className="text-xs text-[#a49484] m-0">{pillar.ji}</p>
+        <p className="text-xs text-[hsl(var(--text-secondary))] m-0">{pillar.ji}</p>
         {animal && (
-          <p className="text-xs text-[#C9A227] m-0 mt-1">{animal}</p>
+          <p className="text-xs text-[hsl(var(--gold))] m-0 mt-1">{animal}</p>
         )}
       </div>
     </div>
@@ -142,7 +142,7 @@ function OhaengChart({ balance }: { balance: SajuChart['ohaengBalance'] }) {
       {elements.map((el) => {
         const pct = maxVal > 0 ? (el.value / maxVal) * 100 : 0;
         const totalPct = total > 0 ? Math.round((el.value / total) * 100) : 0;
-        const color = OHAENG_COLORS[el.key] || '#C9A227';
+        const color = OHAENG_COLORS[el.key] || 'hsl(var(--gold))';
         const label = OHAENG_KR[el.key] || el.key;
 
         return (
@@ -153,13 +153,13 @@ function OhaengChart({ balance }: { balance: SajuChart['ohaengBalance'] }) {
             >
               {label}
             </span>
-            <div className="flex-1 h-4 rounded-full bg-[rgba(201,162,39,0.1)] overflow-hidden">
+            <div className="flex-1 h-4 rounded-full bg-[hsl(var(--gold)/0.1)] overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{ width: `${pct}%`, backgroundColor: color }}
               />
             </div>
-            <span className="text-sm text-[#a49484] w-10 text-right shrink-0">{totalPct}%</span>
+            <span className="text-sm text-[hsl(var(--text-secondary))] w-10 text-right shrink-0">{totalPct}%</span>
           </div>
         );
       })}
@@ -224,7 +224,7 @@ export default function MySajuPage() {
     return (
       <div className="page-container">
         <div className="text-center">
-          <h1 className="text-3xl font-heading font-black text-[#C9A227] m-0">
+          <h1 className="text-3xl font-heading font-black text-[hsl(var(--gold))] m-0">
             \uB098\uC758 \uC0AC\uC8FC \uBA85\uC2DD
           </h1>
         </div>
@@ -233,7 +233,7 @@ export default function MySajuPage() {
           <h2 className="text-xl font-heading font-bold text-foreground m-0 mb-3">
             \uC0DD\uB144\uC6D4\uC77C\uC2DC \uC815\uBCF4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4
           </h2>
-          <p className="text-[#a49484] text-sm leading-relaxed mb-6 max-w-[400px] mx-auto">
+          <p className="text-[hsl(var(--text-secondary))] text-sm leading-relaxed mb-6 max-w-[400px] mx-auto">
             \uC815\uD655\uD55C \uC0AC\uC8FC \uBA85\uC2DD\uC744 \uC704\uD574 \uD504\uB85C\uD544\uC5D0\uC11C \uC0DD\uB144\uC6D4\uC77C \uC815\uBCF4\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694.
           </p>
           <Link
@@ -251,10 +251,10 @@ export default function MySajuPage() {
     <div className="page-container">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-heading font-black text-[#C9A227] m-0">
+        <h1 className="text-3xl font-heading font-black text-[hsl(var(--gold))] m-0">
           \uB098\uC758 \uC0AC\uC8FC \uBA85\uC2DD
         </h1>
-        <p className="text-[#a49484] text-sm mt-2 m-0">
+        <p className="text-[hsl(var(--text-secondary))] text-sm mt-2 m-0">
           \uC0AC\uC8FC\uD314\uC790(\u56DB\u67F1\u516B\u5B57)
         </p>
       </div>
@@ -283,7 +283,7 @@ export default function MySajuPage() {
           <h3 className="text-lg font-heading font-bold text-foreground m-0 mb-3">
             \uC77C\uAC04 \uD574\uC11D
           </h3>
-          <p className="text-sm text-[#a49484] leading-relaxed m-0">
+          <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed m-0">
             {chart.dayGanInterpretation}
           </p>
         </div>
@@ -292,11 +292,11 @@ export default function MySajuPage() {
       {/* Yongsin */}
       {chart.yongsin && (
         <div className="glass-card p-6">
-          <h3 className="text-lg font-heading font-bold text-[#C9A227] m-0 mb-3">
+          <h3 className="text-lg font-heading font-bold text-[hsl(var(--gold))] m-0 mb-3">
             \uC6A9\uC2E0(\u7528\u795E): {chart.yongsin}
           </h3>
           {chart.yongsinDescription && (
-            <p className="text-sm text-[#a49484] leading-relaxed m-0">
+            <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed m-0">
               {chart.yongsinDescription}
             </p>
           )}
@@ -305,7 +305,7 @@ export default function MySajuPage() {
 
       {/* CTA */}
       <div className="text-center">
-        <p className="text-[#a49484] text-sm mb-4">
+        <p className="text-[hsl(var(--text-secondary))] text-sm mb-4">
           \uC804\uBB38 \uC0C1\uB2F4\uC0AC\uC5D0\uAC8C \uC0AC\uC8FC \uD480\uC774 \uBC1B\uAE30
         </p>
         <Link

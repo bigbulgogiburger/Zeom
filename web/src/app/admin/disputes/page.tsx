@@ -103,7 +103,7 @@ export default function AdminDisputesPage() {
             <select
               value={statusFilter}
               onChange={(e) => handleFilterChange(e.target.value)}
-              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:outline-none"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:outline-none"
             >
               <option value="">상태: 전체</option>
               <option value="OPEN">OPEN</option>
@@ -123,27 +123,27 @@ export default function AdminDisputesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">ID</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">카테고리</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">상태</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">설명</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">접수일</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">ID</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">카테고리</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">상태</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">설명</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">접수일</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {disputes.map((d) => (
                   <TableRow
                     key={d.id}
-                    className="hover:bg-[rgba(201,162,39,0.03)] transition-colors cursor-pointer"
+                    className="hover:bg-[hsl(var(--gold)/0.03)] transition-colors cursor-pointer"
                     onClick={() => router.push(`/admin/disputes/${d.id}`)}
                   >
                     <TableCell className="font-mono text-sm">#{d.id}</TableCell>
                     <TableCell className="font-medium">{d.category}</TableCell>
                     <TableCell><StatusBadge value={d.status} /></TableCell>
-                    <TableCell className="text-[#a49484] max-w-[300px] truncate">
+                    <TableCell className="text-[hsl(var(--text-secondary))] max-w-[300px] truncate">
                       {d.description}
                     </TableCell>
-                    <TableCell className="text-[#a49484]">
+                    <TableCell className="text-[hsl(var(--text-secondary))]">
                       {new Date(d.createdAt).toLocaleDateString('ko-KR')}
                     </TableCell>
                   </TableRow>

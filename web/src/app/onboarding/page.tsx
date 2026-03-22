@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-context';
 import { apiFetch } from '@/components/api-client';
+import { Eye } from 'lucide-react';
 
 const INTERESTS = [
   { id: 'saju', label: '사주', icon: '\u2728' },
@@ -42,10 +43,10 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
           key={i}
           className={`h-2 rounded-full transition-all duration-300 ${
             i === currentStep
-              ? 'w-8 bg-gradient-to-r from-[#C9A227] to-[#D4A843]'
+              ? 'w-8 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))]'
               : i < currentStep
-                ? 'w-2 bg-[#C9A227]'
-                : 'w-2 bg-[rgba(201,162,39,0.2)]'
+                ? 'w-2 bg-[hsl(var(--gold))]'
+                : 'w-2 bg-[hsl(var(--gold)/0.2)]'
           }`}
         />
       ))}
@@ -69,8 +70,8 @@ function ToggleChip({
       onClick={onClick}
       className={`inline-flex items-center gap-2 px-5 py-3 rounded-full border transition-all duration-200 text-sm font-medium ${
         selected
-          ? 'border-[#C9A227] bg-[rgba(201,162,39,0.15)] text-[#C9A227]'
-          : 'border-[rgba(201,162,39,0.15)] bg-transparent text-[#a49484] hover:border-[rgba(201,162,39,0.3)]'
+          ? 'border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.15)] text-[hsl(var(--gold))]'
+          : 'border-[hsl(var(--gold)/0.15)] bg-transparent text-[hsl(var(--text-secondary))] hover:border-[hsl(var(--gold)/0.3)]'
       }`}
     >
       <span className="text-lg">{icon}</span>
@@ -185,14 +186,14 @@ export default function OnboardingPage() {
               <h2 className="text-2xl font-heading font-black text-foreground m-0 mb-2">
                 생년월일 입력
               </h2>
-              <p className="text-sm text-[#a49484] m-0">
+              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
                 정확한 운세 분석을 위해 생년월일을 알려주세요
               </p>
             </div>
 
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div>
-                <label className="text-xs text-[#a49484] mb-1 block">연도</label>
+                <label className="text-xs text-[hsl(var(--text-secondary))] mb-1 block">연도</label>
                 <input
                   type="number"
                   placeholder="1990"
@@ -204,7 +205,7 @@ export default function OnboardingPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-[#a49484] mb-1 block">월</label>
+                <label className="text-xs text-[hsl(var(--text-secondary))] mb-1 block">월</label>
                 <select
                   value={birthMonth}
                   onChange={(e) => setBirthMonth(e.target.value)}
@@ -218,7 +219,7 @@ export default function OnboardingPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-[#a49484] mb-1 block">일</label>
+                <label className="text-xs text-[hsl(var(--text-secondary))] mb-1 block">일</label>
                 <select
                   value={birthDay}
                   onChange={(e) => setBirthDay(e.target.value)}
@@ -234,7 +235,7 @@ export default function OnboardingPage() {
             </div>
 
             <div className="mb-6">
-              <label className="text-xs text-[#a49484] mb-1 block">태어난 시간 (선택)</label>
+              <label className="text-xs text-[hsl(var(--text-secondary))] mb-1 block">태어난 시간 (선택)</label>
               <select
                 value={birthTime}
                 onChange={(e) => setBirthTime(e.target.value)}
@@ -261,11 +262,11 @@ export default function OnboardingPage() {
         {step === 1 && (
           <div className="glass-card p-8">
             <div className="text-center mb-6">
-              <span className="text-4xl block mb-3">\uD83D\uDD2E</span>
+              <Eye className="size-6 mx-auto mb-3" />
               <h2 className="text-2xl font-heading font-black text-foreground m-0 mb-2">
                 관심 분야 선택
               </h2>
-              <p className="text-sm text-[#a49484] m-0">
+              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
                 관심 있는 상담 분야를 모두 선택해주세요
               </p>
             </div>
@@ -292,7 +293,7 @@ export default function OnboardingPage() {
               <h2 className="text-2xl font-heading font-black text-foreground m-0 mb-2">
                 고민 유형 선택
               </h2>
-              <p className="text-sm text-[#a49484] m-0">
+              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
                 현재 가장 관심 있는 고민을 모두 선택해주세요
               </p>
             </div>
@@ -319,7 +320,7 @@ export default function OnboardingPage() {
               <h2 className="text-2xl font-heading font-black text-foreground m-0 mb-2">
                 추천 상담사
               </h2>
-              <p className="text-sm text-[#a49484] m-0">
+              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
                 선택하신 관심사에 맞는 상담사입니다
               </p>
             </div>
@@ -336,20 +337,20 @@ export default function OnboardingPage() {
                   <Link
                     key={c.id}
                     href={`/counselors/${c.id}`}
-                    className="block p-4 rounded-xl border border-[rgba(201,162,39,0.15)] hover:border-[rgba(201,162,39,0.3)] hover:bg-[rgba(201,162,39,0.05)] transition-all no-underline"
+                    className="block p-4 rounded-xl border border-[hsl(var(--gold)/0.15)] hover:border-[hsl(var(--gold)/0.3)] hover:bg-[hsl(var(--gold)/0.05)] transition-all no-underline"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#C9A227] to-[#D4A843] flex items-center justify-center text-[#0f0d0a] font-heading font-bold text-lg shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] flex items-center justify-center text-[hsl(var(--background))] font-heading font-bold text-lg shrink-0">
                         {c.name.charAt(0)}
                       </div>
                       <div className="min-w-0">
                         <p className="text-base font-heading font-bold text-foreground m-0">
                           {c.name}
                         </p>
-                        <p className="text-xs text-[#C9A227] m-0">
+                        <p className="text-xs text-[hsl(var(--gold))] m-0">
                           {c.specialty}
                         </p>
-                        <p className="text-xs text-[#a49484] m-0 mt-1 truncate">
+                        <p className="text-xs text-[hsl(var(--text-secondary))] m-0 mt-1 truncate">
                           {c.intro}
                         </p>
                       </div>
@@ -395,7 +396,7 @@ export default function OnboardingPage() {
           <div className="text-center mt-4">
             <button
               onClick={handleComplete}
-              className="text-[#a49484] text-sm hover:text-[#C9A227] transition-colors bg-transparent border-none"
+              className="text-[hsl(var(--text-secondary))] text-sm hover:text-[hsl(var(--gold))] transition-colors bg-transparent border-none"
             >
               건너뛰기
             </button>

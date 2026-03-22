@@ -31,8 +31,8 @@ export function EmptyStateCard({
       className={cn(
         'bg-black/30 backdrop-blur-xl border rounded-2xl p-10 sm:p-12',
         isError
-          ? 'border-[var(--color-danger)]/20'
-          : 'border-[rgba(201,162,39,0.1)]',
+          ? 'border-[hsl(var(--dancheong))]/20'
+          : 'border-[hsl(var(--gold)/0.1)]',
         className
       )}
     >
@@ -41,13 +41,13 @@ export function EmptyStateCard({
         <h3 className={cn(
           'm-0 font-heading font-bold text-xl',
           isError
-            ? 'text-[var(--color-danger)]'
-            : 'text-[var(--color-text-on-dark)]'
+            ? 'text-[hsl(var(--dancheong))]'
+            : 'text-[hsl(var(--text-primary))]'
         )}>
           {title}
         </h3>
         {description && (
-          <p className="text-[#a49484] text-sm leading-relaxed max-w-[400px]">
+          <p className="text-[hsl(var(--text-secondary))] text-sm leading-relaxed max-w-[400px]">
             {description}
           </p>
         )}
@@ -58,8 +58,8 @@ export function EmptyStateCard({
               className={cn(
                 'mt-4 inline-flex items-center justify-center rounded-full px-8 py-3 font-bold font-heading transition-all no-underline border-none cursor-pointer',
                 isError
-                  ? 'bg-[var(--color-danger)] text-white hover:bg-[var(--color-danger)]/90'
-                  : 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)]'
+                  ? 'bg-[hsl(var(--dancheong))] text-white hover:bg-[hsl(var(--dancheong))]/90'
+                  : 'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)]'
               )}
             >
               {actionLabel}
@@ -67,7 +67,7 @@ export function EmptyStateCard({
           ) : actionHref ? (
             <Link
               href={actionHref}
-              className="mt-4 inline-flex items-center justify-center rounded-full px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading transition-all hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)] no-underline"
+              className="mt-4 inline-flex items-center justify-center rounded-full px-8 py-3 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold font-heading transition-all hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)] no-underline"
             >
               {actionLabel}
             </Link>

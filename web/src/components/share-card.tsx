@@ -62,10 +62,10 @@ export default function ShareCard({ fortune, date }: ShareCardProps) {
   }, [shareTitle, shareText, shareUrl]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#C9A227';
-    if (score >= 60) return '#b08d1f';
+    if (score >= 80) return 'hsl(var(--gold))';
+    if (score >= 60) return 'hsl(var(--gold)/0.85)';
     if (score >= 40) return '#8B6914';
-    return '#8B0000';
+    return 'hsl(var(--dancheong))';
   };
 
   return (
@@ -73,11 +73,11 @@ export default function ShareCard({ fortune, date }: ShareCardProps) {
       {/* Preview Card */}
       <div
         className="glass-card p-6 relative overflow-hidden"
-        style={{ borderColor: 'rgba(201,162,39,0.3)' }}
+        style={{ borderColor: 'hsl(var(--gold) / 0.3)' }}
       >
         <div className="text-center mb-4">
-          <p className="text-xs text-[#a49484] m-0 mb-1">{date}</p>
-          <h3 className="text-lg font-heading font-bold text-[#C9A227] m-0">
+          <p className="text-xs text-[hsl(var(--text-secondary))] m-0 mb-1">{date}</p>
+          <h3 className="text-lg font-heading font-bold text-[hsl(var(--gold))] m-0">
             오늘의 운세
           </h3>
         </div>
@@ -96,28 +96,28 @@ export default function ShareCard({ fortune, date }: ShareCardProps) {
           </div>
         </div>
 
-        <p className="text-sm text-[#a49484] text-center leading-relaxed m-0 mb-4">
+        <p className="text-sm text-[hsl(var(--text-secondary))] text-center leading-relaxed m-0 mb-4">
           {fortune.summary}
         </p>
 
         {/* Lucky Items */}
-        <div className="grid grid-cols-3 gap-3 text-center border-t border-[rgba(201,162,39,0.15)] pt-4">
+        <div className="grid grid-cols-3 gap-3 text-center border-t border-[hsl(var(--gold)/0.15)] pt-4">
           <div>
-            <p className="text-[10px] text-[#a49484] m-0">행운의 색</p>
-            <p className="text-xs font-bold text-[#C9A227] m-0 mt-0.5">{fortune.luckyColor}</p>
+            <p className="text-[10px] text-[hsl(var(--text-secondary))] m-0">행운의 색</p>
+            <p className="text-xs font-bold text-[hsl(var(--gold))] m-0 mt-0.5">{fortune.luckyColor}</p>
           </div>
           <div>
-            <p className="text-[10px] text-[#a49484] m-0">행운의 숫자</p>
-            <p className="text-xs font-bold text-[#C9A227] m-0 mt-0.5">{fortune.luckyNumber}</p>
+            <p className="text-[10px] text-[hsl(var(--text-secondary))] m-0">행운의 숫자</p>
+            <p className="text-xs font-bold text-[hsl(var(--gold))] m-0 mt-0.5">{fortune.luckyNumber}</p>
           </div>
           <div>
-            <p className="text-[10px] text-[#a49484] m-0">행운의 방향</p>
-            <p className="text-xs font-bold text-[#C9A227] m-0 mt-0.5">{fortune.luckyDirection}</p>
+            <p className="text-[10px] text-[hsl(var(--text-secondary))] m-0">행운의 방향</p>
+            <p className="text-xs font-bold text-[hsl(var(--gold))] m-0 mt-0.5">{fortune.luckyDirection}</p>
           </div>
         </div>
 
         {/* Watermark */}
-        <p className="text-[10px] text-[#a49484]/50 text-center m-0 mt-3">
+        <p className="text-[10px] text-[hsl(var(--text-secondary))]/50 text-center m-0 mt-3">
           천지연꽃신당 | cheonjiyeon.com
         </p>
       </div>

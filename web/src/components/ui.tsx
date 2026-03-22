@@ -195,7 +195,7 @@ export function EmptyState({
 }: {
   title: string;
   desc?: string;
-  icon?: string;
+  icon?: string | React.ReactNode;
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
@@ -203,10 +203,11 @@ export function EmptyState({
 }) {
   const isError = variant === 'error';
 
-  // Choose icon: if the caller passed an icon string matching a known key, use that;
-  // otherwise fall back to variant-based default.
-  const iconKey = icon && icon in EMPTY_STATE_ICONS ? icon : (isError ? 'error' : 'empty');
-  const renderedIcon = EMPTY_STATE_ICONS[iconKey];
+  // Choose icon: if the caller passed a ReactNode, render it directly;
+  // if a string matching a known key, use that; otherwise fall back to variant-based default.
+  const isIconNode = icon != null && typeof icon !== 'string';
+  const iconKey = typeof icon === 'string' && icon in EMPTY_STATE_ICONS ? icon : (isError ? 'error' : 'empty');
+  const renderedIcon = isIconNode ? icon : EMPTY_STATE_ICONS[iconKey];
 
   return (
     <Card variant="surface">

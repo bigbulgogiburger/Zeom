@@ -54,21 +54,21 @@ export default function CreditHistoryPage() {
           <PageTitle>상담권 이용 내역</PageTitle>
           <Link
             href="/credits"
-            className="text-sm text-[#C9A227] font-medium hover:underline"
+            className="text-sm text-[hsl(var(--gold))] font-medium hover:underline"
           >
             ← 상담권 구매
           </Link>
         </div>
 
         {error && (
-          <div role="alert" className="text-[#8B0000] text-sm font-medium">
+          <div role="alert" className="text-[hsl(var(--dancheong))] text-sm font-medium">
             {error}
           </div>
         )}
 
         {loading ? (
           <Card>
-            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
+            <div className="text-center py-8 text-[hsl(var(--text-secondary))]">
               불러오는 중...
             </div>
           </Card>
@@ -87,14 +87,14 @@ export default function CreditHistoryPage() {
                       </span>
                     </div>
                     {item.usages.length > 0 && (
-                      <div className="text-sm text-[var(--color-text-muted-card)] mt-1">
+                      <div className="text-sm text-[hsl(var(--text-secondary))] mt-1">
                         {item.usages.length}건 사용
                         {item.usages.some(u => u.bookingId) && (
                           <> (예약 #{item.usages.find(u => u.bookingId)?.bookingId})</>
                         )}
                       </div>
                     )}
-                    <div className="text-xs text-[var(--color-text-muted-card)] mt-2">
+                    <div className="text-xs text-[hsl(var(--text-secondary))] mt-2">
                       구매일: {new Date(item.purchasedAt).toLocaleString('ko-KR')}
                     </div>
                   </div>
@@ -102,11 +102,11 @@ export default function CreditHistoryPage() {
                     <div className={`text-lg font-bold font-heading ${
                       item.remainingUnits > 0
                         ? 'text-green-500'
-                        : 'text-[var(--color-text-muted-card)]'
+                        : 'text-[hsl(var(--text-secondary))]'
                     }`}>
                       {item.remainingUnits} / {item.totalUnits}회
                     </div>
-                    <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
+                    <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">
                       잔여 / 전체
                     </div>
                   </div>

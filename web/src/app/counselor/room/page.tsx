@@ -405,12 +405,12 @@ export default function CounselorRoomPage() {
             roomState === RoomState.IN_CALL
               ? 'bg-green-600 text-white'
               : roomState === RoomState.WAITING && sendbirdReady
-              ? 'bg-[#C9A227] text-[#0f0d0a]'
+              ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))]'
               : roomState === RoomState.RINGING
-              ? 'bg-[#D4A843] text-white animate-pulse'
+              ? 'bg-[hsl(var(--gold-soft))] text-white animate-pulse'
               : roomState === RoomState.FAILED
-              ? 'bg-[#8B0000] text-white'
-              : 'bg-[#1a1612] text-[#a49484]'
+              ? 'bg-[hsl(var(--dancheong))] text-white'
+              : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))]'
           }
         >
           {roomState === RoomState.INITIALIZING && '연결 준비 중...'}
@@ -440,23 +440,23 @@ export default function CounselorRoomPage() {
             <Card>
               <div className="text-center py-8">
                 <div className="text-5xl mb-4">📞</div>
-                <div className="font-heading font-bold text-lg text-[#C9A227] mb-2">
+                <div className="font-heading font-bold text-lg text-[hsl(var(--gold))] mb-2">
                   고객의 호출을 기다리는 중...
                 </div>
                 {waitingBookings.length > 0 ? (
                   <div className="mt-4 space-y-2">
-                    <div className="text-sm text-[#a49484]">
+                    <div className="text-sm text-[hsl(var(--text-secondary))]">
                       다음 예약 고객
                     </div>
-                    <div className="inline-flex items-center gap-3 bg-[#1a1612] rounded-xl px-5 py-3">
-                      <div className="w-10 h-10 rounded-full bg-[#C9A227]/20 flex items-center justify-center text-lg">
+                    <div className="inline-flex items-center gap-3 bg-[hsl(var(--surface))] rounded-xl px-5 py-3">
+                      <div className="w-10 h-10 rounded-full bg-[hsl(var(--gold))]/20 flex items-center justify-center text-lg">
                         👤
                       </div>
                       <div className="text-left">
-                        <div className="font-heading font-bold text-[#f9f5ed]">
+                        <div className="font-heading font-bold text-[hsl(var(--text-primary))]">
                           {waitingBookings[0].customerName || '고객'}
                         </div>
-                        <div className="text-xs text-[#a49484]">
+                        <div className="text-xs text-[hsl(var(--text-secondary))]">
                           {(() => {
                             const start = waitingBookings[0].slots?.[0]?.startAt || waitingBookings[0].startAt;
                             const end = waitingBookings[0].slots?.[waitingBookings[0].slots.length - 1]?.endAt || waitingBookings[0].endAt;
@@ -469,7 +469,7 @@ export default function CounselorRoomPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-sm text-[#a49484]">
+                  <div className="text-sm text-[hsl(var(--text-secondary))]">
                     고객이 상담실에 입장하면 자동으로 알림이 표시됩니다.
                   </div>
                 )}
@@ -482,7 +482,7 @@ export default function CounselorRoomPage() {
             <Card>
               <div className="text-center py-6">
                 <div className="text-3xl mb-3">⚠️</div>
-                <div className="font-heading font-bold text-[#8B0000] mb-3">
+                <div className="font-heading font-bold text-[hsl(var(--dancheong))] mb-3">
                   연결에 실패했습니다
                 </div>
                 <Button
@@ -490,7 +490,7 @@ export default function CounselorRoomPage() {
                     setReconnectAttempts(0);
                     initializeSendbird();
                   }}
-                  className="bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]"
+                  className="bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]"
                 >
                   다시 연결
                 </Button>
@@ -500,14 +500,14 @@ export default function CounselorRoomPage() {
 
           {/* Today's remaining bookings */}
           <div>
-            <h3 className="text-base font-bold font-heading text-[#f9f5ed] mb-3">
+            <h3 className="text-base font-bold font-heading text-[hsl(var(--text-primary))] mb-3">
               오늘 남은 예약
             </h3>
             {bookingsLoading ? (
               <Card>
                 <div className="animate-pulse space-y-3">
-                  <div className="h-4 w-1/3 bg-[#1a1612] rounded" />
-                  <div className="h-3 w-1/4 bg-[#1a1612] rounded" />
+                  <div className="h-4 w-1/3 bg-[hsl(var(--surface))] rounded" />
+                  <div className="h-3 w-1/4 bg-[hsl(var(--surface))] rounded" />
                 </div>
               </Card>
             ) : waitingBookings.length === 0 ? (
@@ -525,12 +525,12 @@ export default function CounselorRoomPage() {
                           <span className="font-bold font-heading">{booking.customerName || '고객'}</span>
                           <StatusBadge value={booking.status} />
                           {booking.consultationType && (
-                            <span className="text-xs text-[#a49484]">
+                            <span className="text-xs text-[hsl(var(--text-secondary))]">
                               {booking.consultationType === 'VIDEO' ? '영상' : '채팅'}
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-[#a49484]">
+                        <div className="text-sm text-[hsl(var(--text-secondary))]">
                           {(() => {
                             const start = booking.slots?.[0]?.startAt || booking.startAt;
                             const end = booking.slots?.[booking.slots!.length - 1]?.endAt || booking.endAt;
@@ -565,12 +565,12 @@ export default function CounselorRoomPage() {
               <h3 className="m-0 mb-2 text-sm font-bold font-heading">고객 정보</h3>
               <div className="space-y-1 text-sm">
                 <div>
-                  <span className="text-[#a49484]">이름: </span>
+                  <span className="text-[hsl(var(--text-secondary))]">이름: </span>
                   <span className="font-bold">{callerInfo.customerName}</span>
                 </div>
                 {callerInfo.bookingTime && (
                   <div>
-                    <span className="text-[#a49484]">시간: </span>
+                    <span className="text-[hsl(var(--text-secondary))]">시간: </span>
                     <span>{callerInfo.bookingTime}</span>
                   </div>
                 )}
@@ -599,7 +599,7 @@ export default function CounselorRoomPage() {
             <Card className={chatOpen ? 'lg:col-span-2' : ''}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[400px]">
                 {/* Remote Video (Client) */}
-                <div className="bg-[#1a1612] rounded-lg relative overflow-hidden min-h-[300px]">
+                <div className="bg-[hsl(var(--surface))] rounded-lg relative overflow-hidden min-h-[300px]">
                   <video
                     ref={remoteVideoRef}
                     autoPlay
@@ -607,7 +607,7 @@ export default function CounselorRoomPage() {
                     className="w-full h-full object-cover bg-black"
                   />
                   {!callConnected && (
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[#a49484]">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[hsl(var(--text-secondary))]">
                       <div className="text-5xl mb-2">&#128100;</div>
                       <div>{callerInfo.customerName}</div>
                     </div>
@@ -618,7 +618,7 @@ export default function CounselorRoomPage() {
                 </div>
 
                 {/* Local Video (Counselor) */}
-                <div className="bg-[#1a1612] rounded-lg relative overflow-hidden min-h-[300px]">
+                <div className="bg-[hsl(var(--surface))] rounded-lg relative overflow-hidden min-h-[300px]">
                   <video
                     ref={localVideoRef}
                     autoPlay
@@ -627,7 +627,7 @@ export default function CounselorRoomPage() {
                     className="w-full h-full object-cover bg-black"
                   />
                   {!callConnected && (
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[#a49484]">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[hsl(var(--text-secondary))]">
                       <div className="text-5xl mb-2">&#128100;</div>
                       <div>나 (선생님)</div>
                     </div>
@@ -665,7 +665,7 @@ export default function CounselorRoomPage() {
                 <Button
                   onClick={handleSaveMemo}
                   disabled={memoSaving || !memo.trim() || !activeSessionId}
-                  className="bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843] text-xs px-3 py-1 min-h-8 disabled:opacity-50"
+                  className="bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))] text-xs px-3 py-1 min-h-8 disabled:opacity-50"
                 >
                   {memoSaving ? '저장 중...' : '메모 저장'}
                 </Button>
@@ -675,7 +675,7 @@ export default function CounselorRoomPage() {
               value={memo}
               onChange={(e) => { setMemo(e.target.value); setMemoSaved(false); }}
               placeholder="상담 중 메모를 작성하세요..."
-              className="bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] min-h-[100px] font-heading"
+              className="bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] min-h-[100px] font-heading"
             />
           </Card>
 
@@ -686,8 +686,8 @@ export default function CounselorRoomPage() {
               disabled={!callConnected}
               className={`disabled:opacity-50 ${
                 audioEnabled
-                  ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
-                  : 'bg-[#8B0000] text-white font-heading font-bold hover:bg-[#8B0000]/90'
+                  ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
+                  : 'bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
               }`}
             >
               {audioEnabled ? '마이크 켜짐' : '마이크 꺼짐'}
@@ -698,8 +698,8 @@ export default function CounselorRoomPage() {
               disabled={!callConnected}
               className={`disabled:opacity-50 ${
                 videoEnabled
-                  ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
-                  : 'bg-[#8B0000] text-white font-heading font-bold hover:bg-[#8B0000]/90'
+                  ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
+                  : 'bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
               }`}
             >
               {videoEnabled ? '카메라 켜짐' : '카메라 꺼짐'}
@@ -710,8 +710,8 @@ export default function CounselorRoomPage() {
               disabled={!sendbirdCreds}
               className={`disabled:opacity-50 ${
                 chatOpen
-                  ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
-                  : 'bg-[#1a1612] text-[#f9f5ed] font-heading font-bold hover:bg-[#C9A227]/10'
+                  ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
+                  : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--gold))]/10'
               }`}
             >
               {chatOpen ? '채팅 닫기' : '채팅'}
@@ -723,8 +723,8 @@ export default function CounselorRoomPage() {
                 disabled={!callConnected}
                 className={`disabled:opacity-50 ${
                   pipActive
-                    ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
-                    : 'bg-[#1a1612] text-[#f9f5ed] font-heading font-bold hover:bg-[#C9A227]/10'
+                    ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
+                    : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--gold))]/10'
                 }`}
               >
                 {pipActive ? 'PIP 끄기' : 'PIP'}
@@ -734,7 +734,7 @@ export default function CounselorRoomPage() {
             <Button
               onClick={handleEndSession}
               disabled={ending}
-              className="bg-[#8B0000] text-white font-heading font-bold hover:bg-[#8B0000]/90 rounded-full px-8 disabled:opacity-60"
+              className="bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90 rounded-full px-8 disabled:opacity-60"
             >
               {ending ? '종료 중...' : '상담 종료'}
             </Button>

@@ -64,25 +64,25 @@ export default function CreditsPage() {
           <PageTitle>상담권 구매</PageTitle>
           <Link
             href="/credits/history"
-            className="text-sm text-[#C9A227] font-medium hover:underline"
+            className="text-sm text-[hsl(var(--gold))] font-medium hover:underline"
           >
             구매 내역 보기
           </Link>
         </div>
 
-        <p className="text-[var(--color-text-muted-dark)] text-sm leading-relaxed">
+        <p className="text-[hsl(var(--text-secondary))] text-sm leading-relaxed">
           30분 단위 상담권을 구매하고 예약에 사용하세요
         </p>
 
         {/* Current balance */}
         {credits !== null && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-6">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6">
             <div className="flex items-center justify-center gap-4 py-3">
               <span className="text-lg" aria-hidden="true">&#127915;</span>
               <span className="font-heading font-bold text-lg">
                 현재 보유 상담권:
               </span>
-              <span className="font-heading font-black text-3xl text-[#C9A227]">
+              <span className="font-heading font-black text-3xl text-[hsl(var(--gold))]">
                 {credits}회
               </span>
             </div>
@@ -96,7 +96,7 @@ export default function CreditsPage() {
               <div className="flex flex-col items-center text-center gap-4 py-4">
                 {/* Discount badge */}
                 {product.discount && (
-                  <span className="bg-[var(--color-accent-primary)] text-white px-4 py-1 rounded-full text-xs font-bold font-heading">
+                  <span className="bg-[hsl(var(--gold))] text-white px-4 py-1 rounded-full text-xs font-bold font-heading">
                     {product.discount}
                   </span>
                 )}
@@ -107,12 +107,12 @@ export default function CreditsPage() {
                 </div>
 
                 {/* Duration */}
-                <div className="text-[var(--color-text-muted-card)] text-sm">
+                <div className="text-[hsl(var(--text-secondary))] text-sm">
                   {product.duration} 상담
                 </div>
 
                 {/* Price */}
-                <div className="text-[#C9A227] font-heading font-black text-2xl">
+                <div className="text-[hsl(var(--gold))] font-heading font-black text-2xl">
                   {product.price.toLocaleString()}원
                 </div>
 
@@ -120,7 +120,7 @@ export default function CreditsPage() {
                 <button
                   onClick={() => setConfirmProduct(product)}
                   disabled={purchasing}
-                  className="w-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] border-none rounded-full py-3 px-8 text-base font-bold font-heading cursor-pointer min-h-[44px] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] border-none rounded-full py-3 px-8 text-base font-bold font-heading cursor-pointer min-h-[44px] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   구매하기
                 </button>

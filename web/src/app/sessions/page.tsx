@@ -6,6 +6,7 @@ import { RequireLogin } from '../../components/route-guard';
 import { Card, EmptyState } from '../../components/ui';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Monitor, Smartphone } from 'lucide-react';
 
 type SessionItem = {
   id: number;
@@ -15,10 +16,12 @@ type SessionItem = {
   createdAt: string;
 };
 
-function deviceEmoji(name: string): string {
+function DeviceIcon({ name }: { name: string }) {
   const lower = (name || '').toLowerCase();
-  if (lower.includes('mobile') || lower.includes('iphone') || lower.includes('android')) return '\uD83D\uDCF1';
-  return '\uD83D\uDDA5\uFE0F';
+  if (lower.includes('mobile') || lower.includes('iphone') || lower.includes('android')) {
+    return <Smartphone className="size-5" />;
+  }
+  return <Monitor className="size-5" />;
 }
 
 export default function SessionsPage() {
@@ -98,7 +101,7 @@ export default function SessionsPage() {
             {items.map((s) => (
               <Card key={s.id}>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">{deviceEmoji(s.deviceName)}</span>
+                  <DeviceIcon name={s.deviceName} />
                   <span className="font-bold font-heading">{s.deviceName}</span>
                 </div>
                 <div className="text-muted-foreground text-sm mt-1">

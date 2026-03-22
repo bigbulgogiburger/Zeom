@@ -136,7 +136,7 @@ export default function ReferralPage() {
 
   return (
     <RequireLogin>
-      <main className="min-h-[100dvh] bg-[#0f0d0a] p-6">
+      <main className="min-h-[100dvh] bg-[hsl(var(--background))] p-6">
         <div className="max-w-3xl mx-auto">
           <PageTitle>친구 초대</PageTitle>
 
@@ -149,21 +149,21 @@ export default function ReferralPage() {
             <>
               {/* My Referral Code */}
               <Card className="mb-6">
-                <h3 className="text-lg font-bold text-[#C9A227] mb-4">내 추천 코드</h3>
+                <h3 className="text-lg font-bold text-[hsl(var(--gold))] mb-4">내 추천 코드</h3>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex-1 bg-[#1a1612] border border-[rgba(201,162,39,0.2)] rounded-xl px-4 py-3 text-center">
-                    <span className="text-2xl font-mono font-bold tracking-widest text-[#C9A227]">
+                  <div className="flex-1 bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.2)] rounded-xl px-4 py-3 text-center">
+                    <span className="text-2xl font-mono font-bold tracking-widest text-[hsl(var(--gold))]">
                       {stats?.myCode || '-'}
                     </span>
                   </div>
                   <Button
                     onClick={handleCopyCode}
-                    className="bg-[#C9A227] text-[#0f0d0a] hover:bg-[#D4A843] min-h-[44px] font-bold"
+                    className="bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold-soft))] min-h-[44px] font-bold"
                   >
                     {copied ? '복사됨!' : '복사'}
                   </Button>
                 </div>
-                <p className="text-sm text-[#a49484] mb-4">
+                <p className="text-sm text-[hsl(var(--text-secondary))] mb-4">
                   친구가 추천 코드를 입력하고 가입하면, 양쪽 모두 2,000원 보상을 받습니다.
                 </p>
 
@@ -179,7 +179,7 @@ export default function ReferralPage() {
                   <Button
                     onClick={handleCopyShareLink}
                     variant="outline"
-                    className="flex-1 min-h-[44px] font-bold rounded-xl border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10"
+                    className="flex-1 min-h-[44px] font-bold rounded-xl border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10"
                   >
                     URL 복사
                   </Button>
@@ -189,16 +189,16 @@ export default function ReferralPage() {
               {/* Stats Cards */}
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <Card className="text-center">
-                  <p className="text-sm text-[#a49484] mb-1">초대 수</p>
-                  <p className="text-2xl font-bold text-[#C9A227]">{stats?.totalReferrals || 0}</p>
+                  <p className="text-sm text-[hsl(var(--text-secondary))] mb-1">초대 수</p>
+                  <p className="text-2xl font-bold text-[hsl(var(--gold))]">{stats?.totalReferrals || 0}</p>
                 </Card>
                 <Card className="text-center">
-                  <p className="text-sm text-[#a49484] mb-1">가입 완료</p>
-                  <p className="text-2xl font-bold text-[#C9A227]">{stats?.rewardedCount || 0}</p>
+                  <p className="text-sm text-[hsl(var(--text-secondary))] mb-1">가입 완료</p>
+                  <p className="text-2xl font-bold text-[hsl(var(--gold))]">{stats?.rewardedCount || 0}</p>
                 </Card>
                 <Card className="text-center">
-                  <p className="text-sm text-[#a49484] mb-1">받은 보상</p>
-                  <p className="text-2xl font-bold text-[#C9A227]">
+                  <p className="text-sm text-[hsl(var(--text-secondary))] mb-1">받은 보상</p>
+                  <p className="text-2xl font-bold text-[hsl(var(--gold))]">
                     {(stats?.totalRewardAmount || 0).toLocaleString()}원
                   </p>
                 </Card>
@@ -206,13 +206,13 @@ export default function ReferralPage() {
 
               {/* Apply Referral Code */}
               <Card className="mb-6">
-                <h3 className="text-lg font-bold text-[#C9A227] mb-4">추천 코드 입력</h3>
+                <h3 className="text-lg font-bold text-[hsl(var(--gold))] mb-4">추천 코드 입력</h3>
                 <div className="flex gap-3">
                   <Input
                     value={applyCode}
                     onChange={(e) => setApplyCode(e.target.value.toUpperCase())}
                     placeholder="추천 코드 입력"
-                    className="flex-1 min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl font-mono tracking-wider"
+                    className="flex-1 min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl font-mono tracking-wider"
                   />
                   <ActionButton
                     onClick={handleApplyCode}
@@ -226,7 +226,7 @@ export default function ReferralPage() {
 
               {/* Reward History */}
               <Card>
-                <h3 className="text-lg font-bold text-[#C9A227] mb-4">보상 내역</h3>
+                <h3 className="text-lg font-bold text-[hsl(var(--gold))] mb-4">보상 내역</h3>
                 {(!stats?.rewards || stats.rewards.length === 0) ? (
                   <EmptyState title="보상 내역이 없습니다" desc="친구를 초대하면 보상 내역이 여기에 표시됩니다." />
                 ) : (
@@ -254,7 +254,7 @@ export default function ReferralPage() {
                                 <Badge variant="secondary">대기 중</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-xs text-[#a49484]">
+                            <TableCell className="text-xs text-[hsl(var(--text-secondary))]">
                               {reward.createdAt.replace('T', ' ').slice(0, 16)}
                             </TableCell>
                           </TableRow>

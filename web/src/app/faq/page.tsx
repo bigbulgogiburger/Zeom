@@ -83,13 +83,13 @@ export default function FaqPage() {
       className="mx-auto px-6 py-10"
       style={{
         maxWidth: 800,
-        color: 'var(--color-text-on-dark)',
+        color: 'hsl(var(--text-primary))',
         lineHeight: 1.8,
       }}
     >
       <h1
         className="text-2xl font-bold mb-8"
-        style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-gold)' }}
+        style={{ fontFamily: 'var(--font-heading)', color: 'hsl(var(--gold))' }}
       >
         자주 묻는 질문 (FAQ)
       </h1>
@@ -108,7 +108,7 @@ export default function FaqPage() {
                 key={idx}
                 className="group"
                 style={{
-                  border: '1px solid var(--color-border-dark)',
+                  border: '1px solid hsl(var(--border-subtle))',
                   borderRadius: 12,
                   overflow: 'hidden',
                 }}
@@ -118,13 +118,13 @@ export default function FaqPage() {
                   style={{
                     fontSize: 15,
                     listStyle: 'none',
-                    background: 'var(--color-bg-secondary)',
+                    background: 'hsl(var(--surface))',
                   }}
                 >
                   <span>{item.q}</span>
                   <span
                     className="ml-3 shrink-0 transition-transform duration-200 group-open:rotate-180"
-                    style={{ color: 'var(--color-gold)', fontSize: 12 }}
+                    style={{ color: 'hsl(var(--gold))', fontSize: 12 }}
                   >
                     &#9660;
                   </span>
@@ -133,9 +133,9 @@ export default function FaqPage() {
                   className="px-5 py-4"
                   style={{
                     fontSize: 14,
-                    color: 'var(--color-text-muted-dark)',
+                    color: 'hsl(var(--text-secondary))',
                     background: 'rgba(26, 22, 18, 0.5)',
-                    borderTop: '1px solid var(--color-border-dark)',
+                    borderTop: '1px solid hsl(var(--border-subtle))',
                   }}
                 >
                   {item.a}
@@ -148,13 +148,13 @@ export default function FaqPage() {
 
       <div
         className="mt-6 pt-6"
-        style={{ borderTop: '1px solid var(--color-border-dark)' }}
+        style={{ borderTop: '1px solid hsl(var(--border-subtle))' }}
       >
-        <p style={{ color: 'var(--color-text-muted-dark)', fontSize: 14 }}>
+        <p style={{ color: 'hsl(var(--text-secondary))', fontSize: 14 }}>
           원하시는 답변을 찾지 못하셨나요?{' '}
           <a
             href="mailto:support@cheonjiyeon.com"
-            style={{ color: 'var(--color-gold)' }}
+            style={{ color: 'hsl(var(--gold))' }}
           >
             support@cheonjiyeon.com
           </a>

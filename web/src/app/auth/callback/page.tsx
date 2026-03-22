@@ -52,12 +52,12 @@ export default function OAuthCallbackPage() {
 
   if (error) {
     return (
-      <main className="min-h-[100dvh] flex items-center justify-center bg-[#0f0d0a]">
+      <main className="min-h-[100dvh] flex items-center justify-center bg-[hsl(var(--background))]">
         <div className="text-center">
-          <p className="text-[#a49484] mb-4">{error}</p>
+          <p className="text-[hsl(var(--text-secondary))] mb-4">{error}</p>
           <button
             onClick={() => router.push('/login')}
-            className="text-[#C9A227] underline hover:text-[#D4A843]"
+            className="text-[hsl(var(--gold))] underline hover:text-[hsl(var(--gold-soft))]"
           >
             로그인 페이지로 돌아가기
           </button>
@@ -67,10 +67,10 @@ export default function OAuthCallbackPage() {
   }
 
   return (
-    <main className="min-h-[100dvh] flex items-center justify-center bg-[#0f0d0a]">
+    <main className="min-h-[100dvh] flex items-center justify-center bg-[hsl(var(--background))]">
       <div className="text-center">
-        <div className="w-8 h-8 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-[#a49484]">로그인 처리 중...</p>
+        <div className="w-8 h-8 border-2 border-[hsl(var(--gold))] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-[hsl(var(--text-secondary))]">로그인 처리 중...</p>
       </div>
     </main>
   );

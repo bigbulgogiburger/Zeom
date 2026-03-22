@@ -128,18 +128,18 @@ function StarRating({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md
   const hasHalf = rating - full >= 0.5;
   const starSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-5 h-5';
   return (
-    <span className="inline-flex items-center gap-0.5 text-[#C9A227]">
+    <span className="inline-flex items-center gap-0.5 text-[hsl(var(--gold))]">
       {Array.from({ length: 5 }, (_, i) => (
         <svg
           key={i}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           className={starSize}
-          fill={i < full ? '#C9A227' : i === full && hasHalf ? 'url(#half-detail)' : '#3a3530'}
+          fill={i < full ? 'hsl(var(--gold))' : i === full && hasHalf ? 'url(#half-detail)' : '#3a3530'}
         >
           <defs>
             <linearGradient id="half-detail">
-              <stop offset="50%" stopColor="#C9A227" />
+              <stop offset="50%" stopColor="hsl(var(--gold))" />
               <stop offset="50%" stopColor="#3a3530" />
             </linearGradient>
           </defs>
@@ -153,13 +153,13 @@ function StarRating({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md
 function HeartIcon({ filled }: { filled: boolean }) {
   if (filled) {
     return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#C9A227" className="w-7 h-7">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="hsl(var(--gold))" className="w-7 h-7">
         <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
       </svg>
     );
   }
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#a49484" className="w-7 h-7">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="hsl(var(--text-secondary))" className="w-7 h-7">
       <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 8.25c0-3.105-2.464-5.25-5.437-5.25A5.5 5.5 0 0012 5.052 5.5 5.5 0 007.688 3C4.714 3 2.25 5.145 2.25 8.25c0 3.925 2.438 7.111 4.739 9.256a25.175 25.175 0 004.244 3.17c.12.07.244.133.383.218l.022.012.007.004.003.001a.752.752 0 00.704 0l.003-.001.007-.004.022-.012a15.247 15.247 0 00.383-.218 25.18 25.18 0 004.244-3.17C19.313 15.36 21.75 12.174 21.75 8.25z" />
     </svg>
   );
@@ -357,20 +357,20 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   if (!counselor) {
     return (
       <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 space-y-8">
-        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 animate-pulse">
+        <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-10 animate-pulse">
           <div className="flex flex-col items-center gap-5">
-            <div className="h-24 w-24 rounded-full bg-[#1a1612]" />
-            <div className="h-7 w-2/5 bg-[#1a1612] rounded-lg" />
-            <div className="h-4 w-1/4 bg-[#1a1612] rounded-lg" />
-            <div className="h-4 w-3/5 bg-[#1a1612] rounded-lg" />
+            <div className="h-24 w-24 rounded-full bg-[hsl(var(--surface))]" />
+            <div className="h-7 w-2/5 bg-[hsl(var(--surface))] rounded-lg" />
+            <div className="h-4 w-1/4 bg-[hsl(var(--surface))] rounded-lg" />
+            <div className="h-4 w-3/5 bg-[hsl(var(--surface))] rounded-lg" />
           </div>
         </div>
-        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 animate-pulse">
-          <div className="h-5 w-1/3 bg-[#1a1612] rounded-lg mb-6" />
+        <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-10 animate-pulse">
+          <div className="h-5 w-1/3 bg-[hsl(var(--surface))] rounded-lg mb-6" />
           <div className="grid grid-cols-3 gap-4">
-            <div className="h-12 bg-[#1a1612] rounded-xl" />
-            <div className="h-12 bg-[#1a1612] rounded-xl" />
-            <div className="h-12 bg-[#1a1612] rounded-xl" />
+            <div className="h-12 bg-[hsl(var(--surface))] rounded-xl" />
+            <div className="h-12 bg-[hsl(var(--surface))] rounded-xl" />
+            <div className="h-12 bg-[hsl(var(--surface))] rounded-xl" />
           </div>
         </div>
       </main>
@@ -381,12 +381,12 @@ export default function CounselorDetailClient({ id }: { id: string }) {
   if (bookingSuccess) {
     return (
       <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-12">
+        <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-12">
           <div className="text-5xl mb-6">🎉</div>
-          <h2 className="font-heading text-3xl font-black tracking-tight bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent mb-3">
+          <h2 className="font-heading text-3xl font-black tracking-tight bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent mb-3">
             예약이 완료되었습니다!
           </h2>
-          <p className="text-[#a49484] text-lg leading-relaxed">
+          <p className="text-[hsl(var(--text-secondary))] text-lg leading-relaxed">
             내 예약 페이지로 이동합니다...
           </p>
         </div>
@@ -440,15 +440,15 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                 alt={`${counselor.name} 프로필`}
                 width={96}
                 height={96}
-                className="w-24 h-24 rounded-full object-cover border-3 border-[rgba(201,162,39,0.2)]"
+                className="w-24 h-24 rounded-full object-cover border-3 border-[hsl(var(--gold)/0.2)]"
               />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-[#1a1612] border-3 border-[rgba(201,162,39,0.2)] flex items-center justify-center text-[2.5rem]">
+              <div className="w-24 h-24 rounded-full bg-[hsl(var(--surface))] border-3 border-[hsl(var(--gold)/0.2)] flex items-center justify-center text-[2.5rem]">
                 {specialtyEmoji(counselor.specialty)}
               </div>
             )}
             {counselor.isOnline && (
-              <span className="absolute bottom-1 right-1 w-5 h-5 bg-[#22c55e] border-3 border-[var(--color-bg-card)] rounded-full" />
+              <span className="absolute bottom-1 right-1 w-5 h-5 bg-[#22c55e] border-3 border-[hsl(var(--surface))] rounded-full" />
             )}
           </div>
 
@@ -461,7 +461,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                 <button
                   onClick={toggleFavorite}
                   disabled={togglingFavorite}
-                  className="p-1.5 rounded-full hover:bg-[#C9A227]/10 transition-all duration-200 disabled:opacity-50"
+                  className="p-1.5 rounded-full hover:bg-[hsl(var(--gold))]/10 transition-all duration-200 disabled:opacity-50"
                   aria-label={isFavorited ? '즐겨찾기 해제' : '즐겨찾기 추가'}
                 >
                   <HeartIcon filled={isFavorited} />
@@ -494,7 +494,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                 {counselor.specialty}
               </Badge>
               {counselor.supportedConsultationTypes?.includes('VIDEO') && (
-                <Badge variant="outline" className="font-heading font-bold text-xs rounded-full px-3 py-1 border-[#C9A227]/30 text-[#C9A227]">
+                <Badge variant="outline" className="font-heading font-bold text-xs rounded-full px-3 py-1 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]">
                   화상상담
                 </Badge>
               )}
@@ -516,7 +516,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="text-xs text-muted-foreground bg-[#1a1612]/10 rounded-full px-2.5 py-0.5"
+                    className="text-xs text-muted-foreground bg-[hsl(var(--surface))]/10 rounded-full px-2.5 py-0.5"
                   >
                     #{tag}
                   </span>
@@ -549,7 +549,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
           {certifications.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2 mt-1">
               {certifications.map((cert) => (
-                <Badge key={cert} variant="outline" className="font-heading text-xs rounded-full px-3 py-1 border-[#C9A227]/20 text-[#C9A227]">
+                <Badge key={cert} variant="outline" className="font-heading text-xs rounded-full px-3 py-1 border-[hsl(var(--gold))]/20 text-[hsl(var(--gold))]">
                   {cert}
                 </Badge>
               ))}
@@ -571,8 +571,8 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                 className={cn(
                   'flex-1 max-w-[200px] py-3 px-4 rounded-xl font-heading font-bold text-sm transition-all duration-300 border-2',
                   consultationType === 'VIDEO'
-                    ? 'border-[#C9A227] bg-[#C9A227]/10 text-[#C9A227] shadow-[0_0_12px_rgba(201,162,39,0.15)]'
-                    : 'border-[rgba(201,162,39,0.15)] bg-[#1a1612] text-[var(--color-text-on-dark)] hover:border-[#C9A227]/30'
+                    ? 'border-[hsl(var(--gold))] bg-[hsl(var(--gold))]/10 text-[hsl(var(--gold))] shadow-[0_0_12px_hsl(var(--gold)/0.15)]'
+                    : 'border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] hover:border-[hsl(var(--gold))]/30'
                 )}
               >
                 화상상담
@@ -586,7 +586,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                   'flex-1 max-w-[200px] py-3 px-4 rounded-xl font-heading font-bold text-sm transition-all duration-300 border-2',
                   consultationType === 'CHAT'
                     ? 'border-[#4A90D9] bg-[#4A90D9]/10 text-[#4A90D9] shadow-[0_0_12px_rgba(74,144,217,0.15)]'
-                    : 'border-[rgba(201,162,39,0.15)] bg-[#1a1612] text-[var(--color-text-on-dark)] hover:border-[#4A90D9]/30'
+                    : 'border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] hover:border-[#4A90D9]/30'
                 )}
               >
                 채팅상담
@@ -601,7 +601,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
 
       {/* Available Slots Section */}
       <div>
-        <h3 className="m-0 mb-8 font-heading text-xl font-bold text-[var(--color-text-on-dark)] text-center">
+        <h3 className="m-0 mb-8 font-heading text-xl font-bold text-[hsl(var(--text-primary))] text-center">
           예약 가능 슬롯
         </h3>
 
@@ -611,7 +611,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
           <div className="grid gap-6">
             {Array.from(slotsByDate.entries()).map(([dateLabel, slots]) => (
               <div key={dateLabel}>
-                <h4 className="m-0 mb-4 font-heading text-base font-bold text-[var(--color-text-on-dark)]">
+                <h4 className="m-0 mb-4 font-heading text-base font-bold text-[hsl(var(--text-primary))]">
                   {dateLabel}
                 </h4>
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
@@ -624,12 +624,12 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                         className={cn(
                           'relative p-3 text-center font-heading font-medium text-sm transition-all duration-300 rounded-xl h-auto',
                           isSelected
-                            ? 'border-2 border-[#C9A227] bg-[#C9A227] text-[#1a1612] shadow-[0_0_12px_rgba(201,162,39,0.3)]'
-                            : 'border border-[rgba(201,162,39,0.15)] bg-[#1a1612] text-[var(--color-text-on-dark)] hover:border-[#C9A227]/30 hover:bg-[#C9A227]/5'
+                            ? 'border-2 border-[hsl(var(--gold))] bg-[hsl(var(--gold))] text-[hsl(var(--background))] shadow-[0_0_12px_hsl(var(--gold)/0.3)]'
+                            : 'border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] hover:border-[hsl(var(--gold))]/30 hover:bg-[hsl(var(--gold))]/5'
                         )}
                       >
                         {isSelected && (
-                          <span className="absolute top-1.5 right-2 text-[#1a1612] text-xs font-bold leading-none">
+                          <span className="absolute top-1.5 right-2 text-[hsl(var(--background))] text-xs font-bold leading-none">
                             ✓
                           </span>
                         )}
@@ -642,14 +642,14 @@ export default function CounselorDetailClient({ id }: { id: string }) {
             ))}
 
             {maxWarning && (
-              <div className="text-[var(--color-warning)] text-sm font-medium text-center bg-[var(--color-warning)]/10 rounded-xl py-2 px-4">
+              <div className="text-[hsl(var(--warning))] text-sm font-medium text-center bg-[hsl(var(--warning))]/10 rounded-xl py-2 px-4">
                 {maxWarning}
               </div>
             )}
 
             {selectedSlots.length > 0 && (
               <div className="flex justify-center gap-3 flex-wrap">
-                <Badge variant="outline" className="text-[#C9A227] border-[#C9A227]/30 font-heading font-bold text-sm rounded-full px-4 py-1.5">
+                <Badge variant="outline" className="text-[hsl(var(--gold))] border-[hsl(var(--gold))]/30 font-heading font-bold text-sm rounded-full px-4 py-1.5">
                   {selectedSlots.length}개 슬롯 선택됨 ({selectedSlots.length * 30}분)
                 </Badge>
                 <Badge variant="secondary" className="font-heading font-bold text-sm rounded-full px-4 py-1.5">
@@ -688,25 +688,25 @@ export default function CounselorDetailClient({ id }: { id: string }) {
 
       {/* Confirmation Dialog */}
       {showConfirm && selectedSlots.length > 0 && (
-        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.15)] rounded-2xl p-8 sm:p-10 shadow-lg">
-          <h3 className="m-0 mb-6 font-heading font-bold text-xl text-center text-[var(--color-text-on-dark)]">
+        <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.15)] rounded-2xl p-8 sm:p-10 shadow-lg">
+          <h3 className="m-0 mb-6 font-heading font-bold text-xl text-center text-[hsl(var(--text-primary))]">
             예약 확인
           </h3>
 
           <div className="grid gap-4 text-sm mb-6">
             <div className="flex justify-between items-center">
-              <span className="text-[#a49484]">상담사</span>
-              <span className="font-bold text-[var(--color-text-on-dark)]">{counselor.name}</span>
+              <span className="text-[hsl(var(--text-secondary))]">상담사</span>
+              <span className="font-bold text-[hsl(var(--text-primary))]">{counselor.name}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#a49484]">상담 유형</span>
+              <span className="text-[hsl(var(--text-secondary))]">상담 유형</span>
               <Badge
                 variant="outline"
                 className={cn(
                   'font-heading font-bold text-xs rounded-full px-3 py-1',
                   consultationType === 'CHAT'
                     ? 'border-[#4A90D9]/30 text-[#4A90D9]'
-                    : 'border-[#C9A227]/30 text-[#C9A227]'
+                    : 'border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]'
                 )}
               >
                 {consultationType === 'CHAT' ? '채팅상담' : '화상상담'}
@@ -715,23 +715,23 @@ export default function CounselorDetailClient({ id }: { id: string }) {
 
             {groupConsecutiveSlots(selectedSlots).map((range, i) => (
               <div key={i} className="flex justify-between items-center">
-                <span className="text-[#a49484]">
+                <span className="text-[hsl(var(--text-secondary))]">
                   {i === 0 ? '시간' : ''}
                 </span>
-                <span className="font-bold text-[var(--color-text-on-dark)]">
+                <span className="font-bold text-[hsl(var(--text-primary))]">
                   {formatDate(range.startAt)} {formatTime(range.startAt)} ~ {formatTime(range.endAt)}
                 </span>
               </div>
             ))}
 
-            <div className="border-t border-[rgba(201,162,39,0.1)] pt-4 mt-2 grid gap-4">
+            <div className="border-t border-[hsl(var(--gold)/0.1)] pt-4 mt-2 grid gap-4">
               <div className="flex justify-between items-center">
-                <span className="text-[#a49484]">총 소요시간</span>
-                <span className="font-bold text-[var(--color-text-on-dark)]">{selectedSlots.length * 30}분</span>
+                <span className="text-[hsl(var(--text-secondary))]">총 소요시간</span>
+                <span className="font-bold text-[hsl(var(--text-primary))]">{selectedSlots.length * 30}분</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#a49484]">사용 상담권</span>
-                <span className="font-bold text-[var(--color-text-on-dark)]">{selectedSlots.length}회</span>
+                <span className="text-[hsl(var(--text-secondary))]">사용 상담권</span>
+                <span className="font-bold text-[hsl(var(--text-primary))]">{selectedSlots.length}회</span>
               </div>
             </div>
           </div>
@@ -746,7 +746,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
             <button
               onClick={() => { setShowConfirm(false); setBookingError(''); }}
               disabled={booking}
-              className="flex-1 rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] font-heading font-bold py-3 bg-transparent hover:bg-[#C9A227]/10 transition-all duration-300 disabled:opacity-50"
+              className="flex-1 rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] font-heading font-bold py-3 bg-transparent hover:bg-[hsl(var(--gold))]/10 transition-all duration-300 disabled:opacity-50"
             >
               취소
             </button>
@@ -763,7 +763,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
 
       {/* Reviews Section */}
       <div>
-        <h3 className="m-0 mb-4 font-heading text-xl font-bold text-[var(--color-text-on-dark)] text-center">
+        <h3 className="m-0 mb-4 font-heading text-xl font-bold text-[hsl(var(--text-primary))] text-center">
           리뷰 ({reviewTotal}건)
         </h3>
 
@@ -777,8 +777,8 @@ export default function CounselorDetailClient({ id }: { id: string }) {
               className={cn(
                 'px-3 py-1.5 rounded-full text-xs font-heading font-bold transition-all duration-200 border',
                 reviewType === t
-                  ? 'border-[#C9A227] bg-[#C9A227]/15 text-[#C9A227]'
-                  : 'border-[rgba(201,162,39,0.15)] bg-transparent text-[#a49484] hover:border-[#C9A227]/30'
+                  ? 'border-[hsl(var(--gold))] bg-[hsl(var(--gold))]/15 text-[hsl(var(--gold))]'
+                  : 'border-[hsl(var(--gold)/0.15)] bg-transparent text-[hsl(var(--text-secondary))] hover:border-[hsl(var(--gold))]/30'
               )}
             >
               {t || '전체'}
@@ -799,8 +799,8 @@ export default function CounselorDetailClient({ id }: { id: string }) {
               className={cn(
                 'px-3 py-1.5 rounded-full text-xs font-heading font-bold transition-all duration-200',
                 reviewSort === key
-                  ? 'bg-[#C9A227] text-[#1a1612]'
-                  : 'bg-[#1a1612] text-[#a49484] hover:bg-[#C9A227]/10'
+                  ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))]'
+                  : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--gold))]/10'
               )}
             >
               {label}
@@ -811,7 +811,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
           <select
             value={reviewMinRating}
             onChange={(e) => { setReviewMinRating(Number(e.target.value)); setReviewPage(0); }}
-            className="px-3 py-1.5 rounded-full text-xs font-heading font-bold bg-[#1a1612] text-[#a49484] border border-[rgba(201,162,39,0.15)] outline-none"
+            className="px-3 py-1.5 rounded-full text-xs font-heading font-bold bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))] border border-[hsl(var(--gold)/0.15)] outline-none"
           >
             <option value={0}>전체 별점</option>
             <option value={3}>3점 이상</option>
@@ -821,7 +821,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
         </div>
 
         {reviews.length === 0 ? (
-          <div className="text-center py-8 text-[#a49484] text-sm">
+          <div className="text-center py-8 text-[hsl(var(--text-secondary))] text-sm">
             리뷰가 없습니다.
           </div>
         ) : (
@@ -845,7 +845,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                           {review.isAnonymous ? '익명' : (review.userName ?? '익명')}
                         </span>
                         {review.consultationType && (
-                          <Badge variant="outline" className="text-[10px] px-2 py-0 rounded-full border-[#C9A227]/20 text-[#C9A227]">
+                          <Badge variant="outline" className="text-[10px] px-2 py-0 rounded-full border-[hsl(var(--gold))]/20 text-[hsl(var(--gold))]">
                             {review.consultationType}
                           </Badge>
                         )}
@@ -865,7 +865,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                               <img
                                 src={url}
                                 alt={`리뷰 사진 ${i + 1}`}
-                                className="w-16 h-16 object-cover rounded-lg border border-[rgba(201,162,39,0.1)] hover:border-[#C9A227]/40 transition-colors"
+                                className="w-16 h-16 object-cover rounded-lg border border-[hsl(var(--gold)/0.1)] hover:border-[hsl(var(--gold))]/40 transition-colors"
                               />
                             </a>
                           ))}
@@ -873,7 +873,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                       )}
 
                       {review.reply && (
-                        <div className="mt-3 pl-4 border-l-2 border-[#C9A227]/20">
+                        <div className="mt-3 pl-4 border-l-2 border-[hsl(var(--gold))]/20">
                           <p className="text-xs text-muted-foreground mb-1 font-bold">상담사 답변</p>
                           <p className="text-sm text-card-foreground leading-relaxed">
                             {review.reply}
@@ -907,8 +907,8 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                           className={cn(
                             'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-heading font-bold transition-all duration-200 border',
                             review.helpfulByMe
-                              ? 'border-[#C9A227] bg-[#C9A227]/15 text-[#C9A227]'
-                              : 'border-[rgba(201,162,39,0.15)] bg-transparent text-[#a49484] hover:border-[#C9A227]/30'
+                              ? 'border-[hsl(var(--gold))] bg-[hsl(var(--gold))]/15 text-[hsl(var(--gold))]'
+                              : 'border-[hsl(var(--gold)/0.15)] bg-transparent text-[hsl(var(--text-secondary))] hover:border-[hsl(var(--gold))]/30'
                           )}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
@@ -929,17 +929,17 @@ export default function CounselorDetailClient({ id }: { id: string }) {
                 <button
                   onClick={() => setReviewPage((p) => Math.max(0, p - 1))}
                   disabled={reviewPage === 0}
-                  className="px-3 py-1 rounded-full text-xs font-heading font-bold border border-[rgba(201,162,39,0.15)] text-[#a49484] hover:border-[#C9A227]/30 disabled:opacity-30"
+                  className="px-3 py-1 rounded-full text-xs font-heading font-bold border border-[hsl(var(--gold)/0.15)] text-[hsl(var(--text-secondary))] hover:border-[hsl(var(--gold))]/30 disabled:opacity-30"
                 >
                   이전
                 </button>
-                <span className="px-3 py-1 text-xs text-[#a49484]">
+                <span className="px-3 py-1 text-xs text-[hsl(var(--text-secondary))]">
                   {reviewPage + 1} / {reviewTotalPages}
                 </span>
                 <button
                   onClick={() => setReviewPage((p) => Math.min(reviewTotalPages - 1, p + 1))}
                   disabled={reviewPage >= reviewTotalPages - 1}
-                  className="px-3 py-1 rounded-full text-xs font-heading font-bold border border-[rgba(201,162,39,0.15)] text-[#a49484] hover:border-[#C9A227]/30 disabled:opacity-30"
+                  className="px-3 py-1 rounded-full text-xs font-heading font-bold border border-[hsl(var(--gold)/0.15)] text-[hsl(var(--text-secondary))] hover:border-[hsl(var(--gold))]/30 disabled:opacity-30"
                 >
                   다음
                 </button>
@@ -952,7 +952,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
       {/* Insufficient Credit Modal */}
       {showCreditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.2)] rounded-2xl p-8 sm:p-10 max-w-[420px] w-full shadow-2xl">
+          <div className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.2)] rounded-2xl p-8 sm:p-10 max-w-[420px] w-full shadow-2xl">
             <div className="text-center mb-6">
               <div className="text-4xl mb-4">🎫</div>
               <h3 className="m-0 font-heading font-bold text-xl text-red-400">
@@ -962,16 +962,16 @@ export default function CounselorDetailClient({ id }: { id: string }) {
 
             <div className="grid gap-3 text-sm mb-8">
               <div className="flex justify-between items-center">
-                <span className="text-[#a49484]">필요</span>
-                <span className="font-bold text-[var(--color-text-on-dark)]">{creditShortfall.needed}회</span>
+                <span className="text-[hsl(var(--text-secondary))]">필요</span>
+                <span className="font-bold text-[hsl(var(--text-primary))]">{creditShortfall.needed}회</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#a49484]">보유</span>
-                <span className="font-bold text-[var(--color-text-on-dark)]">{creditShortfall.have}회</span>
+                <span className="text-[hsl(var(--text-secondary))]">보유</span>
+                <span className="font-bold text-[hsl(var(--text-primary))]">{creditShortfall.have}회</span>
               </div>
-              <div className="border-t border-[rgba(201,162,39,0.1)] pt-3">
+              <div className="border-t border-[hsl(var(--gold)/0.1)] pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-[#a49484]">부족</span>
+                  <span className="text-[hsl(var(--text-secondary))]">부족</span>
                   <span className="font-bold text-red-400">{creditShortfall.needed - creditShortfall.have}회</span>
                 </div>
               </div>
@@ -989,7 +989,7 @@ export default function CounselorDetailClient({ id }: { id: string }) {
               </ActionButton>
               <button
                 onClick={() => setShowCreditModal(false)}
-                className="w-full rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] font-heading font-bold py-3 bg-transparent hover:bg-[#C9A227]/10 transition-all duration-300"
+                className="w-full rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] font-heading font-bold py-3 bg-transparent hover:bg-[hsl(var(--gold))]/10 transition-all duration-300"
               >
                 취소
               </button>

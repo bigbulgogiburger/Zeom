@@ -166,12 +166,12 @@ export default function AdminUsersPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] placeholder:text-[#a49484] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none flex-1 min-w-[200px]"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] placeholder:text-[hsl(var(--text-secondary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none flex-1 min-w-[200px]"
             />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:outline-none"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:outline-none"
             >
               <option value="">상태: 전체</option>
               <option value="ACTIVE">활성</option>
@@ -180,7 +180,7 @@ export default function AdminUsersPage() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:outline-none"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:outline-none"
             >
               <option value="">역할: 전체</option>
               <option value="USER">USER</option>
@@ -199,24 +199,24 @@ export default function AdminUsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">ID</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">이름</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">이메일</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">역할</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">상태</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227] text-right">관리</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">ID</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">이름</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">이메일</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">역할</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">상태</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((u) => (
                   <TableRow
                     key={u.id}
-                    className="hover:bg-[rgba(201,162,39,0.03)] transition-colors cursor-pointer"
+                    className="hover:bg-[hsl(var(--gold)/0.03)] transition-colors cursor-pointer"
                     onClick={() => router.push(`/admin/users/${u.id}`)}
                   >
                     <TableCell className="font-mono text-sm">#{u.id}</TableCell>
                     <TableCell className="font-medium">{u.name}</TableCell>
-                    <TableCell className="text-[#a49484]">{u.email}</TableCell>
+                    <TableCell className="text-[hsl(var(--text-secondary))]">{u.email}</TableCell>
                     <TableCell><StatusBadge value={u.role} /></TableCell>
                     <TableCell><StatusBadge value={u.status} /></TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -224,7 +224,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => handleUnsuspend(u)}
                           disabled={processing}
-                          className="rounded-full bg-[#C9A227] text-[#0f0d0a] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:bg-[#b08d1f] transition-colors"
+                          className="rounded-full bg-[hsl(var(--gold))] text-[hsl(var(--background))] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:bg-[hsl(var(--gold))/0.85] transition-colors"
                         >
                           정지 해제
                         </button>
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => { setSuspendTarget(u); setSuspendReason(''); }}
                           disabled={processing}
-                          className="rounded-full bg-[#8B0000] text-white text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:bg-[#6d0000] transition-colors"
+                          className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:bg-[hsl(var(--dancheong))/0.75] transition-colors"
                         >
                           정지
                         </button>
@@ -260,28 +260,28 @@ export default function AdminUsersPage() {
         {/* Reason input (rendered as part of the dialog via a simple overlay) */}
         {suspendTarget && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
-            <div className="bg-[var(--color-bg-card)] border border-[rgba(201,162,39,0.15)] rounded-2xl p-6 max-w-[420px] w-full mx-4 space-y-4">
+            <div className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-2xl p-6 max-w-[420px] w-full mx-4 space-y-4">
               <h3 className="font-heading font-bold text-lg">사용자 정지</h3>
-              <p className="text-[#a49484] text-sm">
+              <p className="text-[hsl(var(--text-secondary))] text-sm">
                 {suspendTarget.name}({suspendTarget.email})님을 정지합니다.
               </p>
               <textarea
                 placeholder="정지 사유를 입력하세요 (필수)"
                 value={suspendReason}
                 onChange={(e) => setSuspendReason(e.target.value)}
-                className="w-full bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[80px] placeholder:text-[#a49484] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none resize-none"
+                className="w-full bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[80px] placeholder:text-[hsl(var(--text-secondary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none resize-none"
               />
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => { setSuspendTarget(null); setSuspendReason(''); }}
-                  className="rounded-full border-2 border-[rgba(201,162,39,0.3)] text-[#f9f5ed] text-sm font-bold font-heading px-5 py-2 hover:bg-[rgba(201,162,39,0.1)] transition-colors"
+                  className="rounded-full border-2 border-[hsl(var(--gold)/0.3)] text-[hsl(var(--text-primary))] text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--gold)/0.1)] transition-colors"
                 >
                   취소
                 </button>
                 <button
                   onClick={handleSuspend}
                   disabled={processing || !suspendReason.trim()}
-                  className="rounded-full bg-[#8B0000] text-white text-sm font-bold font-heading px-5 py-2 hover:bg-[#6d0000] transition-colors disabled:opacity-50"
+                  className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
                 >
                   {processing ? '처리 중...' : '정지'}
                 </button>

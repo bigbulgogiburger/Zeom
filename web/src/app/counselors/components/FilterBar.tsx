@@ -33,8 +33,8 @@ export default function FilterBar({
           className={cn(
             'rounded-full px-5 py-2 text-sm font-medium font-heading transition-all duration-300',
             activeFilters.has(f.key)
-              ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold shadow-[0_4px_20px_rgba(201,162,39,0.15)]'
-              : 'border border-[rgba(201,162,39,0.2)] text-[#a49484] bg-transparent hover:bg-[#C9A227]/10 hover:text-[#C9A227] hover:border-[#C9A227]/30'
+              ? 'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold shadow-[0_4px_20px_hsl(var(--gold)/0.15)]'
+              : 'border border-[hsl(var(--gold)/0.2)] text-[hsl(var(--text-secondary))] bg-transparent hover:bg-[hsl(var(--gold))]/10 hover:text-[hsl(var(--gold))] hover:border-[hsl(var(--gold))]/30'
           )}
         >
           {f.label}
@@ -48,12 +48,12 @@ export default function FilterBar({
           'rounded-full px-5 py-2 text-sm font-medium font-heading transition-all duration-300 flex items-center gap-1.5',
           isOnlineOnly
             ? 'bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/30 font-bold'
-            : 'border border-[rgba(201,162,39,0.2)] text-[#a49484] bg-transparent hover:bg-[#22c55e]/10 hover:text-[#22c55e] hover:border-[#22c55e]/30'
+            : 'border border-[hsl(var(--gold)/0.2)] text-[hsl(var(--text-secondary))] bg-transparent hover:bg-[#22c55e]/10 hover:text-[#22c55e] hover:border-[#22c55e]/30'
         )}
       >
         <span className={cn(
           'w-2 h-2 rounded-full',
-          isOnlineOnly ? 'bg-[#22c55e]' : 'bg-[#a49484]'
+          isOnlineOnly ? 'bg-[#22c55e]' : 'bg-[hsl(var(--text-secondary))]'
         )} />
         지금 상담 가능
       </button>

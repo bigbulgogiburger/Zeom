@@ -68,7 +68,7 @@ export default function ConsultationsPage() {
 
         {loading ? (
           <Card>
-            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
+            <div className="text-center py-8 text-[hsl(var(--text-secondary))]">
               불러오는 중...
             </div>
           </Card>
@@ -102,7 +102,7 @@ export default function ConsultationsPage() {
                       <StatusBadge value={c.status} />
                     </div>
 
-                    <div className="grid gap-1 text-sm text-[var(--color-text-muted-card)]">
+                    <div className="grid gap-1 text-sm text-[hsl(var(--text-secondary))]">
                       <div>
                         <span>시작: </span>
                         <span>{new Date(c.startedAt).toLocaleString('ko-KR')}</span>
@@ -124,8 +124,8 @@ export default function ConsultationsPage() {
                     {/* Review Status */}
                     <div className={`mt-4 px-4 py-2 rounded-full text-xs font-medium inline-block ${
                       c.hasReview
-                        ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
-                        : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+                        ? 'bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]'
+                        : 'bg-[hsl(var(--warning)/0.15)] text-[hsl(var(--warning))]'
                     }`}>
                       {c.hasReview ? '리뷰 작성 완료' : '리뷰 작성 대기'}
                     </div>
@@ -135,7 +135,7 @@ export default function ConsultationsPage() {
                     {!c.hasReview && c.status === 'COMPLETED' && (
                       <button
                         onClick={() => router.push(`/consultation/${c.id}/review`)}
-                        className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] px-6 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
+                        className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] px-6 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
                       >
                         리뷰 작성
                       </button>

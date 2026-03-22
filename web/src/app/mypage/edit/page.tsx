@@ -81,9 +81,9 @@ export default function EditProfilePage() {
     return (
       <Card>
         <div className="animate-pulse space-y-4">
-          <div className="h-5 w-32 bg-[#1a1612] rounded" />
-          <div className="h-10 w-full bg-[#1a1612] rounded" />
-          <div className="h-10 w-full bg-[#1a1612] rounded" />
+          <div className="h-5 w-32 bg-[hsl(var(--surface))] rounded" />
+          <div className="h-10 w-full bg-[hsl(var(--surface))] rounded" />
+          <div className="h-10 w-full bg-[hsl(var(--surface))] rounded" />
         </div>
       </Card>
     );
@@ -99,7 +99,7 @@ export default function EditProfilePage() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="이름"
-          className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+          className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
         />
       </FormField>
 
@@ -109,7 +109,7 @@ export default function EditProfilePage() {
           value={phone}
           onChange={(e) => setPhone(formatPhone(e.target.value))}
           placeholder="010-0000-0000"
-          className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+          className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
         />
       </FormField>
 
@@ -118,7 +118,7 @@ export default function EditProfilePage() {
           type="date"
           value={birthDate}
           onChange={(e) => setBirthDate(e.target.value)}
-          className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40"
+          className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
         />
       </FormField>
 

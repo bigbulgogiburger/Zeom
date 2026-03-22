@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from './auth-context';
 import { apiFetch } from './api-client';
+import { Eye, Palette, Hash, Compass } from 'lucide-react';
 
 type FortuneCategory = {
   label: string;
@@ -60,14 +61,14 @@ const MOCK_SUMMARY: FortuneData = {
 
 function ScoreBar({ score }: { score: number }) {
   const getBarColor = (s: number) => {
-    if (s >= 80) return 'from-[#C9A227] to-[#D4A843]';
-    if (s >= 60) return 'from-[#C9A227] to-[#b08d1f]';
-    if (s >= 40) return 'from-[#b08d1f] to-[#8B6914]';
-    return 'from-[#8B0000] to-[#b08d1f]';
+    if (s >= 80) return 'from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))]';
+    if (s >= 60) return 'from-[hsl(var(--gold))] to-[hsl(var(--gold))/0.85]';
+    if (s >= 40) return 'from-[hsl(var(--gold))/0.85] to-[hsl(var(--gold-muted))]';
+    return 'from-[hsl(var(--dancheong))] to-[hsl(var(--gold))/0.85]';
   };
 
   return (
-    <div className="w-full h-2 rounded-full bg-[rgba(201,162,39,0.1)] overflow-hidden">
+    <div className="w-full h-2 rounded-full bg-[hsl(var(--gold)/0.1)] overflow-hidden">
       <div
         className={`h-full rounded-full bg-gradient-to-r ${getBarColor(score)} transition-all duration-700`}
         style={{ width: `${score}%` }}
@@ -135,15 +136,15 @@ export default function FortuneCard() {
         className="w-full text-left flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <span className="text-3xl">\uD83D\uDD2E</span>
+          <Eye className="size-7 text-[hsl(var(--gold))]" />
           <div>
-            <h3 className="text-lg font-heading font-bold text-[#C9A227] m-0">
+            <h3 className="text-lg font-heading font-bold text-[hsl(var(--gold))] m-0">
               \uC624\uB298\uC758 \uC6B4\uC138
             </h3>
-            <p className="text-xs text-[#a49484] m-0">
+            <p className="text-xs text-[hsl(var(--text-secondary))] m-0">
               {dateStr}
               {hasSajuData && fortune.dailyPillar && (
-                <span className="ml-1 text-[#C9A227]">
+                <span className="ml-1 text-[hsl(var(--gold))]">
                   {fortune.dailyPillar.ganHanja || fortune.dailyPillar.gan}
                   {fortune.dailyPillar.jiHanja || fortune.dailyPillar.ji}\uC77C
                 </span>
@@ -153,30 +154,30 @@ export default function FortuneCard() {
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <span className="text-2xl font-heading font-black bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
+            <span className="text-2xl font-heading font-black bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent">
               {fortune.overallScore}
             </span>
-            <span className="text-sm text-[#a49484] ml-1">/ 100</span>
+            <span className="text-sm text-[hsl(var(--text-secondary))] ml-1">/ 100</span>
           </div>
-          <span className={`text-[#a49484] text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>
+          <span className={`text-[hsl(var(--text-secondary))] text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>
             &#9662;
           </span>
         </div>
       </button>
 
       {/* Summary */}
-      <p className="text-sm text-[#a49484] mt-3 mb-0 leading-relaxed">
+      <p className="text-sm text-[hsl(var(--text-secondary))] mt-3 mb-0 leading-relaxed">
         {fortune.summary}
       </p>
 
       {/* Saju relationship badge */}
       {hasSajuData && fortune.relationship && (
         <div className="mt-2 flex items-center gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[rgba(201,162,39,0.1)] text-xs text-[#C9A227] font-bold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[hsl(var(--gold)/0.1)] text-xs text-[hsl(var(--gold))] font-bold">
             {fortune.relationship}
           </span>
           {fortune.twelveUnseong && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[rgba(201,162,39,0.1)] text-xs text-[#C9A227] font-bold">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[hsl(var(--gold)/0.1)] text-xs text-[hsl(var(--gold))] font-bold">
               {fortune.twelveUnseong}
             </span>
           )}
@@ -185,7 +186,7 @@ export default function FortuneCard() {
 
       {/* Expanded content */}
       {expanded && (
-        <div className="mt-5 pt-4 border-t border-[rgba(201,162,39,0.15)]">
+        <div className="mt-5 pt-4 border-t border-[hsl(var(--gold)/0.15)]">
           {me ? (
             <>
               {/* Category scores */}
@@ -196,7 +197,7 @@ export default function FortuneCard() {
                       <span className="text-sm text-foreground font-medium">
                         {cat.icon} {cat.label}
                       </span>
-                      <span className="text-sm font-bold text-[#C9A227]">
+                      <span className="text-sm font-bold text-[hsl(var(--gold))]">
                         {cat.score}
                       </span>
                     </div>
@@ -207,14 +208,14 @@ export default function FortuneCard() {
 
               {/* Lucky items */}
               <div className="flex flex-wrap gap-3 mb-5">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[rgba(201,162,39,0.1)] text-sm text-[#C9A227]">
-                  \uD83C\uDFA8 {fortune.luckyColor}
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[hsl(var(--gold)/0.1)] text-sm text-[hsl(var(--gold))]">
+                  <Palette className="size-4" /> {fortune.luckyColor}
                 </span>
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[rgba(201,162,39,0.1)] text-sm text-[#C9A227]">
-                  \uD83D\uDD22 {fortune.luckyNumber}
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[hsl(var(--gold)/0.1)] text-sm text-[hsl(var(--gold))]">
+                  <Hash className="size-4" /> {fortune.luckyNumber}
                 </span>
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[rgba(201,162,39,0.1)] text-sm text-[#C9A227]">
-                  \uD83E\uDDED {fortune.luckyDirection}
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[hsl(var(--gold)/0.1)] text-sm text-[hsl(var(--gold))]">
+                  <Compass className="size-4" /> {fortune.luckyDirection}
                 </span>
               </div>
 
@@ -236,7 +237,7 @@ export default function FortuneCard() {
             </>
           ) : (
             <div className="text-center py-4">
-              <p className="text-[#a49484] text-sm mb-4">
+              <p className="text-[hsl(var(--text-secondary))] text-sm mb-4">
                 \uB85C\uADF8\uC778\uD558\uC2DC\uBA74 \uB9DE\uCDA4 \uC6B4\uC138\uC640 \uC0C1\uC138 \uBD84\uC11D\uC744 \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
               </p>
               <Link

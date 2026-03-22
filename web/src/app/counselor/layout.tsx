@@ -40,8 +40,8 @@ function SidebarNav({ onItemClick }: { onItemClick?: () => void }) {
             className={cn(
               'px-4 py-3 rounded-xl text-sm font-medium font-heading transition-colors no-underline',
               isActive
-                ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold shadow-md'
-                : 'text-[#a49484] hover:bg-[rgba(201,162,39,0.08)] hover:text-[#C9A227]'
+                ? 'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold shadow-md'
+                : 'text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--gold)/0.08)] hover:text-[hsl(var(--gold))]'
             )}
           >
             {item.label}
@@ -68,19 +68,19 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
 
   return (
     <RequireCounselor>
-      <div className="flex min-h-[100dvh] bg-[#0f0d0a]">
+      <div className="flex min-h-[100dvh] bg-[hsl(var(--background))]">
         {/* Desktop sidebar */}
-        <aside className="hidden md:flex flex-col w-64 border-r border-[rgba(201,162,39,0.1)] bg-[#1a1612] p-5 gap-4 shrink-0">
-          <div className="font-heading font-bold text-lg bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
+        <aside className="hidden md:flex flex-col w-64 border-r border-[hsl(var(--gold)/0.1)] bg-[hsl(var(--surface))] p-5 gap-4 shrink-0">
+          <div className="font-heading font-bold text-lg bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent">
             선생님 포털
           </div>
-          <Separator className="bg-[rgba(201,162,39,0.1)]" />
+          <Separator className="bg-[hsl(var(--gold)/0.1)]" />
           <SidebarNav />
           <div className="mt-auto">
-            <Separator className="bg-[rgba(201,162,39,0.1)] mb-4" />
+            <Separator className="bg-[hsl(var(--gold)/0.1)] mb-4" />
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 shrink-0" />
-              <span className="text-sm text-[#a49484] font-heading truncate">
+              <span className="text-sm text-[hsl(var(--text-secondary))] font-heading truncate">
                 {me?.name} 선생님
               </span>
               <Badge className="bg-green-500 text-white text-[10px] px-1.5 py-0">
@@ -91,7 +91,7 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
               variant="outline"
               size="sm"
               onClick={logout}
-              className="w-full border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full font-heading font-bold hover:bg-[#C9A227]/10"
+              className="w-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full font-heading font-bold hover:bg-[hsl(var(--gold))]/10"
             >
               로그아웃
             </Button>
@@ -101,30 +101,30 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
         {/* Main content area */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Mobile header */}
-          <header className="md:hidden flex items-center justify-between p-4 border-b border-[rgba(201,162,39,0.1)] bg-[rgba(15,13,10,0.8)] backdrop-blur-xl">
+          <header className="md:hidden flex items-center justify-between p-4 border-b border-[hsl(var(--gold)/0.1)] bg-[hsl(var(--background)/0.8)] backdrop-blur-xl">
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-[#a49484] font-heading hover:text-[#C9A227]"
+                  className="text-[hsl(var(--text-secondary))] font-heading hover:text-[hsl(var(--gold))]"
                 >
                   &#9776; 메뉴
                 </Button>
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="w-64 bg-[#1a1612] border-[rgba(201,162,39,0.1)] p-4"
+                className="w-64 bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.1)] p-4"
               >
-                <SheetTitle className="font-heading font-bold text-lg bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent mb-4">
+                <SheetTitle className="font-heading font-bold text-lg bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent mb-4">
                   선생님 포털
                 </SheetTitle>
-                <Separator className="bg-[rgba(201,162,39,0.1)] mb-4" />
+                <Separator className="bg-[hsl(var(--gold)/0.1)] mb-4" />
                 <SidebarNav onItemClick={() => setSheetOpen(false)} />
-                <Separator className="bg-[rgba(201,162,39,0.1)] my-4" />
+                <Separator className="bg-[hsl(var(--gold)/0.1)] my-4" />
                 <div className="flex items-center gap-2 mb-2">
                   <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 shrink-0" />
-                  <span className="text-sm text-[#a49484] font-heading truncate">
+                  <span className="text-sm text-[hsl(var(--text-secondary))] font-heading truncate">
                     {me?.name} 선생님
                   </span>
                   <Badge className="bg-green-500 text-white text-[10px] px-1.5 py-0">
@@ -135,16 +135,16 @@ export default function CounselorLayout({ children }: { children: React.ReactNod
                   variant="outline"
                   size="sm"
                   onClick={logout}
-                  className="w-full border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full font-heading font-bold hover:bg-[#C9A227]/10"
+                  className="w-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full font-heading font-bold hover:bg-[hsl(var(--gold))]/10"
                 >
                   로그아웃
                 </Button>
               </SheetContent>
             </Sheet>
-            <span className="font-heading font-bold bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
+            <span className="font-heading font-bold bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent">
               선생님 포털
             </span>
-            <span className="flex items-center gap-1.5 text-sm text-[#a49484] font-heading">
+            <span className="flex items-center gap-1.5 text-sm text-[hsl(var(--text-secondary))] font-heading">
               <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
               {me?.name}
             </span>

@@ -50,18 +50,18 @@ function StarRating({ rating }: { rating: number }) {
   const full = Math.floor(rating);
   const hasHalf = rating - full >= 0.5;
   return (
-    <span className="inline-flex items-center gap-0.5 text-[#C9A227]">
+    <span className="inline-flex items-center gap-0.5 text-[hsl(var(--gold))]">
       {Array.from({ length: 5 }, (_, i) => (
         <svg
           key={i}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           className="w-3.5 h-3.5"
-          fill={i < full ? '#C9A227' : i === full && hasHalf ? 'url(#half)' : '#3a3530'}
+          fill={i < full ? 'hsl(var(--gold))' : i === full && hasHalf ? 'url(#half)' : '#3a3530'}
         >
           <defs>
             <linearGradient id="half">
-              <stop offset="50%" stopColor="#C9A227" />
+              <stop offset="50%" stopColor="hsl(var(--gold))" />
               <stop offset="50%" stopColor="#3a3530" />
             </linearGradient>
           </defs>
@@ -75,13 +75,13 @@ function StarRating({ rating }: { rating: number }) {
 function HeartIcon({ filled }: { filled: boolean }) {
   if (filled) {
     return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#C9A227" className="w-5 h-5">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="hsl(var(--gold))" className="w-5 h-5">
         <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
       </svg>
     );
   }
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#a49484" className="w-5 h-5">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="hsl(var(--text-secondary))" className="w-5 h-5">
       <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 8.25c0-3.105-2.464-5.25-5.437-5.25A5.5 5.5 0 0012 5.052 5.5 5.5 0 007.688 3C4.714 3 2.25 5.145 2.25 8.25c0 3.925 2.438 7.111 4.739 9.256a25.175 25.175 0 004.244 3.17c.12.07.244.133.383.218l.022.012.007.004.003.001a.752.752 0 00.704 0l.003-.001.007-.004.022-.012a15.247 15.247 0 00.383-.218 25.18 25.18 0 004.244-3.17C19.313 15.36 21.75 12.174 21.75 8.25z" />
     </svg>
   );
@@ -107,12 +107,12 @@ export default function CounselorCard({
   const responseRate = c.responseRate ?? 100;
 
   return (
-    <div className="relative bg-[var(--color-bg-card)] border border-[rgba(201,162,39,0.15)] rounded-2xl p-5 sm:p-6 shadow-md hover:shadow-[0_8px_32px_rgba(201,162,39,0.12)] hover:-translate-y-1 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col">
+    <div className="relative bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-2xl p-5 sm:p-6 shadow-md hover:shadow-[0_8px_32px_hsl(var(--gold)/0.12)] hover:-translate-y-1 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col">
       {/* Favorite button */}
       {isLoggedIn && (
         <button
           onClick={(e) => { e.preventDefault(); onToggleFavorite?.(c.id); }}
-          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-[#C9A227]/10 transition-all duration-200 z-10"
+          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-[hsl(var(--gold))]/10 transition-all duration-200 z-10"
           aria-label={isFavorited ? '즐겨찾기 해제' : '즐겨찾기 추가'}
         >
           <HeartIcon filled={isFavorited} />
@@ -128,34 +128,34 @@ export default function CounselorCard({
               alt={`${c.name} 프로필`}
               width={64}
               height={64}
-              className="w-16 h-16 rounded-full object-cover border-2 border-[rgba(201,162,39,0.2)]"
+              className="w-16 h-16 rounded-full object-cover border-2 border-[hsl(var(--gold)/0.2)]"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#1a1612] to-[#0f0d0a] border-2 border-[rgba(201,162,39,0.2)] flex items-center justify-center">
-              <span className="text-xl font-heading font-black text-[#C9A227]">{specialtyIcon(c.specialty)}</span>
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[hsl(var(--surface))] to-[hsl(var(--background))] border-2 border-[hsl(var(--gold)/0.2)] flex items-center justify-center">
+              <span className="text-xl font-heading font-black text-[hsl(var(--gold))]">{specialtyIcon(c.specialty)}</span>
             </div>
           )}
           {c.isOnline && (
-            <span className="absolute bottom-0 right-0 w-4 h-4 bg-[#22c55e] border-2 border-[var(--color-bg-card)] rounded-full" />
+            <span className="absolute bottom-0 right-0 w-4 h-4 bg-[#22c55e] border-2 border-[hsl(var(--surface))] rounded-full" />
           )}
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="m-0 font-heading font-bold text-lg text-[var(--color-text-on-card)] truncate">
+          <h3 className="m-0 font-heading font-bold text-lg text-[hsl(var(--text-primary))] truncate">
             {c.name} 선생님
           </h3>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <StarRating rating={rating} />
-            <span className="text-sm font-bold text-[var(--color-text-on-card)]">
+            <span className="text-sm font-bold text-[hsl(var(--text-primary))]">
               {rating.toFixed(1)}
             </span>
-            <span className="text-xs text-[var(--color-text-muted-card)]">
+            <span className="text-xs text-[hsl(var(--text-secondary))]">
               ({reviews}건)
             </span>
             {career > 0 && (
               <>
-                <span className="text-[var(--color-text-muted-card)]">|</span>
-                <span className="text-xs text-[var(--color-text-muted-card)]">
+                <span className="text-[hsl(var(--text-secondary))]">|</span>
+                <span className="text-xs text-[hsl(var(--text-secondary))]">
                   경력 {career}년
                 </span>
               </>
@@ -172,7 +172,7 @@ export default function CounselorCard({
         {tags.slice(0, 3).map((tag) => (
           <span
             key={tag}
-            className="text-xs text-[var(--color-text-muted-card)] bg-[#1a1612]/10 rounded-full px-2.5 py-0.5"
+            className="text-xs text-[hsl(var(--text-secondary))] bg-[hsl(var(--surface))]/10 rounded-full px-2.5 py-0.5"
           >
             #{tag}
           </span>
@@ -180,9 +180,9 @@ export default function CounselorCard({
       </div>
 
       {/* Stats row */}
-      <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted-card)] mb-4">
+      <div className="flex items-center gap-3 text-xs text-[hsl(var(--text-secondary))] mb-4">
         <span>응답률 {responseRate}%</span>
-        <span className="text-[var(--color-text-muted-card)]">|</span>
+        <span className="text-[hsl(var(--text-secondary))]">|</span>
         <span>분당 {price.toLocaleString()}원</span>
       </div>
 
@@ -191,7 +191,7 @@ export default function CounselorCard({
         {c.isOnline && (
           <Button
             asChild
-            className="flex-1 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading rounded-full text-sm hover:from-[#b08d1f] hover:to-[#C9A227]"
+            className="flex-1 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold font-heading rounded-full text-sm hover:from-[hsl(var(--gold))/0.85] hover:to-[hsl(var(--gold))]"
           >
             <Link href={`/counselors/${c.id}`}>
               바로 상담
@@ -202,7 +202,7 @@ export default function CounselorCard({
           variant="outline"
           asChild
           className={cn(
-            'border-2 border-[#C9A227] text-[#C9A227] bg-transparent rounded-full text-sm font-bold font-heading hover:bg-[#C9A227]/10',
+            'border-2 border-[hsl(var(--gold))] text-[hsl(var(--gold))] bg-transparent rounded-full text-sm font-bold font-heading hover:bg-[hsl(var(--gold))]/10',
             c.isOnline ? 'flex-1' : 'w-full'
           )}
         >

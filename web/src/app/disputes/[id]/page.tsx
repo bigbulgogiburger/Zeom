@@ -26,15 +26,15 @@ type DisputeDetail = {
 const STATUS_MAP: Record<string, { label: string; className: string }> = {
   OPEN: {
     label: '접수됨',
-    className: 'bg-[var(--color-warning)] text-[var(--color-warning-light)] hover:bg-[var(--color-warning)]',
+    className: 'bg-[hsl(var(--warning))] text-[var(--color-warning-light)] hover:bg-[hsl(var(--warning))]',
   },
   IN_REVIEW: {
     label: '검토중',
-    className: 'bg-[#2563eb] text-white hover:bg-[#2563eb]',
+    className: 'bg-[hsl(var(--gold))] text-white hover:bg-[hsl(var(--gold))]',
   },
   RESOLVED: {
     label: '해결됨',
-    className: 'bg-[var(--color-success)] text-[var(--color-success-light)] hover:bg-[var(--color-success)]',
+    className: 'bg-[hsl(var(--success))] text-[var(--color-success-light)] hover:bg-[hsl(var(--success))]',
   },
 };
 
@@ -87,7 +87,7 @@ export default function DisputeDetailPage() {
           <Button
             variant="ghost"
             onClick={() => router.push('/disputes')}
-            className="text-[var(--color-gold)] font-heading font-bold"
+            className="text-[hsl(var(--gold))] font-heading font-bold"
           >
             &larr; 목록
           </Button>
@@ -98,7 +98,7 @@ export default function DisputeDetailPage() {
 
         {loading ? (
           <Card>
-            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
+            <div className="text-center py-8 text-[hsl(var(--text-secondary))]">
               불러오는 중...
             </div>
           </Card>
@@ -131,17 +131,17 @@ export default function DisputeDetailPage() {
 
                 <div className="grid gap-3 text-sm">
                   <div>
-                    <span className="text-[var(--color-text-muted-card)]">예약 번호: </span>
+                    <span className="text-[hsl(var(--text-secondary))]">예약 번호: </span>
                     <span className="font-bold">{dispute.reservationId}</span>
                   </div>
                   <div>
-                    <span className="text-[var(--color-text-muted-card)]">접수일: </span>
+                    <span className="text-[hsl(var(--text-secondary))]">접수일: </span>
                     <span>{new Date(dispute.createdAt).toLocaleString('ko-KR')}</span>
                   </div>
                 </div>
 
-                <div className="mt-4 p-4 bg-[#1a1612] rounded-xl text-sm">
-                  <div className="text-[var(--color-text-muted-card)] mb-1">설명</div>
+                <div className="mt-4 p-4 bg-[hsl(var(--surface))] rounded-xl text-sm">
+                  <div className="text-[hsl(var(--text-secondary))] mb-1">설명</div>
                   <div className="whitespace-pre-wrap">{dispute.description}</div>
                 </div>
               </div>
@@ -150,28 +150,28 @@ export default function DisputeDetailPage() {
             {dispute.status === 'RESOLVED' && (
               <Card>
                 <div className="space-y-4">
-                  <h3 className="m-0 text-lg font-bold font-heading text-[var(--color-gold)]">
+                  <h3 className="m-0 text-lg font-bold font-heading text-[hsl(var(--gold))]">
                     해결 결과
                   </h3>
 
                   <div className="grid gap-3 text-sm">
                     {dispute.resolutionType && (
                       <div>
-                        <span className="text-[var(--color-text-muted-card)]">처리 유형: </span>
+                        <span className="text-[hsl(var(--text-secondary))]">처리 유형: </span>
                         <span className="font-bold">
                           {RESOLUTION_TYPE_MAP[dispute.resolutionType] || dispute.resolutionType}
                         </span>
                       </div>
                     )}
                     {dispute.resolutionNote && (
-                      <div className="mt-2 p-4 bg-[#1a1612] rounded-xl">
-                        <div className="text-[var(--color-text-muted-card)] mb-1">관리자 메모</div>
+                      <div className="mt-2 p-4 bg-[hsl(var(--surface))] rounded-xl">
+                        <div className="text-[hsl(var(--text-secondary))] mb-1">관리자 메모</div>
                         <div className="whitespace-pre-wrap">{dispute.resolutionNote}</div>
                       </div>
                     )}
                     {dispute.resolvedAt && (
                       <div>
-                        <span className="text-[var(--color-text-muted-card)]">해결일: </span>
+                        <span className="text-[hsl(var(--text-secondary))]">해결일: </span>
                         <span>{new Date(dispute.resolvedAt).toLocaleString('ko-KR')}</span>
                       </div>
                     )}

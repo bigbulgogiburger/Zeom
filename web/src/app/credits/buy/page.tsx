@@ -116,23 +116,23 @@ export default function CreditBuyPage() {
     return (
       <RequireLogin>
         <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 grid gap-8">
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-12">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-12">
             <div className="text-center flex flex-col gap-6 items-center">
               <div className="text-6xl animate-bounce">
                 &#127916;&#10024;
               </div>
-              <div className="text-2xl font-black font-heading bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
+              <div className="text-2xl font-black font-heading bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent">
                 구매 완료!
               </div>
               {creditBalance !== null && (
-                <div className="text-lg text-[var(--color-text-on-dark)]">
-                  보유 상담권: <span className="font-bold text-[#C9A227]">
+                <div className="text-lg text-[hsl(var(--text-primary))]">
+                  보유 상담권: <span className="font-bold text-[hsl(var(--gold))]">
                     {creditBalance}회
                   </span>
                 </div>
               )}
               <InlineSuccess message={successMessage} />
-              <div className="text-sm text-[var(--color-text-muted-dark)] mt-4">
+              <div className="text-sm text-[hsl(var(--text-secondary))] mt-4">
                 잠시 후 이동합니다...
               </div>
             </div>
@@ -151,10 +151,10 @@ export default function CreditBuyPage() {
 
         {/* Needed credits notice */}
         {needed !== null && needed > 0 && (
-          <div className="bg-[#C9A227]/10 border border-[#C9A227]/30 rounded-2xl p-5 text-sm text-[#C9A227] font-heading">
+          <div className="bg-[hsl(var(--gold))]/10 border border-[hsl(var(--gold))]/30 rounded-2xl p-5 text-sm text-[hsl(var(--gold))] font-heading">
             예약에 필요한 상담권: <span className="font-bold">{needed}회</span>
             {creditBalance !== null && creditBalance < needed && (
-              <span className="ml-2 text-[var(--color-danger)]">
+              <span className="ml-2 text-[hsl(var(--dancheong))]">
                 (부족: {needed - creditBalance}회)
               </span>
             )}
@@ -163,19 +163,19 @@ export default function CreditBuyPage() {
 
         {/* Balance summary */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-6 text-center">
-            <div className="text-sm text-[var(--color-text-muted-dark)] mb-2 font-heading">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6 text-center">
+            <div className="text-sm text-[hsl(var(--text-secondary))] mb-2 font-heading">
               보유 상담권
             </div>
-            <div className="text-3xl font-black text-[#C9A227] font-heading">
+            <div className="text-3xl font-black text-[hsl(var(--gold))] font-heading">
               {creditBalance !== null ? `${creditBalance}회` : '-'}
             </div>
           </div>
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-6 text-center">
-            <div className="text-sm text-[var(--color-text-muted-dark)] mb-2 font-heading">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6 text-center">
+            <div className="text-sm text-[hsl(var(--text-secondary))] mb-2 font-heading">
               보유 캐시
             </div>
-            <div className="text-3xl font-black text-[#C9A227] font-heading">
+            <div className="text-3xl font-black text-[hsl(var(--gold))] font-heading">
               {cashBalance !== null ? `${cashBalance.toLocaleString()}원` : '-'}
             </div>
           </div>
@@ -183,15 +183,15 @@ export default function CreditBuyPage() {
 
         {/* Failure state */}
         {purchaseStatus === 'failed' && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8">
             <div className="text-center flex flex-col gap-4 items-center">
               <div className="text-4xl">&#9888;&#65039;</div>
-              <div className="text-lg font-bold text-[var(--color-danger)] font-heading">
+              <div className="text-lg font-bold text-[hsl(var(--dancheong))] font-heading">
                 구매 실패
               </div>
               <button
                 onClick={handleRetry}
-                className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] px-8 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
+                className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] px-8 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
               >
                 다시 시도하기
               </button>
@@ -200,7 +200,7 @@ export default function CreditBuyPage() {
         )}
 
         {/* Info box */}
-        <div className="bg-[#f9f5ed] border-2 border-[rgba(201,162,39,0.15)] rounded-2xl p-6 text-sm text-[var(--color-text-on-card)] leading-relaxed">
+        <div className="bg-[hsl(var(--text-primary))] border-2 border-[hsl(var(--gold)/0.15)] rounded-2xl p-6 text-sm text-[hsl(var(--text-primary))] leading-relaxed">
           보유한 캐시로 상담권을 구매할 수 있습니다. 상담권 1회는 30분 상담에 해당하며, 예약 시 자동으로 차감됩니다.
         </div>
 
@@ -208,8 +208,8 @@ export default function CreditBuyPage() {
         {loading ? (
           <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="border-2 border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] rounded-2xl p-6 min-h-[180px] flex items-center justify-center">
-                <div className="text-center text-[var(--color-text-muted-card)]">
+              <div key={i} className="border-2 border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] rounded-2xl p-6 min-h-[180px] flex items-center justify-center">
+                <div className="text-center text-[hsl(var(--text-secondary))]">
                   불러오는 중...
                 </div>
               </div>
@@ -227,39 +227,39 @@ export default function CreditBuyPage() {
                 <Card key={product.id}>
                   <div className="flex flex-col gap-4 min-h-[180px]">
                     <div>
-                      <h3 className="m-0 mb-2 text-lg font-bold text-[var(--color-text-on-card)] font-heading">
+                      <h3 className="m-0 mb-2 text-lg font-bold text-[hsl(var(--text-primary))] font-heading">
                         {product.name}
                       </h3>
                       {product.description && (
-                        <p className="m-0 mb-2 text-sm text-[var(--color-text-muted-card)] leading-relaxed">
+                        <p className="m-0 mb-2 text-sm text-[hsl(var(--text-secondary))] leading-relaxed">
                           {product.description}
                         </p>
                       )}
                     </div>
 
-                    <div className="grid gap-2 py-4 border-t border-b border-[var(--color-border-card)]">
+                    <div className="grid gap-2 py-4 border-t border-b border-[hsl(var(--border-subtle))]">
                       <div className="flex justify-between text-sm">
-                        <span className="text-[var(--color-text-muted-card)]">상담권</span>
-                        <span className="font-bold text-[var(--color-accent-primary)] font-heading">
+                        <span className="text-[hsl(var(--text-secondary))]">상담권</span>
+                        <span className="font-bold text-[hsl(var(--gold))] font-heading">
                           {units}회
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-[var(--color-text-muted-card)]">상담 시간</span>
-                        <span className="font-bold text-[var(--color-accent-primary)] font-heading">
+                        <span className="text-[hsl(var(--text-secondary))]">상담 시간</span>
+                        <span className="font-bold text-[hsl(var(--gold))] font-heading">
                           {product.minutes}분
                         </span>
                       </div>
                     </div>
 
                     <div className="mt-auto">
-                      <div className="text-2xl font-black text-center mb-4 text-[#C9A227] font-heading">
+                      <div className="text-2xl font-black text-center mb-4 text-[hsl(var(--gold))] font-heading">
                         {product.priceKrw.toLocaleString()}원
                       </div>
                       {insufficient ? (
                         <button
                           onClick={() => router.push(`/cash/buy?returnTo=/credits/buy${needed ? `?needed=${needed}&returnTo=${encodeURIComponent(returnTo)}` : ''}`)}
-                          className="w-full rounded-full py-3 px-6 text-base font-bold min-h-[44px] font-heading border-2 border-[#C9A227]/30 text-[#C9A227] bg-transparent cursor-pointer hover:bg-[#C9A227]/10"
+                          className="w-full rounded-full py-3 px-6 text-base font-bold min-h-[44px] font-heading border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] bg-transparent cursor-pointer hover:bg-[hsl(var(--gold))]/10"
                         >
                           캐시 충전하기
                         </button>
@@ -269,8 +269,8 @@ export default function CreditBuyPage() {
                           disabled={selectedProductId === product.id || purchaseStatus !== 'idle'}
                           className={`w-full rounded-full py-3 px-6 text-base font-bold min-h-[44px] font-heading border-none cursor-pointer ${
                             selectedProductId === product.id || purchaseStatus !== 'idle'
-                              ? 'bg-[var(--color-border-dark)] text-[var(--color-text-muted-dark)] cursor-not-allowed'
-                              : 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a]'
+                              ? 'bg-[hsl(var(--border-subtle))] text-[hsl(var(--text-secondary))] cursor-not-allowed'
+                              : 'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))]'
                           }`}
                         >
                           {selectedProductId === product.id ? '처리 중...' : '구매하기'}
@@ -289,7 +289,7 @@ export default function CreditBuyPage() {
           <button
             onClick={() => router.push(returnTo)}
             disabled={purchaseStatus === 'purchasing'}
-            className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 text-sm hover:bg-[#C9A227]/10 disabled:opacity-50 disabled:cursor-not-allowed bg-transparent font-heading"
+            className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full px-6 py-2 text-sm hover:bg-[hsl(var(--gold))]/10 disabled:opacity-50 disabled:cursor-not-allowed bg-transparent font-heading"
           >
             돌아가기
           </button>

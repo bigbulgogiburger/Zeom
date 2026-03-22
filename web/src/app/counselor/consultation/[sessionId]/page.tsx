@@ -375,7 +375,7 @@ export default function CounselorConsultationPage() {
         <PageTitle>상담실</PageTitle>
         <InlineError message={message} />
         <Card>
-          <div className="text-center py-8 text-[#a49484]">
+          <div className="text-center py-8 text-[hsl(var(--text-secondary))]">
             세션을 불러오는 중...
           </div>
         </Card>
@@ -390,12 +390,12 @@ export default function CounselorConsultationPage() {
 
       {/* Incoming call dialog */}
       <Dialog open={connectionState === ConnectionState.RINGING && !!incomingCall} onOpenChange={() => {}}>
-        <DialogContent className="bg-[#1a1612] text-[#f9f5ed] border-[rgba(201,162,39,0.15)] max-w-[420px] rounded-2xl">
+        <DialogContent className="bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] border-[hsl(var(--gold)/0.15)] max-w-[420px] rounded-2xl">
           <DialogHeader>
             <DialogTitle className="font-heading font-bold text-lg">
               고객 호출
             </DialogTitle>
-            <DialogDescription className="text-[#a49484] text-sm">
+            <DialogDescription className="text-[hsl(var(--text-secondary))] text-sm">
               고객님이 호출하고 있습니다. 수락하시겠습니까?
             </DialogDescription>
           </DialogHeader>
@@ -407,7 +407,7 @@ export default function CounselorConsultationPage() {
             <Button
               onClick={declineCall}
               variant="outline"
-              className="border-2 border-[#8B0000] text-[#8B0000] bg-transparent rounded-full font-heading font-bold hover:bg-[#8B0000] hover:text-white"
+              className="border-2 border-[hsl(var(--dancheong))] text-[hsl(var(--dancheong))] bg-transparent rounded-full font-heading font-bold hover:bg-[hsl(var(--dancheong))] hover:text-white"
             >
               거절
             </Button>
@@ -428,7 +428,7 @@ export default function CounselorConsultationPage() {
           <p className="text-sm font-bold text-[#DAA520]">
             고객 연결이 끊어졌습니다. 잠시 기다려주세요.
           </p>
-          <p className="text-xs text-[#a49484] mt-1">
+          <p className="text-xs text-[hsl(var(--text-secondary))] mt-1">
             고객이 다시 접속하면 자동으로 연결됩니다.
           </p>
         </div>
@@ -450,7 +450,7 @@ export default function CounselorConsultationPage() {
           <h3 className="m-0 mb-2 text-sm font-bold font-heading">고객 정보</h3>
           <div className="space-y-1 text-sm">
             <div>
-              <span className="text-[#a49484]">이름: </span>
+              <span className="text-[hsl(var(--text-secondary))]">이름: </span>
               <span className="font-bold">{session.customerName}</span>
             </div>
             <div className="mt-2">
@@ -459,12 +459,12 @@ export default function CounselorConsultationPage() {
                   connectionState === ConnectionState.CONNECTED
                     ? 'bg-green-600 text-white'
                     : connectionState === ConnectionState.WAITING
-                    ? 'bg-[#C9A227] text-[#0f0d0a]'
+                    ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))]'
                     : connectionState === ConnectionState.RINGING
-                    ? 'bg-[#D4A843] text-white animate-pulse'
+                    ? 'bg-[hsl(var(--gold-soft))] text-white animate-pulse'
                     : connectionState === ConnectionState.FAILED
-                    ? 'bg-[#8B0000] text-white'
-                    : 'bg-[#1a1612] text-[#a49484]'
+                    ? 'bg-[hsl(var(--dancheong))] text-white'
+                    : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))]'
                 }
               >
                 {getConnectionStateMessage()}
@@ -495,10 +495,10 @@ export default function CounselorConsultationPage() {
         <Card>
           <div className="text-center py-12">
             <div className="text-5xl mb-4">📞</div>
-            <div className="font-heading font-bold text-lg text-[#C9A227] mb-2">
+            <div className="font-heading font-bold text-lg text-[hsl(var(--gold))] mb-2">
               고객의 호출을 기다리는 중...
             </div>
-            <div className="text-sm text-[#a49484]">
+            <div className="text-sm text-[hsl(var(--text-secondary))]">
               고객이 상담실에 입장하면 자동으로 알림이 표시됩니다.
             </div>
           </div>
@@ -511,7 +511,7 @@ export default function CounselorConsultationPage() {
           <Card className={chatOpen ? 'lg:col-span-2' : ''}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[400px]">
               {/* Remote Video (Client) */}
-              <div className="bg-[#1a1612] rounded-lg relative overflow-hidden min-h-[300px]">
+              <div className="bg-[hsl(var(--surface))] rounded-lg relative overflow-hidden min-h-[300px]">
                 <video
                   ref={remoteVideoRef}
                   autoPlay
@@ -519,7 +519,7 @@ export default function CounselorConsultationPage() {
                   className="w-full h-full object-cover bg-black"
                 />
                 {!callConnected && (
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[#a49484]">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[hsl(var(--text-secondary))]">
                     <div className="text-5xl mb-2">&#128100;</div>
                     <div>{session.customerName}</div>
                   </div>
@@ -530,7 +530,7 @@ export default function CounselorConsultationPage() {
               </div>
 
               {/* Local Video (Counselor) */}
-              <div className="bg-[#1a1612] rounded-lg relative overflow-hidden min-h-[300px]">
+              <div className="bg-[hsl(var(--surface))] rounded-lg relative overflow-hidden min-h-[300px]">
                 <video
                   ref={localVideoRef}
                   autoPlay
@@ -539,7 +539,7 @@ export default function CounselorConsultationPage() {
                   className="w-full h-full object-cover bg-black"
                 />
                 {!callConnected && (
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[#a49484]">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[hsl(var(--text-secondary))]">
                     <div className="text-5xl mb-2">&#128100;</div>
                     <div>나 (선생님)</div>
                   </div>
@@ -574,8 +574,8 @@ export default function CounselorConsultationPage() {
           disabled={!callConnected}
           className={`disabled:opacity-50 ${
             audioEnabled
-              ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
-              : 'bg-[#8B0000] text-white font-heading font-bold hover:bg-[#8B0000]/90'
+              ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
+              : 'bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
           }`}
         >
           {audioEnabled ? '마이크 켜짐' : '마이크 꺼짐'}
@@ -586,8 +586,8 @@ export default function CounselorConsultationPage() {
           disabled={!callConnected}
           className={`disabled:opacity-50 ${
             videoEnabled
-              ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
-              : 'bg-[#8B0000] text-white font-heading font-bold hover:bg-[#8B0000]/90'
+              ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
+              : 'bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
           }`}
         >
           {videoEnabled ? '카메라 켜짐' : '카메라 꺼짐'}
@@ -598,8 +598,8 @@ export default function CounselorConsultationPage() {
           disabled={!sendbirdCreds}
           className={`disabled:opacity-50 ${
             chatOpen
-              ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
-              : 'bg-[#1a1612] text-[#f9f5ed] font-heading font-bold hover:bg-[#C9A227]/10'
+              ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
+              : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--gold))]/10'
           }`}
         >
           {chatOpen ? '채팅 닫기' : '채팅'}
@@ -611,8 +611,8 @@ export default function CounselorConsultationPage() {
             disabled={!callConnected}
             className={`disabled:opacity-50 ${
               pipActive
-                ? 'bg-[#C9A227] text-[#0f0d0a] font-heading font-bold hover:bg-[#D4A843]'
-                : 'bg-[#1a1612] text-[#f9f5ed] font-heading font-bold hover:bg-[#C9A227]/10'
+                ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
+                : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--gold))]/10'
             }`}
           >
             {pipActive ? 'PIP 끄기' : 'PIP'}
@@ -625,7 +625,7 @@ export default function CounselorConsultationPage() {
               setReconnectAttempts(0);
               initializeSendbird();
             }}
-            className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-8 font-heading font-bold"
+            className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] rounded-full px-8 font-heading font-bold"
           >
             다시 연결
           </Button>
@@ -634,7 +634,7 @@ export default function CounselorConsultationPage() {
         <Button
           onClick={handleEndSession}
           disabled={loading}
-          className="bg-[#8B0000] text-white font-heading font-bold hover:bg-[#8B0000]/90 rounded-full px-8 disabled:opacity-60"
+          className="bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90 rounded-full px-8 disabled:opacity-60"
         >
           {loading ? '종료 중...' : '상담 종료'}
         </Button>

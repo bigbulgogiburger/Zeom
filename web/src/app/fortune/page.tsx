@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-context';
 import { apiFetch } from '@/components/api-client';
+import { Sparkles, Coins, Heart, Leaf, Palette, Hash, Compass, Briefcase, Handshake } from 'lucide-react';
 
 // === Types ===
 
@@ -147,11 +148,11 @@ function ScoreGauge({ score, size = 'lg', hidden = false }: { score: number; siz
   const dim = (radius + stroke) * 2;
 
   const getColor = (s: number) => {
-    if (hidden) return 'rgba(201,162,39,0.3)';
-    if (s >= 80) return '#C9A227';
-    if (s >= 60) return '#b08d1f';
-    if (s >= 40) return '#8B6914';
-    return '#8B0000';
+    if (hidden) return 'hsl(var(--gold)/0.3)';
+    if (s >= 80) return 'hsl(var(--gold))';
+    if (s >= 60) return 'hsl(var(--gold))/0.85';
+    if (s >= 40) return 'hsl(var(--gold-muted))';
+    return 'hsl(var(--dancheong))';
   };
 
   return (
@@ -161,7 +162,7 @@ function ScoreGauge({ score, size = 'lg', hidden = false }: { score: number; siz
         cy={radius + stroke}
         r={radius}
         fill="none"
-        stroke="rgba(201,162,39,0.1)"
+        stroke="hsl(var(--gold)/0.1)"
         strokeWidth={stroke}
       />
       <circle
@@ -182,7 +183,7 @@ function ScoreGauge({ score, size = 'lg', hidden = false }: { score: number; siz
         y={radius + stroke}
         textAnchor="middle"
         dominantBaseline="central"
-        fill={hidden ? 'rgba(201,162,39,0.5)' : '#C9A227'}
+        fill={hidden ? 'hsl(var(--gold)/0.5)' : 'hsl(var(--gold))'}
         fontSize={size === 'lg' ? 28 : 16}
         fontWeight="900"
         fontFamily="var(--font-heading)"
@@ -195,17 +196,17 @@ function ScoreGauge({ score, size = 'lg', hidden = false }: { score: number; siz
 
 function ScoreBar({ score, hidden = false }: { score: number; hidden?: boolean }) {
   const getBarColor = (s: number) => {
-    if (hidden) return 'from-[rgba(201,162,39,0.2)] to-[rgba(201,162,39,0.3)]';
-    if (s >= 80) return 'from-[#C9A227] to-[#D4A843]';
-    if (s >= 60) return 'from-[#C9A227] to-[#b08d1f]';
-    if (s >= 40) return 'from-[#b08d1f] to-[#8B6914]';
-    return 'from-[#8B0000] to-[#b08d1f]';
+    if (hidden) return 'from-[hsl(var(--gold)/0.2)] to-[hsl(var(--gold)/0.3)]';
+    if (s >= 80) return 'from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))]';
+    if (s >= 60) return 'from-[hsl(var(--gold))] to-[hsl(var(--gold))/0.85]';
+    if (s >= 40) return 'from-[hsl(var(--gold))/0.85] to-[hsl(var(--gold-muted))]';
+    return 'from-[hsl(var(--dancheong))] to-[hsl(var(--gold))/0.85]';
   };
 
   const displayScore = hidden ? 60 : score;
 
   return (
-    <div className="w-full h-3 rounded-full bg-[rgba(201,162,39,0.1)] overflow-hidden">
+    <div className="w-full h-3 rounded-full bg-[hsl(var(--gold)/0.1)] overflow-hidden">
       <div
         className={`h-full rounded-full bg-gradient-to-r ${getBarColor(score)} transition-all duration-700`}
         style={{ width: `${displayScore}%` }}
@@ -216,7 +217,7 @@ function ScoreBar({ score, hidden = false }: { score: number; hidden?: boolean }
 
 function OhaengBar({ element, value, maxValue }: { element: string; value: number; maxValue: number }) {
   const pct = maxValue > 0 ? (value / maxValue) * 100 : 0;
-  const color = OHAENG_COLORS[element] || '#C9A227';
+  const color = OHAENG_COLORS[element] || 'hsl(var(--gold))';
   const label = OHAENG_LABELS[element] || element;
 
   return (
@@ -227,13 +228,13 @@ function OhaengBar({ element, value, maxValue }: { element: string; value: numbe
       >
         {label}
       </span>
-      <div className="flex-1 h-3 rounded-full bg-[rgba(201,162,39,0.1)] overflow-hidden">
+      <div className="flex-1 h-3 rounded-full bg-[hsl(var(--gold)/0.1)] overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-700"
           style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>
-      <span className="text-sm font-bold text-[#C9A227] w-6 text-right">{value}</span>
+      <span className="text-sm font-bold text-[hsl(var(--gold))] w-6 text-right">{value}</span>
     </div>
   );
 }
@@ -248,15 +249,15 @@ function TabBar({ activeTab, onTabChange }: { activeTab: TabType; onTabChange: (
   ];
 
   return (
-    <div className="flex rounded-xl overflow-hidden border border-[rgba(201,162,39,0.2)]">
+    <div className="flex rounded-xl overflow-hidden border border-[hsl(var(--gold)/0.2)]">
       {tabs.map((tab) => (
         <button
           key={tab.key}
           onClick={() => onTabChange(tab.key)}
           className={`flex-1 py-3 px-2 text-sm font-bold transition-all ${
             activeTab === tab.key
-              ? 'bg-[#C9A227] text-[#0f0d0a]'
-              : 'bg-transparent text-[#a49484] hover:text-[#C9A227]'
+              ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))]'
+              : 'bg-transparent text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))]'
           }`}
         >
           {tab.label}
@@ -281,9 +282,9 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
   return (
     <>
       {!isLoggedIn && (
-        <div className="glass-card p-5 border-[rgba(201,162,39,0.3)] text-center">
+        <div className="glass-card p-5 border-[hsl(var(--gold)/0.3)] text-center">
           <p className="text-sm text-foreground m-0 mb-3">
-            로그인하고 <span className="font-bold text-[#C9A227]">나만의 사주 운세</span>를 확인하세요
+            로그인하고 <span className="font-bold text-[hsl(var(--gold))]">나만의 사주 운세</span>를 확인하세요
           </p>
           <Link href="/login" className="btn-primary text-sm px-6 py-2">
             로그인하기
@@ -292,13 +293,13 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
       )}
 
       <div className="text-center">
-        <h2 className="text-2xl font-heading font-black text-[#C9A227] m-0">
+        <h2 className="text-2xl font-heading font-black text-[hsl(var(--gold))] m-0">
           오늘의 운세
         </h2>
-        <p className="text-[#a49484] text-sm mt-2 m-0">
+        <p className="text-[hsl(var(--text-secondary))] text-sm mt-2 m-0">
           {dateStr} ({dayStr}요일)
           {hasSajuData && fortune.dailyPillar && (
-            <span className="ml-2 text-[#C9A227]">
+            <span className="ml-2 text-[hsl(var(--gold))]">
               {fortune.dailyPillar.ganHanja || ''}{fortune.dailyPillar.jiHanja || ''}일
             </span>
           )}
@@ -307,37 +308,37 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
 
       {hasSajuData && fortune.dailyPillar && (
         <div className="glass-card p-6">
-          <h3 className="text-base font-heading font-bold text-[#C9A227] m-0 mb-4 text-center">
+          <h3 className="text-base font-heading font-bold text-[hsl(var(--gold))] m-0 mb-4 text-center">
             오늘의 일진
           </h3>
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
-              <p className="text-xs text-[#a49484] m-0 mb-1">오늘의 일진</p>
+              <p className="text-xs text-[hsl(var(--text-secondary))] m-0 mb-1">오늘의 일진</p>
               <p className="text-2xl font-heading font-black text-foreground m-0">
                 {fortune.dailyPillar.ganHanja || fortune.dailyPillar.gan}{fortune.dailyPillar.jiHanja || fortune.dailyPillar.ji}
               </p>
-              <p className="text-sm text-[#a49484] m-0">
+              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
                 ({fortune.dailyPillar.gan}{fortune.dailyPillar.ji})
               </p>
             </div>
             <div>
-              <p className="text-xs text-[#a49484] m-0 mb-1">당신의 일간</p>
+              <p className="text-xs text-[hsl(var(--text-secondary))] m-0 mb-1">당신의 일간</p>
               <p className="text-2xl font-heading font-black text-foreground m-0">
                 {fortune.myDayGanHanja || fortune.myDayGan}
               </p>
-              <p className="text-sm text-[#a49484] m-0">
+              <p className="text-sm text-[hsl(var(--text-secondary))] m-0">
                 ({fortune.myDayGan})
               </p>
             </div>
           </div>
           {fortune.relationship && (
-            <div className="mt-4 pt-3 border-t border-[rgba(201,162,39,0.15)] text-center">
-              <span className="text-sm text-[#a49484]">관계: </span>
-              <span className="text-sm font-bold text-[#C9A227]">{fortune.relationship}</span>
+            <div className="mt-4 pt-3 border-t border-[hsl(var(--gold)/0.15)] text-center">
+              <span className="text-sm text-[hsl(var(--text-secondary))]">관계: </span>
+              <span className="text-sm font-bold text-[hsl(var(--gold))]">{fortune.relationship}</span>
               {fortune.twelveUnseong && (
                 <>
-                  <span className="text-sm text-[#a49484] mx-2">|</span>
-                  <span className="text-sm font-bold text-[#C9A227]">{fortune.twelveUnseong}</span>
+                  <span className="text-sm text-[hsl(var(--text-secondary))] mx-2">|</span>
+                  <span className="text-sm font-bold text-[hsl(var(--gold))]">{fortune.twelveUnseong}</span>
                 </>
               )}
             </div>
@@ -352,7 +353,7 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
         <h2 className="text-xl font-heading font-bold text-foreground m-0 mb-3">
           총운 점수
         </h2>
-        <p className={`text-sm leading-relaxed max-w-[480px] mx-auto ${!isLoggedIn ? 'text-[#a49484]/50 blur-[3px] select-none' : 'text-[#a49484]'}`}>
+        <p className={`text-sm leading-relaxed max-w-[480px] mx-auto ${!isLoggedIn ? 'text-[hsl(var(--text-secondary))]/50 blur-[3px] select-none' : 'text-[hsl(var(--text-secondary))]'}`}>
           {fortune.summary}
         </p>
       </div>
@@ -367,12 +368,12 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
                   {cat.label}
                 </h3>
               </div>
-              <span className="text-xl font-heading font-black text-[#C9A227]">
+              <span className="text-xl font-heading font-black text-[hsl(var(--gold))]">
                 {isLoggedIn ? cat.score : '?'}
               </span>
             </div>
             <ScoreBar score={cat.score} hidden={!isLoggedIn} />
-            <p className={`text-sm mt-3 mb-0 leading-relaxed ${!isLoggedIn ? 'text-[#a49484]/50 blur-[3px] select-none' : 'text-[#a49484]'}`}>
+            <p className={`text-sm mt-3 mb-0 leading-relaxed ${!isLoggedIn ? 'text-[hsl(var(--text-secondary))]/50 blur-[3px] select-none' : 'text-[hsl(var(--text-secondary))]'}`}>
               {cat.description}
             </p>
           </div>
@@ -400,39 +401,39 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
         </h3>
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div className="text-center">
-            <div className="text-3xl mb-2">{'\uD83C\uDFA8'}</div>
-            <p className="text-xs text-[#a49484] m-0">행운의 색</p>
-            <p className={`text-base font-heading font-bold m-0 mt-1 ${!isLoggedIn ? 'text-[#C9A227]/40 blur-[2px] select-none' : 'text-[#C9A227]'}`}>
+            <div className="flex justify-center mb-2"><Palette className="size-7 text-[hsl(var(--gold))]" /></div>
+            <p className="text-xs text-[hsl(var(--text-secondary))] m-0">행운의 색</p>
+            <p className={`text-base font-heading font-bold m-0 mt-1 ${!isLoggedIn ? 'text-[hsl(var(--gold))]/40 blur-[2px] select-none' : 'text-[hsl(var(--gold))]'}`}>
               {isLoggedIn ? fortune.luckyColor : '???'}
             </p>
           </div>
           <div className="text-center">
-            <div className="text-3xl mb-2">{'\uD83D\uDD22'}</div>
-            <p className="text-xs text-[#a49484] m-0">행운의 숫자</p>
-            <p className={`text-base font-heading font-bold m-0 mt-1 ${!isLoggedIn ? 'text-[#C9A227]/40 blur-[2px] select-none' : 'text-[#C9A227]'}`}>
+            <div className="flex justify-center mb-2"><Hash className="size-7 text-[hsl(var(--gold))]" /></div>
+            <p className="text-xs text-[hsl(var(--text-secondary))] m-0">행운의 숫자</p>
+            <p className={`text-base font-heading font-bold m-0 mt-1 ${!isLoggedIn ? 'text-[hsl(var(--gold))]/40 blur-[2px] select-none' : 'text-[hsl(var(--gold))]'}`}>
               {isLoggedIn ? fortune.luckyNumber : '?'}
             </p>
           </div>
           <div className="text-center">
-            <div className="text-3xl mb-2">{'\uD83E\uDDED'}</div>
-            <p className="text-xs text-[#a49484] m-0">행운의 방향</p>
-            <p className={`text-base font-heading font-bold m-0 mt-1 ${!isLoggedIn ? 'text-[#C9A227]/40 blur-[2px] select-none' : 'text-[#C9A227]'}`}>
+            <div className="flex justify-center mb-2"><Compass className="size-7 text-[hsl(var(--gold))]" /></div>
+            <p className="text-xs text-[hsl(var(--text-secondary))] m-0">행운의 방향</p>
+            <p className={`text-base font-heading font-bold m-0 mt-1 ${!isLoggedIn ? 'text-[hsl(var(--gold))]/40 blur-[2px] select-none' : 'text-[hsl(var(--gold))]'}`}>
               {isLoggedIn ? fortune.luckyDirection : '???'}
             </p>
           </div>
         </div>
         {(fortune.luckyTime || fortune.warningTime) && (
-          <div className="border-t border-[rgba(201,162,39,0.15)] pt-4 grid grid-cols-2 gap-4">
+          <div className="border-t border-[hsl(var(--gold)/0.15)] pt-4 grid grid-cols-2 gap-4">
             {fortune.luckyTime && (
               <div className="text-center">
-                <p className="text-xs text-[#a49484] m-0 mb-1">행운의 시간</p>
-                <p className="text-sm font-bold text-[#2E8B57] m-0">{fortune.luckyTime}</p>
+                <p className="text-xs text-[hsl(var(--text-secondary))] m-0 mb-1">행운의 시간</p>
+                <p className="text-sm font-bold text-[hsl(var(--success))] m-0">{fortune.luckyTime}</p>
               </div>
             )}
             {fortune.warningTime && (
               <div className="text-center">
-                <p className="text-xs text-[#a49484] m-0 mb-1">주의 시간</p>
-                <p className="text-sm font-bold text-[#8B0000] m-0">{fortune.warningTime}</p>
+                <p className="text-xs text-[hsl(var(--text-secondary))] m-0 mb-1">주의 시간</p>
+                <p className="text-sm font-bold text-[hsl(var(--dancheong))] m-0">{fortune.warningTime}</p>
               </div>
             )}
           </div>
@@ -444,18 +445,18 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
           <h3 className="text-lg font-heading font-bold text-foreground m-0 mb-3">
             사주 인사이트
           </h3>
-          <p className="text-sm text-[#a49484] leading-relaxed m-0">
+          <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed m-0">
             {fortune.sajuInsight}
           </p>
         </div>
       )}
 
       {!isLoggedIn ? (
-        <div className="glass-card p-8 border-[rgba(201,162,39,0.3)] text-center">
+        <div className="glass-card p-8 border-[hsl(var(--gold)/0.3)] text-center">
           <p className="text-lg font-heading font-bold text-foreground m-0 mb-2">
             나의 운세 점수가 궁금하신가요?
           </p>
-          <p className="text-sm text-[#a49484] m-0 mb-5">
+          <p className="text-sm text-[hsl(var(--text-secondary))] m-0 mb-5">
             로그인하면 사주팔자 기반 맞춤형 운세를 확인할 수 있습니다
           </p>
           <div className="flex gap-3 justify-center">
@@ -468,7 +469,7 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
           </div>
         </div>
       ) : fortune.counselorCta?.show ? (
-        <div className="glass-card p-6 border-[rgba(201,162,39,0.3)]">
+        <div className="glass-card p-6 border-[hsl(var(--gold)/0.3)]">
           <p className="text-sm text-foreground leading-relaxed mb-4 m-0">
             {fortune.counselorCta.message}
           </p>
@@ -480,7 +481,7 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
         </div>
       ) : (
         <div className="text-center">
-          <p className="text-[#a49484] text-sm mb-4">
+          <p className="text-[hsl(var(--text-secondary))] text-sm mb-4">
             운세를 바탕으로 전문 상담사와 상담해보세요
           </p>
           <Link href="/counselors" className="btn-primary-lg text-base px-10 py-3">
@@ -534,17 +535,17 @@ function ZodiacFortuneTab() {
       <>
         <button
           onClick={() => setSelected(null)}
-          className="text-sm text-[#C9A227] hover:underline mb-2"
+          className="text-sm text-[hsl(var(--gold))] hover:underline mb-2"
         >
           &larr; 전체 띠 보기
         </button>
 
         <div className="glass-card p-6 text-center">
           <div className="text-5xl mb-3">{selected.emoji}</div>
-          <h2 className="text-2xl font-heading font-black text-[#C9A227] m-0">
+          <h2 className="text-2xl font-heading font-black text-[hsl(var(--gold))] m-0">
             {selected.animal}띠 오늘의 운세
           </h2>
-          <p className="text-sm text-[#a49484] mt-1 m-0">
+          <p className="text-sm text-[hsl(var(--text-secondary))] mt-1 m-0">
             {selected.jiji}({selected.hanja})
           </p>
         </div>
@@ -554,7 +555,7 @@ function ZodiacFortuneTab() {
             <ScoreGauge score={selected.overallScore} />
           </div>
           <h3 className="text-lg font-heading font-bold text-foreground m-0 mb-3">총운</h3>
-          <p className="text-sm text-[#a49484] leading-relaxed m-0">{selected.overallText}</p>
+          <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed m-0">{selected.overallText}</p>
         </div>
 
         {[
@@ -568,10 +569,10 @@ function ZodiacFortuneTab() {
                 <span className="text-2xl">{cat.icon}</span>
                 <h3 className="text-lg font-heading font-bold text-foreground m-0">{cat.label}</h3>
               </div>
-              <span className="text-xl font-heading font-black text-[#C9A227]">{cat.score}</span>
+              <span className="text-xl font-heading font-black text-[hsl(var(--gold))]">{cat.score}</span>
             </div>
             <ScoreBar score={cat.score} />
-            <p className="text-sm mt-3 mb-0 leading-relaxed text-[#a49484]">{cat.text}</p>
+            <p className="text-sm mt-3 mb-0 leading-relaxed text-[hsl(var(--text-secondary))]">{cat.text}</p>
           </div>
         ))}
 
@@ -581,25 +582,25 @@ function ZodiacFortuneTab() {
           </h3>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-3xl mb-2">{'\uD83C\uDFA8'}</div>
-              <p className="text-xs text-[#a49484] m-0">행운의 색</p>
-              <p className="text-base font-heading font-bold text-[#C9A227] m-0 mt-1">{selected.luckyColor}</p>
+              <div className="flex justify-center mb-2"><Palette className="size-7 text-[hsl(var(--gold))]" /></div>
+              <p className="text-xs text-[hsl(var(--text-secondary))] m-0">행운의 색</p>
+              <p className="text-base font-heading font-bold text-[hsl(var(--gold))] m-0 mt-1">{selected.luckyColor}</p>
             </div>
             <div className="text-center">
-              <div className="text-3xl mb-2">{'\uD83D\uDD22'}</div>
-              <p className="text-xs text-[#a49484] m-0">행운의 숫자</p>
-              <p className="text-base font-heading font-bold text-[#C9A227] m-0 mt-1">{selected.luckyNumber}</p>
+              <div className="flex justify-center mb-2"><Hash className="size-7 text-[hsl(var(--gold))]" /></div>
+              <p className="text-xs text-[hsl(var(--text-secondary))] m-0">행운의 숫자</p>
+              <p className="text-base font-heading font-bold text-[hsl(var(--gold))] m-0 mt-1">{selected.luckyNumber}</p>
             </div>
             <div className="text-center">
-              <div className="text-3xl mb-2">{'\uD83E\uDDED'}</div>
-              <p className="text-xs text-[#a49484] m-0">행운의 방향</p>
-              <p className="text-base font-heading font-bold text-[#C9A227] m-0 mt-1">{selected.luckyDirection}</p>
+              <div className="flex justify-center mb-2"><Compass className="size-7 text-[hsl(var(--gold))]" /></div>
+              <p className="text-xs text-[hsl(var(--text-secondary))] m-0">행운의 방향</p>
+              <p className="text-base font-heading font-bold text-[hsl(var(--gold))] m-0 mt-1">{selected.luckyDirection}</p>
             </div>
           </div>
         </div>
 
         <div className="text-center">
-          <p className="text-[#a49484] text-sm mb-4">
+          <p className="text-[hsl(var(--text-secondary))] text-sm mb-4">
             더 자세한 운세 상담을 원하시나요?
           </p>
           <Link href="/counselors" className="btn-primary-lg text-base px-10 py-3">
@@ -613,10 +614,10 @@ function ZodiacFortuneTab() {
   return (
     <>
       <div className="text-center">
-        <h2 className="text-2xl font-heading font-black text-[#C9A227] m-0">
+        <h2 className="text-2xl font-heading font-black text-[hsl(var(--gold))] m-0">
           띠별 운세
         </h2>
-        <p className="text-sm text-[#a49484] mt-2 m-0">
+        <p className="text-sm text-[hsl(var(--text-secondary))] mt-2 m-0">
           나의 띠를 선택하고 오늘의 운세를 확인하세요
         </p>
       </div>
@@ -626,20 +627,20 @@ function ZodiacFortuneTab() {
           <button
             key={zodiac.animal}
             onClick={() => setSelected(zodiac)}
-            className="glass-card p-4 text-center hover:border-[rgba(201,162,39,0.5)] transition-all group"
+            className="glass-card p-4 text-center hover:border-[hsl(var(--gold)/0.5)] transition-all group"
           >
             <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">
               {zodiac.emoji}
             </div>
             <p className="text-sm font-bold text-foreground m-0">{zodiac.animal}</p>
-            <p className="text-xs text-[#a49484] m-0 mt-1">
+            <p className="text-xs text-[hsl(var(--text-secondary))] m-0 mt-1">
               {zodiac.jiji}({zodiac.hanja})
             </p>
             <div className="mt-2">
-              <span className="text-sm font-heading font-black text-[#C9A227]">
+              <span className="text-sm font-heading font-black text-[hsl(var(--gold))]">
                 {zodiac.overallScore}
               </span>
-              <span className="text-xs text-[#a49484]">점</span>
+              <span className="text-xs text-[hsl(var(--text-secondary))]">점</span>
             </div>
           </button>
         ))}
@@ -687,19 +688,19 @@ function CompatibilityTab() {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#C9A227';
-    if (score >= 60) return '#b08d1f';
-    if (score >= 40) return '#8B6914';
-    return '#8B0000';
+    if (score >= 80) return 'hsl(var(--gold))';
+    if (score >= 60) return 'hsl(var(--gold))/0.85';
+    if (score >= 40) return 'hsl(var(--gold-muted))';
+    return 'hsl(var(--dancheong))';
   };
 
   return (
     <>
       <div className="text-center">
-        <h2 className="text-2xl font-heading font-black text-[#C9A227] m-0">
+        <h2 className="text-2xl font-heading font-black text-[hsl(var(--gold))] m-0">
           궁합 테스트
         </h2>
-        <p className="text-sm text-[#a49484] mt-2 m-0">
+        <p className="text-sm text-[hsl(var(--text-secondary))] mt-2 m-0">
           두 사람의 생년월일로 궁합을 확인해보세요
         </p>
       </div>
@@ -707,31 +708,31 @@ function CompatibilityTab() {
       <form onSubmit={handleSubmit} className="glass-card p-6">
         <div className="grid gap-5">
           <div>
-            <label className="block text-sm font-bold text-[#C9A227] mb-2">
+            <label className="block text-sm font-bold text-[hsl(var(--gold))] mb-2">
               첫 번째 사람 생년월일
             </label>
             <input
               type="date"
               value={birthDate1}
               onChange={(e) => setBirthDate1(e.target.value)}
-              className="w-full p-3 rounded-xl bg-[rgba(201,162,39,0.05)] border border-[rgba(201,162,39,0.2)] text-foreground focus:border-[#C9A227] focus:outline-none transition-colors"
+              className="w-full p-3 rounded-xl bg-[hsl(var(--gold)/0.05)] border border-[hsl(var(--gold)/0.2)] text-foreground focus:border-[hsl(var(--gold))] focus:outline-none transition-colors"
               max={new Date().toISOString().split('T')[0]}
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-[#C9A227] mb-2">
+            <label className="block text-sm font-bold text-[hsl(var(--gold))] mb-2">
               두 번째 사람 생년월일
             </label>
             <input
               type="date"
               value={birthDate2}
               onChange={(e) => setBirthDate2(e.target.value)}
-              className="w-full p-3 rounded-xl bg-[rgba(201,162,39,0.05)] border border-[rgba(201,162,39,0.2)] text-foreground focus:border-[#C9A227] focus:outline-none transition-colors"
+              className="w-full p-3 rounded-xl bg-[hsl(var(--gold)/0.05)] border border-[hsl(var(--gold)/0.2)] text-foreground focus:border-[hsl(var(--gold))] focus:outline-none transition-colors"
               max={new Date().toISOString().split('T')[0]}
             />
           </div>
           {error && (
-            <p className="text-sm text-[#8B0000] m-0">{error}</p>
+            <p className="text-sm text-[hsl(var(--dancheong))] m-0">{error}</p>
           )}
           <button
             type="submit"
@@ -751,7 +752,7 @@ function CompatibilityTab() {
                 <div className="text-4xl mb-1">{result.emoji1}</div>
                 <p className="text-sm font-bold text-foreground m-0">{result.animal1}띠</p>
               </div>
-              <div className="text-3xl text-[#C9A227]">&hearts;</div>
+              <div className="text-3xl text-[hsl(var(--gold))]">&hearts;</div>
               <div className="text-center">
                 <div className="text-4xl mb-1">{result.emoji2}</div>
                 <p className="text-sm font-bold text-foreground m-0">{result.animal2}띠</p>
@@ -764,7 +765,7 @@ function CompatibilityTab() {
             <h3 className="text-xl font-heading font-bold m-0 mb-3" style={{ color: getScoreColor(result.score) }}>
               궁합 점수
             </h3>
-            <p className="text-sm text-[#a49484] leading-relaxed m-0 max-w-[480px] mx-auto">
+            <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed m-0 max-w-[480px] mx-auto">
               {result.summary}
             </p>
           </div>
@@ -785,11 +786,11 @@ function CompatibilityTab() {
                 </span>
               </div>
               <ScoreBar score={cat.data.score} />
-              <p className="text-sm mt-3 mb-0 leading-relaxed text-[#a49484]">{cat.data.description}</p>
+              <p className="text-sm mt-3 mb-0 leading-relaxed text-[hsl(var(--text-secondary))]">{cat.data.description}</p>
             </div>
           ))}
 
-          <div className="glass-card p-6 border-[rgba(201,162,39,0.3)] text-center">
+          <div className="glass-card p-6 border-[hsl(var(--gold)/0.3)] text-center">
             <p className="text-sm text-foreground m-0 mb-4">
               상담사에게 자세한 궁합 분석을 받아보세요
             </p>
@@ -858,7 +859,7 @@ export default function FortunePage() {
 
   return (
     <div className="page-container">
-      <h1 className="text-3xl font-heading font-black text-[#C9A227] m-0 text-center">
+      <h1 className="text-3xl font-heading font-black text-[hsl(var(--gold))] m-0 text-center">
         운세
       </h1>
 

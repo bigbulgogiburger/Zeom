@@ -27,9 +27,9 @@ export default function SortDropdown({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={cn(
-        'bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl px-4 py-2.5',
-        'text-sm font-heading font-medium text-[var(--color-text-on-dark)]',
-        'focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40',
+        'bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl px-4 py-2.5',
+        'text-sm font-heading font-medium text-[hsl(var(--text-primary))]',
+        'focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40',
         'cursor-pointer min-w-[140px]'
       )}
     >

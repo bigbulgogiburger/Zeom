@@ -291,7 +291,7 @@ export default function MyBookingsPage() {
     switch (state.phase) {
       case 'too_early':
         return (
-          <Button variant="secondary" disabled className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227]">
+          <Button variant="secondary" disabled className="rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]">
             {state.minutesUntilEntry}분 후 입장 가능
           </Button>
         );
@@ -301,7 +301,7 @@ export default function MyBookingsPage() {
             variant="default"
             disabled={enteringId === b.id}
             onClick={() => enterSession(b.id)}
-            className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold"
+            className="rounded-full bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold"
           >
             {enteringId === b.id ? '입장 중...' : '입장 가능'}
           </Button>
@@ -319,7 +319,7 @@ export default function MyBookingsPage() {
         );
       case 'ended':
         return (
-          <Button variant="outline" disabled className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227]">
+          <Button variant="outline" disabled className="rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]">
             상담 종료
           </Button>
         );
@@ -334,8 +334,8 @@ export default function MyBookingsPage() {
 
     return (
       <div className="space-y-3">
-        <div className="bg-[var(--color-danger)]/10 border border-[var(--color-danger)]/20 rounded-xl px-4 py-3 text-sm">
-          <p className="text-[var(--color-danger)] font-bold font-heading mb-1">
+        <div className="bg-[hsl(var(--dancheong))]/10 border border-[hsl(var(--dancheong))]/20 rounded-xl px-4 py-3 text-sm">
+          <p className="text-[hsl(var(--dancheong))] font-bold font-heading mb-1">
             결제에 실패했습니다
           </p>
           <p className="text-muted-foreground text-xs">
@@ -347,7 +347,7 @@ export default function MyBookingsPage() {
         {exhausted ? (
           <Button
             variant="outline"
-            className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] w-full"
+            className="rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] w-full"
             onClick={() => router.push('/support')}
           >
             고객센터 문의
@@ -355,7 +355,7 @@ export default function MyBookingsPage() {
         ) : (
           <Button
             variant="default"
-            className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold w-full"
+            className="rounded-full bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold w-full"
             disabled={retryingId === b.id}
             onClick={() => retryPayment(b.id)}
           >
@@ -453,7 +453,7 @@ export default function MyBookingsPage() {
                         <Button
                           variant="outline"
                           onClick={() => router.push(`/counselors/${b.counselorId}`)}
-                          className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227]"
+                          className="rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]"
                         >
                           예약 변경
                         </Button>
@@ -477,12 +477,12 @@ export default function MyBookingsPage() {
 
         {/* Cancel Reason Modal */}
         <Dialog open={cancelModalOpen} onOpenChange={(open) => { if (!open) setCancelModalOpen(false); }}>
-          <DialogContent className="bg-[var(--color-bg-card)] text-[var(--color-text-on-card)] border-[rgba(201,162,39,0.15)] rounded-2xl max-w-[420px]">
+          <DialogContent className="bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] border-[hsl(var(--gold)/0.15)] rounded-2xl max-w-[420px]">
             <DialogHeader>
               <DialogTitle className="font-heading font-bold text-lg">
                 예약 취소
               </DialogTitle>
-              <DialogDescription className="text-[var(--color-text-muted-card)] text-sm leading-normal">
+              <DialogDescription className="text-[hsl(var(--text-secondary))] text-sm leading-normal">
                 취소 사유를 선택해주세요.
               </DialogDescription>
             </DialogHeader>
@@ -514,8 +514,8 @@ export default function MyBookingsPage() {
                   onClick={() => setCancelReason(r.value)}
                   className={`text-left px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-heading ${
                     cancelReason === r.value
-                      ? 'border-[#C9A227] bg-[#C9A227]/10 text-[#C9A227] font-bold'
-                      : 'border-[rgba(201,162,39,0.15)] text-[var(--color-text-on-card)] hover:border-[#C9A227]/30'
+                      ? 'border-[hsl(var(--gold))] bg-[hsl(var(--gold))]/10 text-[hsl(var(--gold))] font-bold'
+                      : 'border-[hsl(var(--gold)/0.15)] text-[hsl(var(--text-primary))] hover:border-[hsl(var(--gold))]/30'
                   }`}
                 >
                   {r.label}
@@ -527,7 +527,7 @@ export default function MyBookingsPage() {
                   value={cancelOtherText}
                   onChange={(e) => setCancelOtherText(e.target.value)}
                   placeholder="취소 사유를 입력해주세요..."
-                  className="mt-2 w-full min-h-[80px] rounded-xl border border-[rgba(201,162,39,0.15)] bg-[#1a1612] text-[var(--color-text-on-card)] px-4 py-3 text-sm placeholder:text-[#a49484]/50 focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40 resize-none"
+                  className="mt-2 w-full min-h-[80px] rounded-xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] px-4 py-3 text-sm placeholder:text-[hsl(var(--text-secondary))]/50 focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40 resize-none"
                 />
               )}
             </div>
@@ -537,14 +537,14 @@ export default function MyBookingsPage() {
                 variant="outline"
                 onClick={() => setCancelModalOpen(false)}
                 disabled={cancelling}
-                className="border-2 border-[var(--color-border-card)] text-[var(--color-text-on-card)] bg-transparent font-heading font-bold hover:bg-[var(--color-bg-card-hover)]"
+                className="border-2 border-[hsl(var(--border-subtle))] text-[hsl(var(--text-primary))] bg-transparent font-heading font-bold hover:bg-[hsl(var(--surface-hover))]"
               >
                 닫기
               </Button>
               <Button
                 onClick={confirmCancel}
                 disabled={cancelling}
-                className="bg-[var(--color-danger)] text-white hover:bg-[var(--color-danger)]/90 font-heading font-bold"
+                className="bg-[hsl(var(--dancheong))] text-white hover:bg-[hsl(var(--dancheong))]/90 font-heading font-bold"
               >
                 {cancelling ? '취소 중...' : '예약 취소'}
               </Button>

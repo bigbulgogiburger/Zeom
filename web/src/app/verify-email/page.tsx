@@ -45,20 +45,20 @@ function VerifyEmailContent() {
     <div className="text-center">
       {status === 'loading' && (
         <div className="py-8">
-          <div className="w-8 h-8 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-[#a49484]">이메일 인증 중...</p>
+          <div className="w-8 h-8 border-2 border-[hsl(var(--gold))] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm text-[hsl(var(--text-secondary))]">이메일 인증 중...</p>
         </div>
       )}
 
       {status === 'success' && (
-        <div className="mb-6 p-4 rounded-xl bg-[#1a1612] border border-[rgba(201,162,39,0.15)]">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] flex items-center justify-center mx-auto mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0f0d0a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <div className="mb-6 p-4 rounded-xl bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)]">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] flex items-center justify-center mx-auto mb-4">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--background))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
           <p className="text-sm text-foreground font-bold mb-1">{message}</p>
-          <p className="text-xs text-[#a49484]">이제 모든 서비스를 이용하실 수 있습니다.</p>
+          <p className="text-xs text-[hsl(var(--text-secondary))]">이제 모든 서비스를 이용하실 수 있습니다.</p>
         </div>
       )}
 
@@ -72,7 +72,7 @@ function VerifyEmailContent() {
 
       <Link
         href="/login"
-        className="text-[#C9A227] font-bold text-sm hover:underline hover:text-[#D4A843] transition-colors"
+        className="text-[hsl(var(--gold))] font-bold text-sm hover:underline hover:text-[hsl(var(--gold-soft))] transition-colors"
       >
         로그인 페이지로 이동
       </Link>
@@ -83,18 +83,18 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <main
-      className="min-h-[100dvh] flex flex-col items-center justify-center p-6 bg-[#0f0d0a]"
-      style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.05) 0%, transparent 70%)' }}
+      className="min-h-[100dvh] flex flex-col items-center justify-center p-6 bg-[hsl(var(--background))]"
+      style={{ backgroundImage: 'radial-gradient(ellipse at center, hsl(var(--gold)/0.05) 0%, transparent 70%)' }}
     >
       <div className="w-full max-w-[420px]">
-        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 sm:p-10">
+        <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8 sm:p-10">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent font-heading m-0 mb-2">
+            <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent font-heading m-0 mb-2">
               이메일 인증
             </h1>
           </div>
 
-          <Suspense fallback={<div className="text-center text-sm text-[#a49484]">로딩 중...</div>}>
+          <Suspense fallback={<div className="text-center text-sm text-[hsl(var(--text-secondary))]">로딩 중...</div>}>
             <VerifyEmailContent />
           </Suspense>
         </div>

@@ -190,10 +190,10 @@ export default function CounselorsPage() {
     <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-16">
       {/* Header */}
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-black tracking-tight text-[var(--color-text-on-dark)] font-heading">
+        <h1 className="text-4xl font-black tracking-tight text-[hsl(var(--text-primary))] font-heading">
           {t('title')}
         </h1>
-        <p className="text-[#a49484] text-lg leading-relaxed mt-3">
+        <p className="text-[hsl(var(--text-secondary))] text-lg leading-relaxed mt-3">
           {t('subtitle')}
         </p>
       </div>
@@ -205,7 +205,7 @@ export default function CounselorsPage() {
           placeholder={t('searchPlaceholder')}
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="w-full min-h-[52px] bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl px-5 py-3.5 text-[var(--color-text-on-dark)] placeholder:text-[#a49484]/50 focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40 transition-all text-base"
+          className="w-full min-h-[52px] bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl px-5 py-3.5 text-[hsl(var(--text-primary))] placeholder:text-[hsl(var(--text-secondary))]/50 focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40 transition-all text-base"
         />
       </div>
 
@@ -220,7 +220,7 @@ export default function CounselorsPage() {
         />
 
         <div className="flex justify-between items-center max-w-[600px] mx-auto">
-          <span className="text-sm text-[#a49484]">
+          <span className="text-sm text-[hsl(var(--text-secondary))]">
             {!loading && `${totalElements}명의 상담사`}
           </span>
           <SortDropdown value={sortBy} onChange={handleSortChange} />
@@ -233,20 +233,20 @@ export default function CounselorsPage() {
           {Array.from({ length: 6 }, (_, i) => (
             <div
               key={i}
-              className="bg-[var(--color-bg-card)] border border-[rgba(201,162,39,0.1)] rounded-2xl p-6 animate-pulse"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6 animate-pulse"
             >
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-16 h-16 rounded-full bg-[#e5ddd0]" />
+                <div className="w-16 h-16 rounded-full bg-[hsl(var(--border-subtle))]" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-5 w-3/5 bg-[#e5ddd0] rounded-lg" />
-                  <div className="h-3 w-2/3 bg-[#e5ddd0] rounded-lg" />
+                  <div className="h-5 w-3/5 bg-[hsl(var(--border-subtle))] rounded-lg" />
+                  <div className="h-3 w-2/3 bg-[hsl(var(--border-subtle))] rounded-lg" />
                 </div>
               </div>
-              <div className="h-3 w-4/5 bg-[#e5ddd0] rounded-lg mb-2" />
-              <div className="h-3 w-3/5 bg-[#e5ddd0] rounded-lg mb-4" />
+              <div className="h-3 w-4/5 bg-[hsl(var(--border-subtle))] rounded-lg mb-2" />
+              <div className="h-3 w-3/5 bg-[hsl(var(--border-subtle))] rounded-lg mb-4" />
               <div className="flex gap-2">
-                <div className="h-10 flex-1 bg-[#e5ddd0] rounded-full" />
-                <div className="h-10 flex-1 bg-[#e5ddd0] rounded-full" />
+                <div className="h-10 flex-1 bg-[hsl(var(--border-subtle))] rounded-full" />
+                <div className="h-10 flex-1 bg-[hsl(var(--border-subtle))] rounded-full" />
               </div>
             </div>
           ))}
@@ -259,13 +259,13 @@ export default function CounselorsPage() {
           </AlertDescription>
         </Alert>
       ) : counselors.length === 0 ? (
-        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8">
+        <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8">
           <div className="text-center py-6">
             <div className="text-4xl mb-4">🔍</div>
-            <p className="font-bold font-heading text-xl text-[var(--color-text-on-dark)]">
+            <p className="font-bold font-heading text-xl text-[hsl(var(--text-primary))]">
               {t('noResults')}
             </p>
-            <p className="text-[#a49484] text-sm mt-2 leading-relaxed">
+            <p className="text-[hsl(var(--text-secondary))] text-sm mt-2 leading-relaxed">
               {t('noResultsHint')}
             </p>
             <button
@@ -277,7 +277,7 @@ export default function CounselorsPage() {
                 setSortBy('recommended');
                 setPage(1);
               }}
-              className="mt-6 inline-flex items-center justify-center rounded-full px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading transition-all hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)]"
+              className="mt-6 inline-flex items-center justify-center rounded-full px-8 py-3 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold font-heading transition-all hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)]"
             >
               {t('viewAll')}
             </button>

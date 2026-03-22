@@ -86,31 +86,31 @@ export default function AdminAuditPage() {
               placeholder="action (예: AUTH_LOGIN)"
               value={action}
               onChange={(e) => setAction(e.target.value)}
-              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] placeholder:text-[#a49484] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] placeholder:text-[hsl(var(--text-secondary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none"
             />
-            <label className="text-sm text-[#a49484] flex items-center gap-1.5">
+            <label className="text-sm text-[hsl(var(--text-secondary))] flex items-center gap-1.5">
               시작
               <input
                 type="datetime-local"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
+                className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none"
               />
             </label>
-            <label className="text-sm text-[#a49484] flex items-center gap-1.5">
+            <label className="text-sm text-[hsl(var(--text-secondary))] flex items-center gap-1.5">
               종료
               <input
                 type="datetime-local"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none"
+                className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none"
               />
             </label>
             <ActionButton onClick={load} loading={loading}>불러오기</ActionButton>
             <ActionButton
               onClick={downloadCsv}
               loading={loading}
-              className="!bg-transparent border-2 border-[#C9A227]/30 !text-[#C9A227] hover:!bg-[#C9A227]/10"
+              className="!bg-transparent border-2 border-[hsl(var(--gold))]/30 !text-[hsl(var(--gold))] hover:!bg-[hsl(var(--gold))]/10"
             >
               CSV 다운로드
             </ActionButton>
@@ -129,13 +129,13 @@ export default function AdminAuditPage() {
             <Card key={a.id}>
               <div className="flex justify-between gap-4 flex-wrap items-center">
                 <div className="font-heading font-bold">
-                  <span className="text-[#C9A227]">#{a.id}</span>
-                  <span className="text-[#a49484] mx-2">·</span>
+                  <span className="text-[hsl(var(--gold))]">#{a.id}</span>
+                  <span className="text-[hsl(var(--text-secondary))] mx-2">·</span>
                   <span className="text-sm font-normal">{new Date(a.createdAt).toLocaleString('ko-KR')}</span>
                 </div>
                 <StatusBadge value={a.action} />
               </div>
-              <div className="mt-3 text-[#a49484] text-sm">
+              <div className="mt-3 text-[hsl(var(--text-secondary))] text-sm">
                 user={a.userId}, target={a.targetType}:{a.targetId}
               </div>
             </Card>
@@ -147,15 +147,15 @@ export default function AdminAuditPage() {
           <ActionButton
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
-            className="!bg-transparent border-2 border-[#C9A227] !text-[#C9A227] hover:!bg-[#C9A227]/10 !min-h-[36px] !px-5 !py-1.5"
+            className="!bg-transparent border-2 border-[hsl(var(--gold))] !text-[hsl(var(--gold))] hover:!bg-[hsl(var(--gold))]/10 !min-h-[36px] !px-5 !py-1.5"
           >
             이전
           </ActionButton>
-          <span className="font-heading font-bold text-[#f9f5ed]">{page} / {totalPages}</span>
+          <span className="font-heading font-bold text-[hsl(var(--text-primary))]">{page} / {totalPages}</span>
           <ActionButton
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="!bg-transparent border-2 border-[#C9A227] !text-[#C9A227] hover:!bg-[#C9A227]/10 !min-h-[36px] !px-5 !py-1.5"
+            className="!bg-transparent border-2 border-[hsl(var(--gold))] !text-[hsl(var(--gold))] hover:!bg-[hsl(var(--gold))]/10 !min-h-[36px] !px-5 !py-1.5"
           >
             다음
           </ActionButton>

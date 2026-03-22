@@ -215,17 +215,17 @@ export default function WalletPage() {
 
         {/* Balance Card */}
         {wallet && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 text-center max-w-[520px] mx-auto">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-10 text-center max-w-[520px] mx-auto">
             <div className="text-center py-4">
-              <div className="text-[#C9A227] text-sm mb-3 font-bold font-heading tracking-wide">
+              <div className="text-[hsl(var(--gold))] text-sm mb-3 font-bold font-heading tracking-wide">
                 현재 잔액
               </div>
-              <div className="text-5xl font-black text-[#C9A227] mb-8 font-heading">
+              <div className="text-5xl font-black text-[hsl(var(--gold))] mb-8 font-heading">
                 {(wallet.balanceCash ?? wallet.balance ?? 0).toLocaleString()}원
               </div>
               <button
                 onClick={() => router.push('/cash/buy')}
-                className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-10 py-3.5 font-bold text-base cursor-pointer min-h-[48px] font-heading border-none hover:shadow-[0_4px_20px_rgba(201,162,39,0.2)] transition-all"
+                className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] rounded-full px-10 py-3.5 font-bold text-base cursor-pointer min-h-[48px] font-heading border-none hover:shadow-[0_4px_20px_hsl(var(--gold)/0.2)] transition-all"
               >
                 충전하기
               </button>
@@ -235,15 +235,15 @@ export default function WalletPage() {
 
         {/* Credit Balance */}
         {creditBalance && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 text-center max-w-[520px] mx-auto">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-10 text-center max-w-[520px] mx-auto">
             <div className="text-center py-4">
-              <div className="text-[#C9A227] text-sm mb-3 font-bold font-heading tracking-wide">
+              <div className="text-[hsl(var(--gold))] text-sm mb-3 font-bold font-heading tracking-wide">
                 보유 상담권
               </div>
-              <div className="text-4xl font-black text-[#C9A227] mb-2 font-heading">
+              <div className="text-4xl font-black text-[hsl(var(--gold))] mb-2 font-heading">
                 {creditBalance.remainingCredits}회
               </div>
-              <div className="text-sm text-[var(--color-text-muted-dark)] mb-6">
+              <div className="text-sm text-[hsl(var(--text-secondary))] mb-6">
                 ({creditBalance.usedCredits}회 사용됨)
               </div>
 
@@ -251,7 +251,7 @@ export default function WalletPage() {
               <div className="w-full max-w-[320px] mx-auto mb-6">
                 <div className="h-2 rounded-full bg-black/30 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] transition-all duration-500"
+                    className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] transition-all duration-500"
                     style={{
                       width: creditBalance.totalCredits > 0
                         ? `${(creditBalance.remainingCredits / creditBalance.totalCredits) * 100}%`
@@ -259,7 +259,7 @@ export default function WalletPage() {
                     }}
                   />
                 </div>
-                <div className="flex justify-between text-xs text-[var(--color-text-muted-dark)] mt-1.5">
+                <div className="flex justify-between text-xs text-[hsl(var(--text-secondary))] mt-1.5">
                   <span>사용: {creditBalance.usedCredits}회</span>
                   <span>전체: {creditBalance.totalCredits}회</span>
                 </div>
@@ -267,7 +267,7 @@ export default function WalletPage() {
 
               <button
                 onClick={() => router.push('/credits/buy')}
-                className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-10 py-3.5 font-bold text-base cursor-pointer min-h-[48px] font-heading border-none hover:shadow-[0_4px_20px_rgba(201,162,39,0.2)] transition-all"
+                className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] rounded-full px-10 py-3.5 font-bold text-base cursor-pointer min-h-[48px] font-heading border-none hover:shadow-[0_4px_20px_hsl(var(--gold)/0.2)] transition-all"
               >
                 상담권 구매
               </button>
@@ -278,13 +278,13 @@ export default function WalletPage() {
         {/* Transaction History */}
         <div>
           <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-            <h3 className="text-xl font-heading font-bold text-[var(--color-text-on-dark)]">
+            <h3 className="text-xl font-heading font-bold text-[hsl(var(--text-primary))]">
               거래 내역
             </h3>
             <button
               onClick={handleCsvExport}
               disabled={csvExporting}
-              className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-5 py-2 text-sm hover:bg-[#C9A227]/10 disabled:opacity-50 disabled:cursor-not-allowed bg-transparent font-heading"
+              className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full px-5 py-2 text-sm hover:bg-[hsl(var(--gold))]/10 disabled:opacity-50 disabled:cursor-not-allowed bg-transparent font-heading"
             >
               {csvExporting ? '내보내는 중...' : 'CSV 내보내기'}
             </button>
@@ -298,8 +298,8 @@ export default function WalletPage() {
                 onClick={() => setFilterType(tab.value)}
                 className={`rounded-full px-5 py-2 text-sm font-heading border-2 transition-all ${
                   filterType === tab.value
-                    ? 'bg-[#C9A227] text-[#0f0d0a] border-[#C9A227] font-bold'
-                    : 'bg-transparent text-[#C9A227] border-[#C9A227]/30 hover:bg-[#C9A227]/10'
+                    ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] border-[hsl(var(--gold))] font-bold'
+                    : 'bg-transparent text-[hsl(var(--gold))] border-[hsl(var(--gold))]/30 hover:bg-[hsl(var(--gold))]/10'
                 }`}
               >
                 {tab.label}
@@ -315,8 +315,8 @@ export default function WalletPage() {
                 onClick={() => setPeriodPreset(tab.value)}
                 className={`rounded-full px-4 py-1.5 text-xs font-heading border transition-all ${
                   periodPreset === tab.value
-                    ? 'bg-[#C9A227]/20 text-[#C9A227] border-[#C9A227]/50 font-bold'
-                    : 'bg-transparent text-[var(--color-text-muted-dark)] border-[rgba(201,162,39,0.15)] hover:bg-[#C9A227]/5'
+                    ? 'bg-[hsl(var(--gold))]/20 text-[hsl(var(--gold))] border-[hsl(var(--gold))]/50 font-bold'
+                    : 'bg-transparent text-[hsl(var(--text-secondary))] border-[hsl(var(--gold)/0.15)] hover:bg-[hsl(var(--gold))]/5'
                 }`}
               >
                 {tab.label}
@@ -328,14 +328,14 @@ export default function WalletPage() {
                   type="date"
                   value={customFrom}
                   onChange={(e) => setCustomFrom(e.target.value)}
-                  className="bg-black/30 border border-[rgba(201,162,39,0.2)] rounded-lg px-3 py-1.5 text-xs text-[var(--color-text-on-dark)]"
+                  className="bg-black/30 border border-[hsl(var(--gold)/0.2)] rounded-lg px-3 py-1.5 text-xs text-[hsl(var(--text-primary))]"
                 />
-                <span className="text-[var(--color-text-muted-dark)] text-xs">~</span>
+                <span className="text-[hsl(var(--text-secondary))] text-xs">~</span>
                 <input
                   type="date"
                   value={customTo}
                   onChange={(e) => setCustomTo(e.target.value)}
-                  className="bg-black/30 border border-[rgba(201,162,39,0.2)] rounded-lg px-3 py-1.5 text-xs text-[var(--color-text-on-dark)]"
+                  className="bg-black/30 border border-[hsl(var(--gold)/0.2)] rounded-lg px-3 py-1.5 text-xs text-[hsl(var(--text-primary))]"
                 />
               </div>
             )}
@@ -343,12 +343,12 @@ export default function WalletPage() {
 
           {/* Period Total */}
           {periodTotal !== null && transactions.length > 0 && (
-            <div className="bg-black/20 border border-[rgba(201,162,39,0.1)] rounded-xl px-6 py-3 mb-6 flex justify-between items-center">
-              <span className="text-sm text-[var(--color-text-muted-dark)]">
+            <div className="bg-black/20 border border-[hsl(var(--gold)/0.1)] rounded-xl px-6 py-3 mb-6 flex justify-between items-center">
+              <span className="text-sm text-[hsl(var(--text-secondary))]">
                 선택 기간 합계
               </span>
               <span className={`text-lg font-bold font-heading ${
-                periodTotal >= 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'
+                periodTotal >= 0 ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--dancheong))]'
               }`}>
                 {periodTotal >= 0 ? '+' : ''}{periodTotal.toLocaleString()}원
               </span>
@@ -357,7 +357,7 @@ export default function WalletPage() {
 
           {loading ? (
             <Card>
-              <div className="text-center py-8 text-[var(--color-text-muted-card)]">
+              <div className="text-center py-8 text-[hsl(var(--text-secondary))]">
                 불러오는 중...
               </div>
             </Card>
@@ -392,11 +392,11 @@ export default function WalletPage() {
                           </span>
                         </div>
                         {t.refType && (
-                          <div className="text-sm text-[var(--color-text-muted-card)] mt-1">
+                          <div className="text-sm text-[hsl(var(--text-secondary))] mt-1">
                             {t.refType}{t.refId ? ` #${t.refId}` : ''}
                           </div>
                         )}
-                        <div className="text-xs text-[var(--color-text-muted-card)] mt-2">
+                        <div className="text-xs text-[hsl(var(--text-secondary))] mt-2">
                           {new Date(t.createdAt).toLocaleString('ko-KR')}
                         </div>
                       </div>
@@ -404,20 +404,20 @@ export default function WalletPage() {
                         <div>
                           <div className={`text-lg font-bold font-heading ${
                             t.type === 'CHARGE' || t.type === 'REFUND'
-                              ? 'text-[var(--color-success)]'
-                              : 'text-[var(--color-danger)]'
+                              ? 'text-[hsl(var(--success))]'
+                              : 'text-[hsl(var(--dancheong))]'
                           }`}>
                             {t.type === 'CHARGE' || t.type === 'REFUND' ? '+' : '-'}
                             {Math.abs(t.amount).toLocaleString()}원
                           </div>
-                          <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
+                          <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">
                             잔액: {t.balanceAfter.toLocaleString()}원
                           </div>
                         </div>
                         <button
                           onClick={() => handleReceiptDownload(t.id)}
                           title="영수증 다운로드"
-                          className="bg-transparent border border-[rgba(201,162,39,0.2)] rounded-lg p-2 text-[#C9A227] hover:bg-[#C9A227]/10 transition-all cursor-pointer flex-shrink-0"
+                          className="bg-transparent border border-[hsl(var(--gold)/0.2)] rounded-lg p-2 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10 transition-all cursor-pointer flex-shrink-0"
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -437,17 +437,17 @@ export default function WalletPage() {
                   <button
                     onClick={() => loadTransactions(page - 1)}
                     disabled={page === 0}
-                    className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 hover:bg-[#C9A227]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full px-6 py-2 hover:bg-[hsl(var(--gold))]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     이전
                   </button>
-                  <span className="px-6 py-2 text-[var(--color-text-muted-dark)] flex items-center">
+                  <span className="px-6 py-2 text-[hsl(var(--text-secondary))] flex items-center">
                     {page + 1} / {totalPages}
                   </span>
                   <button
                     onClick={() => loadTransactions(page + 1)}
                     disabled={page >= totalPages - 1}
-                    className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 hover:bg-[#C9A227]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full px-6 py-2 hover:bg-[hsl(var(--gold))]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     다음
                   </button>

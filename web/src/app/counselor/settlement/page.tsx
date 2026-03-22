@@ -251,29 +251,29 @@ export default function CounselorSettlementPage() {
 
       {/* Bank Account Section */}
       <Card>
-        <h3 className="text-lg font-heading font-bold text-[#C9A227] mb-4">
+        <h3 className="text-lg font-heading font-bold text-[hsl(var(--gold))] mb-4">
           정산 계좌
         </h3>
         {bankAccountLoading ? (
-          <div className="text-sm text-[var(--color-text-muted-card)]">불러오는 중...</div>
+          <div className="text-sm text-[hsl(var(--text-secondary))]">불러오는 중...</div>
         ) : bankAccount && !showBankForm ? (
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex-1 min-w-[200px]">
-                <div className="text-sm text-[var(--color-text-muted-card)] mb-1">은행</div>
+                <div className="text-sm text-[hsl(var(--text-secondary))] mb-1">은행</div>
                 <div className="font-bold font-heading">{getBankName(bankAccount.bankCode)}</div>
               </div>
               <div className="flex-1 min-w-[200px]">
-                <div className="text-sm text-[var(--color-text-muted-card)] mb-1">계좌번호</div>
+                <div className="text-sm text-[hsl(var(--text-secondary))] mb-1">계좌번호</div>
                 <div className="font-bold font-heading font-mono">{bankAccount.accountNumberMasked}</div>
               </div>
               <div className="flex-1 min-w-[120px]">
-                <div className="text-sm text-[var(--color-text-muted-card)] mb-1">예금주</div>
+                <div className="text-sm text-[hsl(var(--text-secondary))] mb-1">예금주</div>
                 <div className="font-bold font-heading">{bankAccount.holderName}</div>
               </div>
               <button
                 onClick={handleEditBankAccount}
-                className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-5 py-2 text-sm hover:bg-[#C9A227]/10 bg-transparent font-heading cursor-pointer"
+                className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full px-5 py-2 text-sm hover:bg-[hsl(var(--gold))]/10 bg-transparent font-heading cursor-pointer"
               >
                 변경
               </button>
@@ -283,18 +283,18 @@ export default function CounselorSettlementPage() {
         ) : (
           <form onSubmit={handleBankAccountSubmit} className="flex flex-col gap-4">
             {!bankAccount && (
-              <div className="text-sm text-[var(--color-text-muted-card)] mb-2">
+              <div className="text-sm text-[hsl(var(--text-secondary))] mb-2">
                 정산금을 받을 계좌를 등록해 주세요.
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm text-[var(--color-text-muted-card)] mb-1">은행</label>
+                <label className="block text-sm text-[hsl(var(--text-secondary))] mb-1">은행</label>
                 <select
                   value={bankCode}
                   onChange={(e) => setBankCode(e.target.value)}
                   required
-                  className="w-full border-2 border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] rounded-xl px-4 py-3 text-sm text-[var(--color-text-on-card)] font-heading"
+                  className="w-full border-2 border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] rounded-xl px-4 py-3 text-sm text-[hsl(var(--text-primary))] font-heading"
                 >
                   {BANK_CODES.map((bank) => (
                     <option key={bank.code} value={bank.code}>
@@ -304,25 +304,25 @@ export default function CounselorSettlementPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-[var(--color-text-muted-card)] mb-1">계좌번호</label>
+                <label className="block text-sm text-[hsl(var(--text-secondary))] mb-1">계좌번호</label>
                 <input
                   type="text"
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value.replace(/[^0-9-]/g, ''))}
                   required
                   placeholder="숫자만 입력"
-                  className="w-full border-2 border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] rounded-xl px-4 py-3 text-sm text-[var(--color-text-on-card)] font-heading"
+                  className="w-full border-2 border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] rounded-xl px-4 py-3 text-sm text-[hsl(var(--text-primary))] font-heading"
                 />
               </div>
               <div>
-                <label className="block text-sm text-[var(--color-text-muted-card)] mb-1">예금주명</label>
+                <label className="block text-sm text-[hsl(var(--text-secondary))] mb-1">예금주명</label>
                 <input
                   type="text"
                   value={holderName}
                   onChange={(e) => setHolderName(e.target.value)}
                   required
                   placeholder="예금주명"
-                  className="w-full border-2 border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] rounded-xl px-4 py-3 text-sm text-[var(--color-text-on-card)] font-heading"
+                  className="w-full border-2 border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] rounded-xl px-4 py-3 text-sm text-[hsl(var(--text-primary))] font-heading"
                 />
               </div>
             </div>
@@ -331,7 +331,7 @@ export default function CounselorSettlementPage() {
               <button
                 type="submit"
                 disabled={bankSaving}
-                className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-8 py-2.5 text-sm font-bold font-heading border-none cursor-pointer disabled:opacity-50"
+                className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] rounded-full px-8 py-2.5 text-sm font-bold font-heading border-none cursor-pointer disabled:opacity-50"
               >
                 {bankSaving ? '저장 중...' : (bankAccount ? '계좌 수정' : '계좌 등록')}
               </button>
@@ -342,7 +342,7 @@ export default function CounselorSettlementPage() {
                     setShowBankForm(false);
                     setBankError('');
                   }}
-                  className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 text-sm bg-transparent cursor-pointer font-heading hover:bg-[#C9A227]/10"
+                  className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full px-6 py-2 text-sm bg-transparent cursor-pointer font-heading hover:bg-[hsl(var(--gold))]/10"
                 >
                   취소
                 </button>
@@ -386,27 +386,27 @@ export default function CounselorSettlementPage() {
 
         return (
           <Card>
-            <h3 className="text-lg font-heading font-bold text-[#C9A227] mb-4">
+            <h3 className="text-lg font-heading font-bold text-[hsl(var(--gold))] mb-4">
               출금 요청
             </h3>
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-6 flex-wrap">
                 <div>
-                  <div className="text-sm text-[var(--color-text-muted-card)] mb-1">출금 가능 금액</div>
+                  <div className="text-sm text-[hsl(var(--text-secondary))] mb-1">출금 가능 금액</div>
                   <div className="text-xl font-bold font-heading">{formatAmount(pendingAmount)}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-[var(--color-text-muted-card)] mb-1">대기 건수</div>
+                  <div className="text-sm text-[hsl(var(--text-secondary))] mb-1">대기 건수</div>
                   <div className="text-xl font-bold font-heading">{pendingSettlements.length}건</div>
                 </div>
               </div>
               {!hasBankAccount && !bankAccountLoading && (
-                <div className="text-sm text-[#8B0000]">
+                <div className="text-sm text-[hsl(var(--dancheong))]">
                   정산 계좌가 등록되지 않았습니다. 위에서 계좌를 먼저 등록해주세요.
                 </div>
               )}
               {hasBankAccount && pendingAmount > 0 && pendingAmount < 10000 && (
-                <div className="text-sm text-[var(--color-text-muted-card)]">
+                <div className="text-sm text-[hsl(var(--text-secondary))]">
                   최소 출금 금액은 10,000원입니다.
                 </div>
               )}
@@ -451,19 +451,19 @@ export default function CounselorSettlementPage() {
         <Card>
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-[rgba(201,162,39,0.15)]">
-                <TableHead className="font-heading font-bold text-[#C9A227]">기간</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227] text-right">상담 건수</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227] text-right">총 금액</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227] text-right">수수료율</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227] text-right">정산액</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227] text-center">상태</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227]">정산일</TableHead>
+              <TableRow className="border-b border-[hsl(var(--gold)/0.15)]">
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">기간</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">상담 건수</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">총 금액</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">수수료율</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">정산액</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-center">상태</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">정산일</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {settlements.map((s) => (
-                <TableRow key={s.id} className="border-b border-[rgba(201,162,39,0.1)]">
+                <TableRow key={s.id} className="border-b border-[hsl(var(--gold)/0.1)]">
                   <TableCell className="text-sm">{formatPeriod(s.periodStart, s.periodEnd)}</TableCell>
                   <TableCell className="text-sm text-right">{s.totalSessions}건</TableCell>
                   <TableCell className="text-sm text-right">{formatAmount(s.totalAmount)}</TableCell>
@@ -472,7 +472,7 @@ export default function CounselorSettlementPage() {
                   <TableCell className="text-center">
                     <StatusBadge value={STATUS_LABELS[s.status] || s.status} />
                   </TableCell>
-                  <TableCell className="text-sm text-[#a49484]">{formatDate(s.paidAt)}</TableCell>
+                  <TableCell className="text-sm text-[hsl(var(--text-secondary))]">{formatDate(s.paidAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

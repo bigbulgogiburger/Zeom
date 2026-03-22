@@ -97,20 +97,20 @@ export default function CounselorCustomersPage() {
         <Card>
           <Table>
             <TableHeader>
-              <TableRow className="border-[rgba(201,162,39,0.15)]">
-                <TableHead className="font-heading font-bold text-[#C9A227]">고객명</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227]">이메일</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227] text-right">상담 횟수</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227]">마지막 상담일</TableHead>
+              <TableRow className="border-[hsl(var(--gold)/0.15)]">
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">고객명</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">이메일</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">상담 횟수</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">마지막 상담일</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {customers.map((c) => (
-                <TableRow key={c.userId} className="border-[rgba(201,162,39,0.1)]">
+                <TableRow key={c.userId} className="border-[hsl(var(--gold)/0.1)]">
                   <TableCell className="font-medium">{c.name}</TableCell>
-                  <TableCell className="text-[#a49484]">{c.email}</TableCell>
+                  <TableCell className="text-[hsl(var(--text-secondary))]">{c.email}</TableCell>
                   <TableCell className="text-right font-bold">{c.totalSessions}회</TableCell>
-                  <TableCell className="text-[#a49484]">{formatDate(c.lastSessionAt)}</TableCell>
+                  <TableCell className="text-[hsl(var(--text-secondary))]">{formatDate(c.lastSessionAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

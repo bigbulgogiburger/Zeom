@@ -98,7 +98,7 @@ function RevenueChart({ data }: { data: RevenueDataPoint[] }) {
           return (
             <g key={ratio}>
               <line x1="50" y1={y} x2="100%" y2={y} stroke="#3d3529" strokeDasharray="4" />
-              <text x="46" y={y + 4} textAnchor="end" fill="#a49484" fontSize="10">
+              <text x="46" y={y + 4} textAnchor="end" fill="hsl(var(--text-secondary))" fontSize="10">
                 {formatCurrency(Math.round(maxRevenue * ratio))}
               </text>
             </g>
@@ -117,7 +117,7 @@ function RevenueChart({ data }: { data: RevenueDataPoint[] }) {
                 y={y}
                 width={barWidth}
                 height={barHeight}
-                fill="#C9A227"
+                fill="hsl(var(--gold))"
                 rx="2"
                 opacity="0.85"
               >
@@ -128,7 +128,7 @@ function RevenueChart({ data }: { data: RevenueDataPoint[] }) {
                   x={x + barWidth / 2}
                   y={chartHeight + 36}
                   textAnchor="middle"
-                  fill="#a49484"
+                  fill="hsl(var(--text-secondary))"
                   fontSize="9"
                   transform={`rotate(-45, ${x + barWidth / 2}, ${chartHeight + 36})`}
                 >
@@ -245,8 +245,8 @@ export default function AdminAnalyticsPage() {
                 onClick={() => handlePeriodChange(p)}
                 className={`px-4 py-1.5 rounded-full text-sm font-bold font-heading transition-colors ${
                   period === p
-                    ? 'bg-[#C9A227] text-[#2b2219]'
-                    : 'bg-[#3d3529] text-[#a49484] hover:bg-[#4a4235]'
+                    ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))]'
+                    : 'bg-[#3d3529] text-[hsl(var(--text-secondary))] hover:bg-[#4a4235]'
                 }`}
               >
                 {PERIOD_LABELS[p]}
@@ -271,7 +271,7 @@ export default function AdminAnalyticsPage() {
         {/* Revenue Chart */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-heading font-bold text-[#f9f5ed] text-lg">매출 추이</h3>
+            <h3 className="font-heading font-bold text-[hsl(var(--text-primary))] text-lg">매출 추이</h3>
             <ActionButton onClick={downloadRevenueCsv}>매출 CSV</ActionButton>
           </div>
           <Card>
@@ -284,7 +284,7 @@ export default function AdminAnalyticsPage() {
         {/* Counselor Ranking */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-heading font-bold text-[#f9f5ed] text-lg">
+            <h3 className="font-heading font-bold text-[hsl(var(--text-primary))] text-lg">
               상담사 매출 순위 (Top 10)
             </h3>
             <ActionButton onClick={downloadKpiCsv}>KPI CSV</ActionButton>
@@ -296,22 +296,22 @@ export default function AdminAnalyticsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-heading font-bold text-[#C9A227]">순위</TableHead>
-                    <TableHead className="font-heading font-bold text-[#C9A227]">상담사</TableHead>
-                    <TableHead className="font-heading font-bold text-[#C9A227]">매출</TableHead>
-                    <TableHead className="font-heading font-bold text-[#C9A227]">상담 건수</TableHead>
-                    <TableHead className="font-heading font-bold text-[#C9A227]">평균 평점</TableHead>
+                    <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">순위</TableHead>
+                    <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">상담사</TableHead>
+                    <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">매출</TableHead>
+                    <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">상담 건수</TableHead>
+                    <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">평균 평점</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {ranking.map((c, i) => (
-                    <TableRow key={c.counselorId} className="hover:bg-[rgba(201,162,39,0.03)] transition-colors">
+                    <TableRow key={c.counselorId} className="hover:bg-[hsl(var(--gold)/0.03)] transition-colors">
                       <TableCell className="font-mono text-sm font-bold">{i + 1}</TableCell>
                       <TableCell className="font-medium">{c.name}</TableCell>
                       <TableCell>{formatCurrency(c.revenue)}</TableCell>
                       <TableCell>{c.sessionCount}건</TableCell>
                       <TableCell>
-                        <span className="text-[#C9A227] font-bold">
+                        <span className="text-[hsl(var(--gold))] font-bold">
                           {c.avgRating > 0 ? c.avgRating.toFixed(1) : '-'}
                         </span>
                       </TableCell>

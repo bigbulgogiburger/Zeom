@@ -72,14 +72,14 @@ export default function ChatSessionPage() {
     <RequireLogin>
       {loading ? (
         <div className="flex items-center justify-center h-[80vh]">
-          <div className="text-[var(--color-text-muted-dark)] text-sm">상담 채팅을 준비하는 중...</div>
+          <div className="text-[hsl(var(--text-secondary))] text-sm">상담 채팅을 준비하는 중...</div>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center h-[80vh] gap-4">
-          <div className="text-[var(--color-danger)] text-sm font-medium">{error}</div>
+          <div className="text-[hsl(var(--dancheong))] text-sm font-medium">{error}</div>
           <button
             onClick={() => router.push('/consultations')}
-            className="px-6 py-2.5 rounded-full border border-[rgba(201,162,39,0.3)] text-[var(--color-gold)] font-heading font-bold text-sm hover:bg-[rgba(201,162,39,0.1)] transition-colors"
+            className="px-6 py-2.5 rounded-full border border-[hsl(var(--gold)/0.3)] text-[hsl(var(--gold))] font-heading font-bold text-sm hover:bg-[hsl(var(--gold)/0.1)] transition-colors"
           >
             상담 목록으로 돌아가기
           </button>

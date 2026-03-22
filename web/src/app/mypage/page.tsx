@@ -61,9 +61,9 @@ export default function MypagePage() {
     return (
       <Card>
         <div className="animate-pulse space-y-4">
-          <div className="h-5 w-32 bg-[#1a1612] rounded" />
-          <div className="h-4 w-48 bg-[#1a1612] rounded" />
-          <div className="h-4 w-40 bg-[#1a1612] rounded" />
+          <div className="h-5 w-32 bg-[hsl(var(--surface))] rounded" />
+          <div className="h-4 w-48 bg-[hsl(var(--surface))] rounded" />
+          <div className="h-4 w-40 bg-[hsl(var(--surface))] rounded" />
         </div>
       </Card>
     );
@@ -91,11 +91,11 @@ export default function MypagePage() {
       )}
 
       {!profile.emailVerified && (
-        <div className="p-4 rounded-xl bg-[#1a1612] border border-[rgba(201,162,39,0.3)]">
+        <div className="p-4 rounded-xl bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.3)]">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-bold text-[#C9A227]">이메일 인증이 필요합니다</p>
-              <p className="text-xs text-[#a49484] mt-1">인증 이메일을 확인해주세요.</p>
+              <p className="text-sm font-bold text-[hsl(var(--gold))]">이메일 인증이 필요합니다</p>
+              <p className="text-xs text-[hsl(var(--text-secondary))] mt-1">인증 이메일을 확인해주세요.</p>
             </div>
             <ActionButton
               onClick={resendVerification}
@@ -112,7 +112,7 @@ export default function MypagePage() {
         <div className="space-y-5">
           <InfoRow label="이메일" value={profile.email}>
             {profile.emailVerified && (
-              <span className="text-xs bg-[#C9A227]/20 text-[#C9A227] px-2 py-0.5 rounded-full font-bold ml-2">
+              <span className="text-xs bg-[hsl(var(--gold))]/20 text-[hsl(var(--gold))] px-2 py-0.5 rounded-full font-bold ml-2">
                 인증됨
               </span>
             )}
@@ -130,8 +130,8 @@ export default function MypagePage() {
 
 function InfoRow({ label, value, children }: { label: string; value: string; children?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between border-b border-[rgba(201,162,39,0.08)] pb-3 last:border-0 last:pb-0">
-      <span className="text-sm text-[#a49484] font-medium">{label}</span>
+    <div className="flex items-center justify-between border-b border-[hsl(var(--gold)/0.08)] pb-3 last:border-0 last:pb-0">
+      <span className="text-sm text-[hsl(var(--text-secondary))] font-medium">{label}</span>
       <span className="text-sm font-bold text-foreground flex items-center">
         {value}
         {children}

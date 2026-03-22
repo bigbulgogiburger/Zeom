@@ -11,18 +11,18 @@ export default function PrivacyPage() {
       className="mx-auto px-6 py-10"
       style={{
         maxWidth: 800,
-        color: 'var(--color-text-on-dark)',
+        color: 'hsl(var(--text-primary))',
         lineHeight: 1.8,
       }}
     >
       <h1
         className="text-2xl font-bold mb-8"
-        style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-gold)' }}
+        style={{ fontFamily: 'var(--font-heading)', color: 'hsl(var(--gold))' }}
       >
         개인정보처리방침
       </h1>
 
-      <p className="mb-8" style={{ color: 'var(--color-text-muted-dark)', fontSize: 14 }}>
+      <p className="mb-8" style={{ color: 'hsl(var(--text-secondary))', fontSize: 14 }}>
         시행일: 2026년 3월 1일
       </p>
 
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         <p className="mb-3">회사는 다음의 개인정보를 수집합니다:</p>
         <table className="w-full mb-4" style={{ borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--color-border-dark)' }}>
+            <tr style={{ borderBottom: '1px solid hsl(var(--border-subtle))' }}>
               <th className="py-2 text-left" style={{ fontSize: 14, fontWeight: 600 }}>
                 수집 시점
               </th>
@@ -46,23 +46,23 @@ export default function PrivacyPage() {
             </tr>
           </thead>
           <tbody style={{ fontSize: 14 }}>
-            <tr style={{ borderBottom: '1px solid var(--color-border-dark)' }}>
+            <tr style={{ borderBottom: '1px solid hsl(var(--border-subtle))' }}>
               <td className="py-2">회원가입</td>
               <td className="py-2">이메일, 비밀번호, 닉네임, 전화번호(선택)</td>
             </tr>
-            <tr style={{ borderBottom: '1px solid var(--color-border-dark)' }}>
+            <tr style={{ borderBottom: '1px solid hsl(var(--border-subtle))' }}>
               <td className="py-2">소셜 로그인</td>
               <td className="py-2">소셜 계정 식별자, 이메일, 프로필 이미지</td>
             </tr>
-            <tr style={{ borderBottom: '1px solid var(--color-border-dark)' }}>
+            <tr style={{ borderBottom: '1px solid hsl(var(--border-subtle))' }}>
               <td className="py-2">결제</td>
               <td className="py-2">결제 수단 정보, 거래 내역</td>
             </tr>
-            <tr style={{ borderBottom: '1px solid var(--color-border-dark)' }}>
+            <tr style={{ borderBottom: '1px solid hsl(var(--border-subtle))' }}>
               <td className="py-2">상담 이용</td>
               <td className="py-2">예약 내역, 상담 기록, 리뷰 내용</td>
             </tr>
-            <tr style={{ borderBottom: '1px solid var(--color-border-dark)' }}>
+            <tr style={{ borderBottom: '1px solid hsl(var(--border-subtle))' }}>
               <td className="py-2">운세 서비스</td>
               <td className="py-2">생년월일, 태어난 시간(선택), 성별</td>
             </tr>
@@ -171,9 +171,9 @@ export default function PrivacyPage() {
 
       <div
         className="mt-10 pt-6"
-        style={{ borderTop: '1px solid var(--color-border-dark)' }}
+        style={{ borderTop: '1px solid hsl(var(--border-subtle))' }}
       >
-        <p style={{ color: 'var(--color-text-muted-dark)', fontSize: 13 }}>
+        <p style={{ color: 'hsl(var(--text-secondary))', fontSize: 13 }}>
           본 개인정보처리방침은 2026년 3월 1일부터 시행됩니다.
         </p>
       </div>

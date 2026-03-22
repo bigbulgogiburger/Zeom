@@ -79,10 +79,10 @@ export default function FavoritesPage() {
     <RequireLogin>
       <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-16">
         <div className="mb-10 text-center">
-          <h1 className="text-4xl font-black tracking-tight text-[var(--color-text-on-dark)] font-heading">
+          <h1 className="text-4xl font-black tracking-tight text-[hsl(var(--text-primary))] font-heading">
             즐겨찾기 상담사
           </h1>
-          <p className="text-[#a49484] text-lg leading-relaxed mt-3">
+          <p className="text-[hsl(var(--text-secondary))] text-lg leading-relaxed mt-3">
             관심 있는 상담사를 한눈에 확인하세요
           </p>
         </div>
@@ -96,14 +96,14 @@ export default function FavoritesPage() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 animate-pulse">
+              <div key={i} className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8 animate-pulse">
                 <div className="text-center mb-6">
-                  <div className="h-16 w-16 rounded-full bg-[#1a1612] mx-auto" />
+                  <div className="h-16 w-16 rounded-full bg-[hsl(var(--surface))] mx-auto" />
                 </div>
-                <div className="h-6 w-3/5 bg-[#1a1612] rounded-lg mx-auto mb-4" />
-                <div className="h-4 w-2/5 bg-[#1a1612] rounded-lg mx-auto mb-4" />
-                <div className="h-4 w-4/5 bg-[#1a1612] rounded-lg mx-auto mb-6" />
-                <div className="h-10 w-1/3 bg-[#1a1612] rounded-full mx-auto" />
+                <div className="h-6 w-3/5 bg-[hsl(var(--surface))] rounded-lg mx-auto mb-4" />
+                <div className="h-4 w-2/5 bg-[hsl(var(--surface))] rounded-lg mx-auto mb-4" />
+                <div className="h-4 w-4/5 bg-[hsl(var(--surface))] rounded-lg mx-auto mb-6" />
+                <div className="h-10 w-1/3 bg-[hsl(var(--surface))] rounded-full mx-auto" />
               </div>
             ))}
           </div>
@@ -152,7 +152,7 @@ export default function FavoritesPage() {
 
                 {/* Actions */}
                 <div className="text-center mt-6 flex flex-col gap-3 items-center">
-                  <Button variant="outline" size="sm" asChild className="border-2 border-[#C9A227] text-[#C9A227] bg-transparent rounded-full px-8 py-2.5 hover:bg-[#C9A227]/10 text-sm font-bold font-heading transition-all duration-300">
+                  <Button variant="outline" size="sm" asChild className="border-2 border-[hsl(var(--gold))] text-[hsl(var(--gold))] bg-transparent rounded-full px-8 py-2.5 hover:bg-[hsl(var(--gold))]/10 text-sm font-bold font-heading transition-all duration-300">
                     <Link href={`/counselors/${f.counselorId}`}>
                       프로필 보기
                     </Link>
@@ -162,7 +162,7 @@ export default function FavoritesPage() {
                     size="sm"
                     onClick={() => removeFavorite(f.counselorId)}
                     disabled={removingId === f.counselorId}
-                    className="text-[#a49484] hover:text-[var(--color-danger)] text-xs font-heading"
+                    className="text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--dancheong))] text-xs font-heading"
                   >
                     {removingId === f.counselorId ? '해제 중...' : '즐겨찾기 해제'}
                   </Button>

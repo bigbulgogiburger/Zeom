@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Scale } from 'lucide-react';
 import { apiFetch } from '../../components/api-client';
 import { RequireLogin } from '../../components/route-guard';
 import { Card, EmptyState, InlineError, PageTitle } from '../../components/ui';
@@ -21,15 +22,15 @@ type Dispute = {
 const STATUS_MAP: Record<string, { label: string; className: string }> = {
   OPEN: {
     label: '접수됨',
-    className: 'bg-[var(--color-warning)] text-[var(--color-warning-light)] hover:bg-[var(--color-warning)]',
+    className: 'bg-[hsl(var(--warning))] text-[var(--color-warning-light)] hover:bg-[hsl(var(--warning))]',
   },
   IN_REVIEW: {
     label: '검토중',
-    className: 'bg-[#2563eb] text-white hover:bg-[#2563eb]',
+    className: 'bg-[hsl(var(--gold))] text-white hover:bg-[hsl(var(--gold))]',
   },
   RESOLVED: {
     label: '해결됨',
-    className: 'bg-[var(--color-success)] text-[var(--color-success-light)] hover:bg-[var(--color-success)]',
+    className: 'bg-[hsl(var(--success))] text-[var(--color-success-light)] hover:bg-[hsl(var(--success))]',
   },
 };
 
@@ -83,7 +84,7 @@ export default function DisputesPage() {
 
         {loading ? (
           <Card>
-            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
+            <div className="text-center py-8 text-[hsl(var(--text-secondary))]">
               불러오는 중...
             </div>
           </Card>
@@ -98,7 +99,7 @@ export default function DisputesPage() {
           />
         ) : disputes.length === 0 ? (
           <EmptyState
-            icon="⚖️"
+            icon={<Scale className="size-5" />}
             title="분쟁 내역이 없습니다"
             desc="상담과 관련된 문제가 있으시면 분쟁을 접수할 수 있습니다."
           />
@@ -134,7 +135,7 @@ export default function DisputesPage() {
                         </Badge>
                       </div>
 
-                      <div className="grid gap-1 text-sm text-[var(--color-text-muted-card)]">
+                      <div className="grid gap-1 text-sm text-[hsl(var(--text-secondary))]">
                         <div className="line-clamp-2">{d.description}</div>
                         <div className="mt-2">
                           <span>접수일: </span>
@@ -145,7 +146,7 @@ export default function DisputesPage() {
                       </div>
                     </div>
 
-                    <div className="text-[var(--color-text-muted-card)] text-sm shrink-0">
+                    <div className="text-[hsl(var(--text-secondary))] text-sm shrink-0">
                       &rsaquo;
                     </div>
                   </div>

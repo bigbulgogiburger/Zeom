@@ -116,22 +116,22 @@ export default function CounselorBookingsPage() {
       <Card>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium font-heading text-[#f9f5ed] whitespace-nowrap">
+            <label className="text-sm font-medium font-heading text-[hsl(var(--text-primary))] whitespace-nowrap">
               날짜
             </label>
             <Input
               type="date"
               value={dateFilter}
               onChange={handleDateChange}
-              className="w-[160px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
+              className="w-[160px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))]"
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium font-heading text-[#f9f5ed] whitespace-nowrap">
+            <label className="text-sm font-medium font-heading text-[hsl(var(--text-primary))] whitespace-nowrap">
               상태
             </label>
             <Select value={statusFilter} onValueChange={handleStatusChange}>
-              <SelectTrigger className="w-[150px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]">
+              <SelectTrigger className="w-[150px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -148,7 +148,7 @@ export default function CounselorBookingsPage() {
               variant="ghost"
               size="sm"
               onClick={() => { setDateFilter(''); setStatusFilter('ALL'); setPage(1); }}
-              className="text-sm font-heading text-[#a49484] hover:text-[#C9A227]"
+              className="text-sm font-heading text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))]"
             >
               필터 초기화
             </Button>
@@ -171,11 +171,11 @@ export default function CounselorBookingsPage() {
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="animate-pulse flex items-center gap-4">
-                <div className="h-4 w-1/5 bg-[#1a1612] rounded" />
-                <div className="h-4 w-1/4 bg-[#1a1612] rounded" />
-                <div className="h-4 w-1/6 bg-[#1a1612] rounded" />
-                <div className="h-4 w-1/12 bg-[#1a1612] rounded" />
-                <div className="h-4 w-1/5 bg-[#1a1612] rounded" />
+                <div className="h-4 w-1/5 bg-[hsl(var(--surface))] rounded" />
+                <div className="h-4 w-1/4 bg-[hsl(var(--surface))] rounded" />
+                <div className="h-4 w-1/6 bg-[hsl(var(--surface))] rounded" />
+                <div className="h-4 w-1/12 bg-[hsl(var(--surface))] rounded" />
+                <div className="h-4 w-1/5 bg-[hsl(var(--surface))] rounded" />
               </div>
             ))}
           </div>
@@ -189,26 +189,26 @@ export default function CounselorBookingsPage() {
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-[rgba(201,162,39,0.15)]">
-                <TableHead className="font-heading font-bold text-[#C9A227]">고객명</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227]">예약시간</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227]">상태</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227]">크레딧</TableHead>
-                <TableHead className="font-heading font-bold text-[#C9A227]">예약일</TableHead>
+              <TableRow className="border-[hsl(var(--gold)/0.15)]">
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">고객명</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">예약시간</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">상태</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">크레딧</TableHead>
+                <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">예약일</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {bookings.map(booking => (
-                <TableRow key={booking.id} className="border-[rgba(201,162,39,0.15)]">
+                <TableRow key={booking.id} className="border-[hsl(var(--gold)/0.15)]">
                   <TableCell className="font-bold font-heading">{booking.customerName}</TableCell>
-                  <TableCell className="text-sm text-[#a49484]">
+                  <TableCell className="text-sm text-[hsl(var(--text-secondary))]">
                     {formatDateTime(booking.startTime)}
                   </TableCell>
                   <TableCell>
                     <StatusBadge value={booking.status} />
                   </TableCell>
                   <TableCell className="font-heading">{booking.creditsUsed ?? '-'}</TableCell>
-                  <TableCell className="text-sm text-[#a49484]">
+                  <TableCell className="text-sm text-[hsl(var(--text-secondary))]">
                     {formatDate(booking.createdAt)}
                   </TableCell>
                 </TableRow>

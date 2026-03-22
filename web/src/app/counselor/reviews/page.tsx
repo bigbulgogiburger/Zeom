@@ -163,9 +163,9 @@ export default function CounselorReviewsPage() {
           {[1, 2, 3].map(i => (
             <Card key={i}>
               <div className="space-y-2">
-                <div className="animate-pulse h-4 w-1/3 bg-[#1a1612] rounded" />
-                <div className="animate-pulse h-3 w-2/3 bg-[#1a1612] rounded" />
-                <div className="animate-pulse h-3 w-1/2 bg-[#1a1612] rounded" />
+                <div className="animate-pulse h-4 w-1/3 bg-[hsl(var(--surface))] rounded" />
+                <div className="animate-pulse h-3 w-2/3 bg-[hsl(var(--surface))] rounded" />
+                <div className="animate-pulse h-3 w-1/2 bg-[hsl(var(--surface))] rounded" />
               </div>
             </Card>
           ))}
@@ -185,48 +185,48 @@ export default function CounselorReviewsPage() {
                   <span className="font-heading font-bold text-sm">
                     {review.customerName}
                   </span>
-                  <span className="text-[#a49484] text-xs">
+                  <span className="text-[hsl(var(--text-secondary))] text-xs">
                     {formatDate(review.createdAt)}
                   </span>
                 </div>
-                <span className="text-[#C9A227] font-heading font-bold text-sm">
+                <span className="text-[hsl(var(--gold))] font-heading font-bold text-sm">
                   {renderStars(review.rating)}
                 </span>
               </div>
 
               {/* Comment */}
-              <p className="text-sm text-[#f9f5ed] mb-3 whitespace-pre-wrap">
+              <p className="text-sm text-[hsl(var(--text-primary))] mb-3 whitespace-pre-wrap">
                 {review.comment}
               </p>
 
               {/* Reply section */}
               {review.reply ? (
-                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3 mt-2">
+                <div className="border-t border-[hsl(var(--gold)/0.15)] pt-3 mt-2">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-heading font-bold text-xs text-[#C9A227]">
+                    <span className="font-heading font-bold text-xs text-[hsl(var(--gold))]">
                       상담사 답변
                     </span>
                     {review.replyAt && (
-                      <span className="text-[#a49484] text-xs">
+                      <span className="text-[hsl(var(--text-secondary))] text-xs">
                         {formatDate(review.replyAt)}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-[#f9f5ed] whitespace-pre-wrap">
+                  <p className="text-sm text-[hsl(var(--text-primary))] whitespace-pre-wrap">
                     {review.reply}
                   </p>
                 </div>
               ) : replyOpenId === review.id ? (
-                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3 mt-2">
+                <div className="border-t border-[hsl(var(--gold)/0.15)] pt-3 mt-2">
                   <Textarea
                     value={replyText}
                     onChange={e => setReplyText(e.target.value)}
                     placeholder="답변을 입력해 주세요..."
                     rows={3}
-                    className="bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl mb-2 text-[#f9f5ed]"
+                    className="bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl mb-2 text-[hsl(var(--text-primary))]"
                   />
                   {replyError && (
-                    <div className="text-[#8B0000] text-xs mb-2 font-medium">
+                    <div className="text-[hsl(var(--dancheong))] text-xs mb-2 font-medium">
                       {replyError}
                     </div>
                   )}
@@ -236,7 +236,7 @@ export default function CounselorReviewsPage() {
                       size="sm"
                       onClick={handleCancelReply}
                       disabled={replySaving}
-                      className="font-heading font-bold text-sm text-[#a49484] hover:text-[#C9A227]"
+                      className="font-heading font-bold text-sm text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))]"
                     >
                       취소
                     </Button>
@@ -244,19 +244,19 @@ export default function CounselorReviewsPage() {
                       size="sm"
                       onClick={() => handleSaveReply(review.id)}
                       disabled={replySaving}
-                      className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] rounded-full px-6 font-heading font-bold text-sm"
+                      className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] rounded-full px-6 font-heading font-bold text-sm"
                     >
                       {replySaving ? '저장 중...' : '답변 저장'}
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="border-t border-[rgba(201,162,39,0.15)] pt-3 mt-2">
+                <div className="border-t border-[hsl(var(--gold)/0.15)] pt-3 mt-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleOpenReply(review.id)}
-                    className="text-[#C9A227] font-heading font-bold text-sm hover:bg-[#C9A227]/10"
+                    className="text-[hsl(var(--gold))] font-heading font-bold text-sm hover:bg-[hsl(var(--gold))]/10"
                   >
                     답변 작성
                   </Button>

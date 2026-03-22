@@ -158,7 +158,7 @@ export default function AdminDisputeDetailPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push('/admin/disputes')}
-            className="text-[#C9A227] font-heading font-bold text-sm hover:underline"
+            className="text-[hsl(var(--gold))] font-heading font-bold text-sm hover:underline"
           >
             &larr; 목록으로
           </button>
@@ -175,28 +175,28 @@ export default function AdminDisputeDetailPage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3 flex-wrap">
                   <StatusBadge value={dispute.status} />
-                  <span className="text-[#a49484] text-sm">카테고리: {dispute.category}</span>
-                  <span className="text-[#a49484] text-sm">
+                  <span className="text-[hsl(var(--text-secondary))] text-sm">카테고리: {dispute.category}</span>
+                  <span className="text-[hsl(var(--text-secondary))] text-sm">
                     접수일: {new Date(dispute.createdAt).toLocaleString('ko-KR')}
                   </span>
                 </div>
 
                 <div>
-                  <h4 className="font-heading font-bold text-sm text-[#C9A227] mb-2">고객 주장</h4>
-                  <p className="text-[#f9f5ed] text-sm leading-relaxed bg-[#1a1612] p-4 rounded-xl border border-[rgba(201,162,39,0.1)]">
+                  <h4 className="font-heading font-bold text-sm text-[hsl(var(--gold))] mb-2">고객 주장</h4>
+                  <p className="text-[hsl(var(--text-primary))] text-sm leading-relaxed bg-[hsl(var(--surface))] p-4 rounded-xl border border-[hsl(var(--gold)/0.1)]">
                     {dispute.description || '내용 없음'}
                   </p>
                 </div>
 
                 {dispute.resolutionType && (
-                  <div className="mt-4 p-4 bg-[rgba(201,162,39,0.05)] border border-[rgba(201,162,39,0.15)] rounded-xl">
-                    <h4 className="font-heading font-bold text-sm text-[#C9A227] mb-2">중재 결과</h4>
+                  <div className="mt-4 p-4 bg-[hsl(var(--gold)/0.05)] border border-[hsl(var(--gold)/0.15)] rounded-xl">
+                    <h4 className="font-heading font-bold text-sm text-[hsl(var(--gold))] mb-2">중재 결과</h4>
                     <p className="text-sm"><strong>유형:</strong> {dispute.resolutionType}</p>
                     {dispute.resolutionNote && (
                       <p className="text-sm mt-1"><strong>메모:</strong> {dispute.resolutionNote}</p>
                     )}
                     {dispute.resolvedAt && (
-                      <p className="text-[#a49484] text-xs mt-2">
+                      <p className="text-[hsl(var(--text-secondary))] text-xs mt-2">
                         해결일: {new Date(dispute.resolvedAt).toLocaleString('ko-KR')}
                       </p>
                     )}
@@ -208,19 +208,19 @@ export default function AdminDisputeDetailPage() {
             {/* Customer info */}
             {customer && (
               <Card>
-                <h4 className="font-heading font-bold text-sm text-[#C9A227] mb-3">고객 정보</h4>
+                <h4 className="font-heading font-bold text-sm text-[hsl(var(--gold))] mb-3">고객 정보</h4>
                 <p className="text-sm">이름: {customer.name}</p>
-                <p className="text-sm text-[#a49484]">이메일: {customer.email}</p>
+                <p className="text-sm text-[hsl(var(--text-secondary))]">이메일: {customer.email}</p>
               </Card>
             )}
 
             {/* Booking info */}
             {booking && (
               <Card>
-                <h4 className="font-heading font-bold text-sm text-[#C9A227] mb-3">관련 예약</h4>
+                <h4 className="font-heading font-bold text-sm text-[hsl(var(--gold))] mb-3">관련 예약</h4>
                 <p className="text-sm">예약 #{booking.id} - <StatusBadge value={booking.status} /></p>
-                <p className="text-sm text-[#a49484]">크레딧: {booking.creditsUsed}</p>
-                <p className="text-sm text-[#a49484]">
+                <p className="text-sm text-[hsl(var(--text-secondary))]">크레딧: {booking.creditsUsed}</p>
+                <p className="text-sm text-[hsl(var(--text-secondary))]">
                   예약일: {new Date(booking.createdAt).toLocaleString('ko-KR')}
                 </p>
               </Card>
@@ -242,10 +242,10 @@ export default function AdminDisputeDetailPage() {
               </div>
 
               {showResolveForm && dispute.status === 'IN_REVIEW' && (
-                <div className="mt-4 p-4 border border-[rgba(201,162,39,0.15)] rounded-xl space-y-4">
+                <div className="mt-4 p-4 border border-[hsl(var(--gold)/0.15)] rounded-xl space-y-4">
                   <h4 className="font-heading font-bold text-sm">중재 결정</h4>
                   <div>
-                    <label className="block mb-2 font-medium text-sm text-[#a49484]">유형 선택</label>
+                    <label className="block mb-2 font-medium text-sm text-[hsl(var(--text-secondary))]">유형 선택</label>
                     <div className="flex gap-2 flex-wrap">
                       {RESOLUTION_TYPES.map((rt) => (
                         <button
@@ -253,8 +253,8 @@ export default function AdminDisputeDetailPage() {
                           onClick={() => setResolutionType(rt.value)}
                           className={`rounded-full px-4 py-2 text-sm font-bold font-heading transition-colors border-2 ${
                             resolutionType === rt.value
-                              ? 'bg-[#C9A227] text-[#0f0d0a] border-[#C9A227]'
-                              : 'border-[rgba(201,162,39,0.3)] text-[#f9f5ed] hover:bg-[rgba(201,162,39,0.1)]'
+                              ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] border-[hsl(var(--gold))]'
+                              : 'border-[hsl(var(--gold)/0.3)] text-[hsl(var(--text-primary))] hover:bg-[hsl(var(--gold)/0.1)]'
                           }`}
                         >
                           {rt.label}
@@ -266,12 +266,12 @@ export default function AdminDisputeDetailPage() {
                     placeholder="메모 (선택)"
                     value={resolutionNote}
                     onChange={(e) => setResolutionNote(e.target.value)}
-                    className="w-full bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[80px] placeholder:text-[#a49484] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none resize-none"
+                    className="w-full bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[80px] placeholder:text-[hsl(var(--text-secondary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none resize-none"
                   />
                   <div className="flex gap-3 justify-end">
                     <button
                       onClick={() => { setShowResolveForm(false); setResolutionType(''); setResolutionNote(''); }}
-                      className="rounded-full border-2 border-[rgba(201,162,39,0.3)] text-[#f9f5ed] text-sm font-bold font-heading px-5 py-2 hover:bg-[rgba(201,162,39,0.1)] transition-colors"
+                      className="rounded-full border-2 border-[hsl(var(--gold)/0.3)] text-[hsl(var(--text-primary))] text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--gold)/0.1)] transition-colors"
                     >
                       취소
                     </button>

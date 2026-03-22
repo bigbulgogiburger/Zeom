@@ -129,19 +129,19 @@ export default function NewRefundPage() {
           </h3>
           <div className="grid gap-2 text-sm">
             <div className="p-4 bg-[var(--color-success-light)] rounded-xl">
-              <span className="font-bold text-[var(--color-success)]">
+              <span className="font-bold text-[hsl(var(--success))]">
                 24시간 이상 전:
               </span>
               <span className="ml-2">100% 환불</span>
             </div>
             <div className="p-4 bg-[var(--color-warning-light)] rounded-xl">
-              <span className="font-bold text-[var(--color-warning)]">
+              <span className="font-bold text-[hsl(var(--warning))]">
                 1시간 ~ 24시간 전:
               </span>
               <span className="ml-2">50% 환불</span>
             </div>
             <div className="p-4 bg-[var(--color-danger-light)] rounded-xl">
-              <span className="font-bold text-[var(--color-danger)]">
+              <span className="font-bold text-[hsl(var(--dancheong))]">
                 1시간 미만:
               </span>
               <span className="ml-2">환불 불가</span>
@@ -167,8 +167,8 @@ export default function NewRefundPage() {
                     key={r.id}
                     className={`flex gap-4 p-4 rounded-xl cursor-pointer transition-all ${
                       selectedReservationId === r.id
-                        ? 'bg-[#C9A227] border-2 border-[#C9A227]'
-                        : 'bg-[#1a1612] border-2 border-[rgba(201,162,39,0.15)] hover:border-[#C9A227]/40'
+                        ? 'bg-[hsl(var(--gold))] border-2 border-[hsl(var(--gold))]'
+                        : 'bg-[hsl(var(--surface))] border-2 border-[hsl(var(--gold)/0.15)] hover:border-[hsl(var(--gold))]/40'
                     }`}
                   >
                     <input
@@ -182,15 +182,15 @@ export default function NewRefundPage() {
                     <div className="flex-1">
                       <div className={`font-bold mb-1 ${
                         selectedReservationId === r.id
-                          ? 'text-[#0f0d0a]'
-                          : 'text-[var(--color-text-on-dark)]'
+                          ? 'text-[hsl(var(--background))]'
+                          : 'text-[hsl(var(--text-primary))]'
                       }`}>
                         {r.counselorName} 상담
                       </div>
                       <div className={`text-sm ${
                         selectedReservationId === r.id
-                          ? 'text-[#0f0d0a]/70'
-                          : 'text-[var(--color-text-muted-dark)]'
+                          ? 'text-[hsl(var(--background))]/70'
+                          : 'text-[hsl(var(--text-secondary))]'
                       }`}>
                         {new Date(r.startAt).toLocaleString('ko-KR')}
                         <span className="mx-1">&middot;</span>
@@ -204,19 +204,19 @@ export default function NewRefundPage() {
 
             {/* Estimated Refund */}
             {selectedReservation && (
-              <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-6">
+              <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6">
                 <div className="text-center py-2">
-                  <div className="text-sm text-[var(--color-text-muted-dark)] mb-2">
+                  <div className="text-sm text-[hsl(var(--text-secondary))] mb-2">
                     예상 환불 금액
                   </div>
                   <div className={`text-3xl font-black font-heading mb-2 ${
                     estimatedRefund > 0
-                      ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent'
-                      : 'text-[var(--color-danger)]'
+                      ? 'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent'
+                      : 'text-[hsl(var(--dancheong))]'
                   }`}>
                     {estimatedRefund.toLocaleString()}원
                   </div>
-                  <div className="text-xs text-[var(--color-text-muted-dark)]">
+                  <div className="text-xs text-[hsl(var(--text-secondary))]">
                     {hoursUntilStart >= 24
                       ? '(24시간 이상 전 - 100% 환불)'
                       : hoursUntilStart >= 1
@@ -239,7 +239,7 @@ export default function NewRefundPage() {
                 placeholder="환불 사유를 입력해주세요."
                 rows={4}
                 disabled={loading}
-                className="w-full p-4 border-2 border-[rgba(201,162,39,0.15)] rounded-xl bg-[#1a1612] text-[var(--color-text-on-dark)] text-base font-[inherit] leading-relaxed resize-y focus:border-[#C9A227]/50 focus:outline-none"
+                className="w-full p-4 border-2 border-[hsl(var(--gold)/0.15)] rounded-xl bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] text-base font-[inherit] leading-relaxed resize-y focus:border-[hsl(var(--gold))]/50 focus:outline-none"
               />
             </Card>
 
@@ -254,7 +254,7 @@ export default function NewRefundPage() {
             <button
               type="button"
               onClick={() => router.push('/refunds')}
-              className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 text-sm hover:bg-[#C9A227]/10 bg-transparent cursor-pointer"
+              className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full px-6 py-2 text-sm hover:bg-[hsl(var(--gold))]/10 bg-transparent cursor-pointer"
             >
               취소
             </button>

@@ -73,26 +73,26 @@ export default function DashboardPage() {
   return (
     <RequireAdmin>
       <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
-        <h1 className="text-3xl font-black tracking-tight text-[#f9f5ed] font-heading">운영 대시보드</h1>
+        <h1 className="text-3xl font-black tracking-tight text-[hsl(var(--text-primary))] font-heading">운영 대시보드</h1>
 
         <Card>
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
             <div className="grid gap-1">
-              <Label className="text-sm font-medium text-[#a49484]">시작</Label>
+              <Label className="text-sm font-medium text-[hsl(var(--text-secondary))]">시작</Label>
               <Input
                 type="datetime-local"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] focus:border-[rgba(201,162,39,0.4)] focus:ring-[rgba(201,162,39,0.3)]"
+                className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-[hsl(var(--gold)/0.3)]"
               />
             </div>
             <div className="grid gap-1">
-              <Label className="text-sm font-medium text-[#a49484]">종료</Label>
+              <Label className="text-sm font-medium text-[hsl(var(--text-secondary))]">종료</Label>
               <Input
                 type="datetime-local"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] focus:border-[rgba(201,162,39,0.4)] focus:ring-[rgba(201,162,39,0.3)]"
+                className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-[hsl(var(--gold)/0.3)]"
               />
             </div>
             <ActionButton onClick={load} loading={loading}>조회</ActionButton>
@@ -104,7 +104,7 @@ export default function DashboardPage() {
               </Alert>
             )}
             {success && (
-              <Alert className="mb-2 rounded-xl border-[rgba(201,162,39,0.15)]">
+              <Alert className="mb-2 rounded-xl border-[hsl(var(--gold)/0.15)]">
                 <AlertDescription className="text-green-500">{success}</AlertDescription>
               </Alert>
             )}

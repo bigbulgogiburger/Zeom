@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { RotateCcw } from 'lucide-react';
 import { apiFetch } from '../../components/api-client';
 import { RequireLogin } from '../../components/route-guard';
 import { Card, EmptyState, InlineError, PageTitle, StatusBadge } from '../../components/ui';
@@ -58,7 +59,7 @@ export default function RefundsPage() {
           <PageTitle>환불 내역</PageTitle>
           <button
             onClick={() => router.push('/refunds/new')}
-            className="bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] px-6 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
+            className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] px-6 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
           >
             + 환불 신청
           </button>
@@ -68,7 +69,7 @@ export default function RefundsPage() {
 
         {loading ? (
           <Card>
-            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
+            <div className="text-center py-8 text-[hsl(var(--text-secondary))]">
               불러오는 중...
             </div>
           </Card>
@@ -83,7 +84,7 @@ export default function RefundsPage() {
           />
         ) : refunds.length === 0 ? (
           <EmptyState
-            icon="🔄"
+            icon={<RotateCcw className="size-5" />}
             title="환불 내역이 없습니다"
             desc="예약을 취소하거나 환불이 필요한 경우 신청할 수 있습니다."
           />
@@ -100,10 +101,10 @@ export default function RefundsPage() {
                       <StatusBadge value={r.status} />
                     </div>
 
-                    <div className="grid gap-1 text-sm text-[var(--color-text-muted-card)]">
+                    <div className="grid gap-1 text-sm text-[hsl(var(--text-secondary))]">
                       <div>
                         <span>금액: </span>
-                        <span className="font-bold text-[#C9A227]">
+                        <span className="font-bold text-[hsl(var(--gold))]">
                           {r.amount.toLocaleString()}원
                         </span>
                       </div>
@@ -120,8 +121,8 @@ export default function RefundsPage() {
                     </div>
 
                     {r.reason && (
-                      <div className="mt-4 p-4 bg-[#1a1612] rounded-xl text-sm">
-                        <div className="text-[var(--color-text-muted-card)] mb-1">
+                      <div className="mt-4 p-4 bg-[hsl(var(--surface))] rounded-xl text-sm">
+                        <div className="text-[hsl(var(--text-secondary))] mb-1">
                           사유:
                         </div>
                         <div>{r.reason}</div>

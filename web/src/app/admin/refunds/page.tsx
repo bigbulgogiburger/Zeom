@@ -154,7 +154,7 @@ export default function AdminRefundsPage() {
             <select
               value={statusFilter}
               onChange={(e) => handleFilterChange(e.target.value)}
-              className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[44px] focus:border-[rgba(201,162,39,0.4)] focus:outline-none"
+              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[44px] focus:border-[hsl(var(--gold)/0.4)] focus:outline-none"
             >
               <option value="">상태: 전체</option>
               <option value="REQUESTED">요청</option>
@@ -174,28 +174,28 @@ export default function AdminRefundsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">ID</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">고객명</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">금액</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">사유</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">상태</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">경과</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227]">요청일</TableHead>
-                  <TableHead className="font-heading font-bold text-[#C9A227] text-right">관리</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">ID</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">고객명</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">금액</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">사유</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">상태</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">경과</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">요청일</TableHead>
+                  <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {refunds.map((r) => (
-                  <TableRow key={r.id} className="hover:bg-[rgba(201,162,39,0.03)] transition-colors">
+                  <TableRow key={r.id} className="hover:bg-[hsl(var(--gold)/0.03)] transition-colors">
                     <TableCell className="font-mono text-sm">#{r.id}</TableCell>
                     <TableCell className="font-medium">{r.customerName}</TableCell>
                     <TableCell className="font-heading font-bold">{formatCurrency(r.amount)}</TableCell>
-                    <TableCell className="text-[#a49484] max-w-[200px] truncate">{r.reason}</TableCell>
+                    <TableCell className="text-[hsl(var(--text-secondary))] max-w-[200px] truncate">{r.reason}</TableCell>
                     <TableCell><StatusBadge value={r.status} /></TableCell>
-                    <TableCell className="text-[#a49484] font-mono text-sm">
+                    <TableCell className="text-[hsl(var(--text-secondary))] font-mono text-sm">
                       {getElapsedTime(r.createdAt)}
                     </TableCell>
-                    <TableCell className="text-[#a49484]">
+                    <TableCell className="text-[hsl(var(--text-secondary))]">
                       {new Date(r.createdAt).toLocaleDateString('ko-KR')}
                     </TableCell>
                     <TableCell className="text-right">
@@ -204,14 +204,14 @@ export default function AdminRefundsPage() {
                           <button
                             onClick={() => { setActionTarget({ refund: r, action: 'approve' }); setAdminNote(''); }}
                             disabled={processing}
-                            className="rounded-full bg-[#C9A227] text-[#0f0d0a] text-sm font-bold font-heading px-3 py-1.5 min-h-[28px] hover:bg-[#b08d1f] transition-colors"
+                            className="rounded-full bg-[hsl(var(--gold))] text-[hsl(var(--background))] text-sm font-bold font-heading px-3 py-1.5 min-h-[28px] hover:bg-[hsl(var(--gold))/0.85] transition-colors"
                           >
                             승인
                           </button>
                           <button
                             onClick={() => { setActionTarget({ refund: r, action: 'reject' }); setAdminNote(''); }}
                             disabled={processing}
-                            className="rounded-full bg-[#8B0000] text-white text-sm font-bold font-heading px-3 py-1.5 min-h-[28px] hover:bg-[#6d0000] transition-colors"
+                            className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-3 py-1.5 min-h-[28px] hover:bg-[hsl(var(--dancheong))/0.75] transition-colors"
                           >
                             거절
                           </button>
@@ -230,23 +230,23 @@ export default function AdminRefundsPage() {
         {/* Action dialog */}
         {actionTarget && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
-            <div className="bg-[var(--color-bg-card)] border border-[rgba(201,162,39,0.15)] rounded-2xl p-6 max-w-[420px] w-full mx-4 space-y-4">
+            <div className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-2xl p-6 max-w-[420px] w-full mx-4 space-y-4">
               <h3 className="font-heading font-bold text-lg">
                 환불 {actionTarget.action === 'approve' ? '승인' : '거절'}
               </h3>
-              <p className="text-[#a49484] text-sm">
+              <p className="text-[hsl(var(--text-secondary))] text-sm">
                 환불 #{actionTarget.refund.id} ({actionTarget.refund.customerName}) - {formatCurrency(actionTarget.refund.amount)}
               </p>
               <textarea
                 placeholder="관리자 메모 (선택)"
                 value={adminNote}
                 onChange={(e) => setAdminNote(e.target.value)}
-                className="w-full bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed] px-3 py-2 text-sm min-h-[80px] placeholder:text-[#a49484] focus:border-[rgba(201,162,39,0.4)] focus:ring-2 focus:ring-[rgba(201,162,39,0.3)] focus:outline-none resize-none"
+                className="w-full bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] px-3 py-2 text-sm min-h-[80px] placeholder:text-[hsl(var(--text-secondary))] focus:border-[hsl(var(--gold)/0.4)] focus:ring-2 focus:ring-[hsl(var(--gold)/0.3)] focus:outline-none resize-none"
               />
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => { setActionTarget(null); setAdminNote(''); }}
-                  className="rounded-full border-2 border-[rgba(201,162,39,0.3)] text-[#f9f5ed] text-sm font-bold font-heading px-5 py-2 hover:bg-[rgba(201,162,39,0.1)] transition-colors"
+                  className="rounded-full border-2 border-[hsl(var(--gold)/0.3)] text-[hsl(var(--text-primary))] text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--gold)/0.1)] transition-colors"
                 >
                   취소
                 </button>
@@ -255,8 +255,8 @@ export default function AdminRefundsPage() {
                   disabled={processing}
                   className={`rounded-full text-sm font-bold font-heading px-5 py-2 transition-colors disabled:opacity-50 ${
                     actionTarget.action === 'approve'
-                      ? 'bg-[#C9A227] text-[#0f0d0a] hover:bg-[#b08d1f]'
-                      : 'bg-[#8B0000] text-white hover:bg-[#6d0000]'
+                      ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold))/0.85]'
+                      : 'bg-[hsl(var(--dancheong))] text-white hover:bg-[hsl(var(--dancheong))/0.75]'
                   }`}
                 >
                   {processing ? '처리 중...' : actionTarget.action === 'approve' ? '승인' : '거절'}

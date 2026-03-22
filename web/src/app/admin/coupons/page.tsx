@@ -166,11 +166,11 @@ export default function AdminCouponsPage() {
   }
 
   const selectClass =
-    "w-full min-h-[44px] rounded-xl border border-[rgba(201,162,39,0.15)] bg-[#1a1612] px-3 py-2 text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]/40";
+    "w-full min-h-[44px] rounded-xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] px-3 py-2 text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40";
 
   return (
     <RequireAdmin>
-      <main className="min-h-[100dvh] bg-[#0f0d0a] p-6">
+      <main className="min-h-[100dvh] bg-[hsl(var(--background))] p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <PageTitle>쿠폰 관리</PageTitle>
@@ -185,14 +185,14 @@ export default function AdminCouponsPage() {
           {/* Create Form */}
           {showCreate && (
             <Card className="mb-6">
-              <h3 className="text-lg font-bold text-[#C9A227] mb-4">새 쿠폰 생성</h3>
+              <h3 className="text-lg font-bold text-[hsl(var(--gold))] mb-4">새 쿠폰 생성</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField label="쿠폰 코드" required>
                   <Input
                     value={createCode}
                     onChange={(e) => setCreateCode(e.target.value.toUpperCase())}
                     placeholder="WELCOME2026"
-                    className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl"
+                    className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl"
                   />
                 </FormField>
                 <FormField label="쿠폰 유형" required>
@@ -212,7 +212,7 @@ export default function AdminCouponsPage() {
                     value={createValue}
                     onChange={(e) => setCreateValue(e.target.value)}
                     placeholder={createType === 'PERCENT' ? '10' : '5000'}
-                    className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl"
+                    className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl"
                   />
                 </FormField>
                 <FormField label="최소 주문 금액" hint="선택 사항">
@@ -221,7 +221,7 @@ export default function AdminCouponsPage() {
                     value={createMinOrder}
                     onChange={(e) => setCreateMinOrder(e.target.value)}
                     placeholder="10000"
-                    className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl"
+                    className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl"
                   />
                 </FormField>
                 <FormField label="최대 사용 횟수" hint="비워두면 무제한">
@@ -230,7 +230,7 @@ export default function AdminCouponsPage() {
                     value={createMaxUses}
                     onChange={(e) => setCreateMaxUses(e.target.value)}
                     placeholder="100"
-                    className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl"
+                    className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl"
                   />
                 </FormField>
                 <div />
@@ -239,7 +239,7 @@ export default function AdminCouponsPage() {
                     type="datetime-local"
                     value={createValidFrom}
                     onChange={(e) => setCreateValidFrom(e.target.value)}
-                    className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl"
+                    className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl"
                   />
                 </FormField>
                 <FormField label="종료일" required>
@@ -247,7 +247,7 @@ export default function AdminCouponsPage() {
                     type="datetime-local"
                     value={createValidUntil}
                     onChange={(e) => setCreateValidUntil(e.target.value)}
-                    className="min-h-[44px] bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl"
+                    className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl"
                   />
                 </FormField>
               </div>
@@ -277,8 +277,8 @@ export default function AdminCouponsPage() {
                 onClick={() => { setFilter(value); setPage(1); }}
                 className={
                   filter === value
-                    ? 'bg-[#C9A227] text-[#0f0d0a] hover:bg-[#D4A843]'
-                    : 'border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10'
+                    ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold-soft))]'
+                    : 'border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10'
                 }
               >
                 {label}
@@ -309,7 +309,7 @@ export default function AdminCouponsPage() {
                   <TableBody>
                     {coupons.map((coupon) => (
                       <TableRow key={coupon.id}>
-                        <TableCell className="font-mono font-bold text-[#C9A227]">
+                        <TableCell className="font-mono font-bold text-[hsl(var(--gold))]">
                           {coupon.code}
                         </TableCell>
                         <TableCell>{COUPON_TYPE_LABELS[coupon.couponType] || coupon.couponType}</TableCell>

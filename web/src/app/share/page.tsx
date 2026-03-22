@@ -46,17 +46,17 @@ export default async function SharePage({ searchParams }: Props) {
   const date = params.date || '오늘';
 
   const getScoreColor = (s: number) => {
-    if (s >= 80) return '#C9A227';
-    if (s >= 60) return '#b08d1f';
+    if (s >= 80) return 'hsl(var(--gold))';
+    if (s >= 60) return 'hsl(var(--gold)/0.85)';
     if (s >= 40) return '#8B6914';
-    return '#8B0000';
+    return 'hsl(var(--dancheong))';
   };
 
   return (
     <div className="page-container">
       <div className="glass-card p-8 text-center">
-        <p className="text-sm text-[#a49484] m-0 mb-2">{date}</p>
-        <h1 className="text-2xl font-heading font-black text-[#C9A227] m-0 mb-6">
+        <p className="text-sm text-[hsl(var(--text-secondary))] m-0 mb-2">{date}</p>
+        <h1 className="text-2xl font-heading font-black text-[hsl(var(--gold))] m-0 mb-6">
           오늘의 운세
         </h1>
 
@@ -74,7 +74,7 @@ export default async function SharePage({ searchParams }: Props) {
           </div>
         </div>
 
-        <p className="text-sm text-[#a49484] leading-relaxed m-0 mb-6">
+        <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed m-0 mb-6">
           나만의 사주팔자 기반 맞춤형 운세를 확인해보세요.
         </p>
 
@@ -82,7 +82,7 @@ export default async function SharePage({ searchParams }: Props) {
           내 운세 확인하기
         </a>
 
-        <p className="text-xs text-[#a49484]/50 m-0 mt-6">
+        <p className="text-xs text-[hsl(var(--text-secondary))]/50 m-0 mt-6">
           천지연꽃신당 | cheonjiyeon.com
         </p>
       </div>

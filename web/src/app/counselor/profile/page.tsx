@@ -109,8 +109,8 @@ export default function CounselorProfilePage() {
           <div className="space-y-4">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="animate-pulse">
-                <div className="h-4 w-1/4 bg-[#1a1612] rounded mb-2" />
-                <div className="h-10 w-full bg-[#1a1612] rounded" />
+                <div className="h-4 w-1/4 bg-[hsl(var(--surface))] rounded mb-2" />
+                <div className="h-10 w-full bg-[hsl(var(--surface))] rounded" />
               </div>
             ))}
           </div>
@@ -141,7 +141,7 @@ export default function CounselorProfilePage() {
 
       {/* Edit form */}
       <Card>
-        <h3 className="font-heading font-bold text-lg text-[#C9A227] mb-4">
+        <h3 className="font-heading font-bold text-lg text-[hsl(var(--gold))] mb-4">
           기본 정보
         </h3>
 
@@ -150,7 +150,7 @@ export default function CounselorProfilePage() {
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="상담사 이름"
-            className="bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
+            className="bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))]"
           />
         </FormField>
 
@@ -159,7 +159,7 @@ export default function CounselorProfilePage() {
             value={specialty}
             onChange={e => setSpecialty(e.target.value)}
             placeholder="예: 사주, 타로, 궁합"
-            className="bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
+            className="bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))]"
           />
         </FormField>
 
@@ -177,11 +177,11 @@ export default function CounselorProfilePage() {
             placeholder="상담사 소개를 작성해 주세요..."
             rows={5}
             maxLength={INTRO_MAX_LENGTH}
-            className="bg-[#1a1612] border-[rgba(201,162,39,0.15)] rounded-xl text-[#f9f5ed]"
+            className="bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))]"
           />
         </FormField>
 
-        <Separator className="my-4 bg-[rgba(201,162,39,0.1)]" />
+        <Separator className="my-4 bg-[hsl(var(--gold)/0.1)]" />
 
         <InlineError message={error} />
         {success && (

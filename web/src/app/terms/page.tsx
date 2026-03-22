@@ -11,18 +11,18 @@ export default function TermsPage() {
       className="mx-auto px-6 py-10"
       style={{
         maxWidth: 800,
-        color: 'var(--color-text-on-dark)',
+        color: 'hsl(var(--text-primary))',
         lineHeight: 1.8,
       }}
     >
       <h1
         className="text-2xl font-bold mb-8"
-        style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-gold)' }}
+        style={{ fontFamily: 'var(--font-heading)', color: 'hsl(var(--gold))' }}
       >
         이용약관
       </h1>
 
-      <p className="mb-8" style={{ color: 'var(--color-text-muted-dark)', fontSize: 14 }}>
+      <p className="mb-8" style={{ color: 'hsl(var(--text-secondary))', fontSize: 14 }}>
         시행일: 2026년 3월 1일
       </p>
 
@@ -175,9 +175,9 @@ export default function TermsPage() {
 
       <div
         className="mt-10 pt-6"
-        style={{ borderTop: '1px solid var(--color-border-dark)' }}
+        style={{ borderTop: '1px solid hsl(var(--border-subtle))' }}
       >
-        <p style={{ color: 'var(--color-text-muted-dark)', fontSize: 13 }}>
+        <p style={{ color: 'hsl(var(--text-secondary))', fontSize: 13 }}>
           본 약관은 2026년 3월 1일부터 시행됩니다.
         </p>
       </div>

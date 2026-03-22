@@ -88,9 +88,9 @@ export default function NotificationPreferencesPage() {
     return (
       <main className="max-w-[600px] mx-auto px-6 py-12">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-40 bg-[#1a1612] rounded-lg" />
+          <div className="h-8 w-40 bg-[hsl(var(--surface))] rounded-lg" />
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-16 bg-[#1a1612] rounded-xl" />
+            <div key={i} className="h-16 bg-[hsl(var(--surface))] rounded-xl" />
           ))}
         </div>
       </main>
@@ -103,17 +103,17 @@ export default function NotificationPreferencesPage() {
       <div className="mb-8">
         <button
           onClick={() => router.push('/notifications')}
-          className="text-sm text-[#a49484] hover:text-[#C9A227] transition-colors mb-4 flex items-center gap-1"
+          className="text-sm text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] transition-colors mb-4 flex items-center gap-1"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
           알림으로 돌아가기
         </button>
-        <h1 className="text-3xl font-black tracking-tight text-[var(--color-text-on-dark)] font-heading">
+        <h1 className="text-3xl font-black tracking-tight text-[hsl(var(--text-primary))] font-heading">
           알림 설정
         </h1>
-        <p className="text-[#a49484] text-sm mt-2">
+        <p className="text-[hsl(var(--text-secondary))] text-sm mt-2">
           이메일 알림 수신 여부를 설정합니다.
         </p>
       </div>
@@ -124,10 +124,10 @@ export default function NotificationPreferencesPage() {
           {PREFERENCE_LABELS.map(({ key, label, description }) => (
             <div
               key={key}
-              className="bg-black/20 border border-[rgba(201,162,39,0.08)] rounded-xl px-5 py-4 flex items-center justify-between gap-4"
+              className="bg-black/20 border border-[hsl(var(--gold)/0.08)] rounded-xl px-5 py-4 flex items-center justify-between gap-4"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[var(--color-text-on-dark)]">
+                <p className="text-sm font-medium text-[hsl(var(--text-primary))]">
                   {label}
                 </p>
                 <p className="text-xs text-[#6b5c4d] mt-0.5">
@@ -138,9 +138,9 @@ export default function NotificationPreferencesPage() {
               {/* Toggle switch */}
               <button
                 onClick={() => handleToggle(key)}
-                className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 ${
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--gold))]/30 ${
                   preferences[key]
-                    ? 'bg-[#C9A227]'
+                    ? 'bg-[hsl(var(--gold))]'
                     : 'bg-[#3a3530]'
                 }`}
                 role="switch"
@@ -161,12 +161,12 @@ export default function NotificationPreferencesPage() {
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading px-8 py-2.5 hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)] transition-all"
+              className="rounded-full bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold font-heading px-8 py-2.5 hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)] transition-all"
             >
               {saving ? '저장 중...' : '저장'}
             </Button>
             {saved && (
-              <span className="text-sm text-[#C9A227] font-medium">
+              <span className="text-sm text-[hsl(var(--gold))] font-medium">
                 저장되었습니다
               </span>
             )}
