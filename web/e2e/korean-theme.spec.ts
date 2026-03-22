@@ -124,7 +124,9 @@ test.describe('Korean Theme: Design System', () => {
       return el.clientWidth;
     });
 
-    expect(bodyWidth).toBe(375);
+    // clientWidth may be slightly less than viewport due to scrollbar
+    expect(bodyWidth).toBeGreaterThanOrEqual(355);
+    expect(bodyWidth).toBeLessThanOrEqual(375);
 
     // Check if navigation or layout is mobile-friendly
     // (usually stacked vertically, not horizontal overflow)
@@ -222,7 +224,9 @@ test.describe('Korean Theme: Design System', () => {
       return el.clientWidth;
     });
 
-    expect(bodyWidth).toBe(768);
+    // clientWidth may be slightly less than viewport due to scrollbar
+    expect(bodyWidth).toBeGreaterThanOrEqual(748);
+    expect(bodyWidth).toBeLessThanOrEqual(768);
 
     // No horizontal overflow
     const hasOverflow = await page.evaluate(() => {

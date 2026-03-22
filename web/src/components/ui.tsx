@@ -55,7 +55,7 @@ const STATUS_CONFIG: Record<string, { label: string; type: 'success' | 'warning'
 const STATUS_STYLES: Record<string, string> = {
   success: 'bg-[hsl(var(--success))] text-[hsl(35,20%,88%)] hover:bg-[hsl(var(--success))]',
   warning: 'bg-[hsl(var(--warning))] text-[hsl(24,15%,5%)] hover:bg-[hsl(var(--warning))]',
-  destructive: 'bg-[hsl(var(--destructive))] text-[hsl(35,20%,88%)] hover:bg-[hsl(var(--destructive))]',
+  destructive: 'bg-[hsl(var(--dancheong))] text-[hsl(35,20%,88%)] hover:bg-[hsl(var(--dancheong))]',
 };
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
@@ -92,8 +92,7 @@ const CARD_VARIANTS = {
   surface: cn(
     'rounded-2xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface))]',
     'text-[hsl(var(--text-primary))]',
-    'hover:border-[hsl(var(--border-accent))/0.4] hover:-translate-y-0.5',
-    'transition-all duration-300',
+    'card-hover-glow',
   ),
   glass: cn(
     'rounded-2xl bg-[hsl(var(--surface))/0.6] backdrop-blur-xl',
@@ -105,7 +104,7 @@ const CARD_VARIANTS = {
   elevated: cn(
     'rounded-2xl bg-gradient-to-br from-[hsl(var(--surface))] to-[hsl(var(--background))]',
     'border border-[hsl(var(--border-accent))/0.3]',
-    'shadow-[0_8px_32px_rgba(0,0,0,0.3)]',
+    'shadow-[0_8px_32px_hsl(var(--gold)/0.06)]',
     'text-[hsl(var(--text-primary))]',
     'transition-all duration-300',
   ),
@@ -181,7 +180,7 @@ export function PageTitle({ children }: { children: React.ReactNode }) {
 
 const EMPTY_STATE_ICONS: Record<string, React.ReactNode> = {
   search: <Search className="size-12 text-[hsl(var(--text-muted))]" />,
-  error: <AlertCircle className="size-12 text-[hsl(var(--destructive))]" />,
+  error: <AlertCircle className="size-12 text-[hsl(var(--dancheong))]" />,
   empty: <Package className="size-12 text-[hsl(var(--text-muted))]" />,
 };
 
@@ -352,11 +351,11 @@ export function FormField({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-6">
-      <label className="block mb-2 font-medium text-sm text-[hsl(var(--text-primary))]">
+    <div className="mb-6 form-group">
+      <label className="block mb-2 font-medium text-sm text-[hsl(var(--text-primary))] transition-colors duration-200">
         {label}
         {required && (
-          <span className="text-[hsl(var(--gold))] ml-1" aria-hidden="true">*</span>
+          <span className="text-[hsl(var(--lotus))] ml-1" aria-hidden="true">*</span>
         )}
       </label>
       {children}

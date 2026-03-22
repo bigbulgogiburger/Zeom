@@ -61,9 +61,10 @@
   --border-subtle: 35 15% 18%;
   --border-accent: 43 50% 30%;
 
-  /* Typography */
+  /* Typography — Geist for English display, Pretendard for Korean */
   --font-pretendard: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-heading: var(--font-pretendard);
+  --font-geist: 'Geist', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-heading: var(--font-geist);
   --font-body: var(--font-pretendard);
 
   /* Transitions */
@@ -136,7 +137,7 @@
 
   /* Font family */
   --font-sans: var(--font-pretendard);
-  --font-heading: var(--font-pretendard);
+  --font-heading: var(--font-geist);
   --font-body: var(--font-pretendard);
 }
 
@@ -326,6 +327,35 @@ html.js-anim .fade-up.visible {
 
 .scroll-hint {
   animation: pulse 2s ease-in-out infinite;
+}
+
+/* ===== Micro-interaction: Form Focus Label ===== */
+.form-group:focus-within label {
+  color: hsl(var(--gold));
+  transition: color 200ms ease;
+}
+
+/* ===== Micro-interaction: Tab Bounce ===== */
+@keyframes tabBounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1.05); }
+}
+
+.tab-bounce {
+  animation: tabBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ===== Micro-interaction: Card Hover Glow ===== */
+.card-hover-glow {
+  transition: transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-spring), border-color 0.3s ease;
+}
+
+.card-hover-glow:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px hsl(var(--gold) / 0.08), 0 4px 12px hsl(var(--gold) / 0.04);
+  border-color: hsl(var(--border-accent) / 0.5);
 }
 
 /* ===== Screen Reader Only ===== */

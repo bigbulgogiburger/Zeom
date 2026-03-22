@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Sparkles, Users, Calendar, User } from 'lucide-react';
@@ -14,40 +15,57 @@ const tabs = [
 
 export default function BottomTabBar() {
   const pathname = usePathname();
+  const [bounceKey, setBounceKey] = useState<string | null>(null);
+  const prevPathRef = useRef(pathname);
+
+  // Trigger bounce animation when active tab changes
+  useEffect(() => {
+    if (prevPathRef.current !== pathname) {
+      const activeTab = tabs.find(({ href }) =>
+        href === '/' ? pathname === '/' : pathname.startsWith(href),
+      );
+      if (activeTab) {
+        setBounceKey(activeTab.href);
+        const timer = setTimeout(() => setBounceKey(null), 400);
+        return () => clearTimeout(timer);
+      }
+      prevPathRef.current = pathname;
+    }
+  }, [pathname]);
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[hsl(var(--background)/0.9)] backdrop-blur-xl border-t border-[hsl(var(--border-subtle))]"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[hsl(var(--background)/0.92)] backdrop-blur-xl border-t border-[hsl(var(--border-subtle))]"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      <div className="flex items-center justify-around" style={{ height: 56 }}>
+      <div className="flex items-center justify-around h-14">
         {tabs.map(({ href, label, icon: Icon }) => {
           const isActive =
             href === '/' ? pathname === '/' : pathname.startsWith(href);
+          const isBouncing = bounceKey === href;
+
           return (
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 no-underline min-w-[44px] min-h-[44px] transition-all duration-200"
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 no-underline min-w-[44px] min-h-[44px] transition-colors duration-200 ${isBouncing ? 'tab-bounce' : ''}`}
               style={{
                 color: isActive
                   ? 'hsl(var(--gold))'
                   : 'hsl(var(--text-muted))',
-                transform: isActive ? 'scale(1.05)' : 'scale(1)',
               }}
             >
               {/* Active dot indicator */}
               <span
-                className="rounded-full transition-all duration-200"
+                className="rounded-full transition-all duration-300"
                 style={{
-                  width: 4,
-                  height: 4,
-                  backgroundColor: isActive
-                    ? 'hsl(var(--gold))'
-                    : 'transparent',
-                  marginBottom: 2,
+                  width: isActive ? 5 : 0,
+                  height: isActive ? 5 : 0,
+                  backgroundColor: 'hsl(var(--gold))',
+                  opacity: isActive ? 1 : 0,
+                  marginBottom: 1,
                 }}
                 aria-hidden="true"
               />
@@ -59,6 +77,7 @@ export default function BottomTabBar() {
                 style={{
                   fontSize: 10,
                   fontWeight: isActive ? 600 : 400,
+                  letterSpacing: isActive ? '0.02em' : '0',
                 }}
               >
                 {label}

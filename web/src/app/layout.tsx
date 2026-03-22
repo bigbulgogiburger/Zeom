@@ -69,8 +69,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           crossOrigin="anonymous"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
+        <link
+          rel="stylesheet"
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.min.css"
+        />
       </head>
       <body className="grain-overlay">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:bg-[hsl(var(--gold))] focus:text-[hsl(var(--background))] focus:px-4 focus:py-2 focus:rounded-lg focus:font-bold focus:text-sm">
+          본문으로 건너뛰기
+        </a>
         {GA_ID && (
           <>
             <Script
@@ -91,7 +99,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <ToastProvider>
                 <SessionExpiryGuard />
                 <AppHeader />
-                <div className="pb-14 md:pb-0">{children}</div>
+                <div id="main-content" className="pb-14 md:pb-0">{children}</div>
                 <BottomTabBar />
                 <AnalyticsProvider />
               </ToastProvider>

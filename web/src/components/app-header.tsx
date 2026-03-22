@@ -47,16 +47,16 @@ export default function AppHeader() {
 
   return (
     <>
-      <header className="app-header sticky top-0 z-[100] h-16 flex items-center px-6 bg-[hsl(var(--background)/0.85)] backdrop-blur-xl border-b border-[hsl(var(--border-subtle))]">
+      <header className="sticky top-0 z-[100] h-16 flex items-center px-6 bg-[hsl(var(--background)/0.85)] backdrop-blur-xl border-b border-[hsl(var(--border-subtle))]">
         <Link
           href="/"
-          className="app-header-brand text-lg font-bold tracking-tight text-[hsl(var(--gold))] no-underline"
+          className="text-lg font-bold tracking-tight text-[hsl(var(--gold))] no-underline shrink-0"
         >
           천지연꽃신당
         </Link>
 
         {/* Desktop nav */}
-        <nav className="app-header-nav gap-2">
+        <nav className="hidden md:flex items-center gap-2 ml-8">
           <Link href="/counselors" className={desktopNavLinkClass}>
             상담사
           </Link>
@@ -103,14 +103,14 @@ export default function AppHeader() {
         </nav>
 
         {/* Desktop right section */}
-        <div className="app-header-right">
+        <div className="ml-auto flex items-center gap-3">
           <LanguageSwitcher />
           {me ? (
             <>
               <CreditWidget />
               <WalletWidget />
               <NotificationBell />
-              <span className="app-header-user text-[hsl(var(--text-secondary))]">
+              <span className="hidden md:inline text-sm text-[hsl(var(--text-secondary))]">
                 {me.name}
               </span>
               <Button
@@ -123,7 +123,7 @@ export default function AppHeader() {
               </Button>
             </>
           ) : (
-            <span className="app-header-auth-links flex gap-1 items-center">
+            <span className="hidden md:flex gap-1 items-center">
               <Link
                 href="/login"
                 className={desktopNavLinkClass}
@@ -145,7 +145,7 @@ export default function AppHeader() {
               <Button
                 variant="outline"
                 size="icon"
-                className="app-header-hamburger rounded-full border border-[hsl(var(--border-subtle))] text-[hsl(var(--text-secondary))] bg-transparent hover:border-[hsl(var(--gold))] hover:text-[hsl(var(--gold))] hover:bg-transparent min-w-[44px] min-h-[44px] transition-colors duration-200"
+                className="md:hidden rounded-full border border-[hsl(var(--border-subtle))] text-[hsl(var(--text-secondary))] bg-transparent hover:border-[hsl(var(--gold))] hover:text-[hsl(var(--gold))] hover:bg-transparent min-w-[44px] min-h-[44px] transition-colors duration-200"
                 aria-label="메뉴 열기"
               >
                 <Menu size={20} strokeWidth={1.8} />
