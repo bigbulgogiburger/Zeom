@@ -153,18 +153,18 @@ export default function SessionTimer({
   const seconds = displaySeconds % 60;
 
   const getBgColor = () => {
-    if (isGrace) return '#8B0000';
-    if (phase === 'warning1') return '#8B0000';
-    if (phase === 'warning3') return '#B8860B';
-    if (phase === 'warning5') return '#DAA520';
-    if (phase === 'expired') return '#8B0000';
-    return 'var(--color-bg-card)';
+    if (isGrace) return 'hsl(var(--dancheong))';
+    if (phase === 'warning1') return 'hsl(var(--dancheong))';
+    if (phase === 'warning3') return 'hsl(var(--warning))';
+    if (phase === 'warning5') return 'hsl(var(--gold-soft))';
+    if (phase === 'expired') return 'hsl(var(--dancheong))';
+    return 'hsl(var(--card))';
   };
 
   const getTextColor = () => {
     if (isGrace || phase === 'warning1' || phase === 'expired') return '#FFF';
     if (phase === 'warning3' || phase === 'warning5') return '#FFF';
-    return 'var(--color-gold)';
+    return 'hsl(var(--gold))';
   };
 
   const getLabel = () => {

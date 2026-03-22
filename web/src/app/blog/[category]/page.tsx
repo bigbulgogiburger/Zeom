@@ -69,10 +69,10 @@ export default async function CategoryPage({
     <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-16">
       {/* Header */}
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-black tracking-tight text-[var(--color-text-on-dark)] font-heading">
+        <h1 className="text-4xl font-black tracking-tight text-text-primary font-heading">
           {categoryEmoji(category)} {category}
         </h1>
-        <p className="text-[#a49484] text-lg leading-relaxed mt-3">
+        <p className="text-text-secondary text-lg leading-relaxed mt-3">
           {category}에 대한 전문 정보와 가이드
         </p>
       </div>
@@ -81,7 +81,7 @@ export default async function CategoryPage({
       <div className="flex flex-wrap justify-center gap-3 mb-12">
         <Link
           href="/blog"
-          className="rounded-full px-6 py-2.5 text-sm font-medium font-heading transition-all duration-300 border border-[rgba(201,162,39,0.2)] text-[#a49484] bg-transparent hover:bg-[#C9A227]/10 hover:text-[#C9A227] hover:border-[#C9A227]/30 no-underline"
+          className="rounded-full px-6 py-2.5 text-sm font-medium font-heading transition-all duration-300 border border-[hsl(var(--gold)/0.2)] text-text-secondary bg-transparent hover:bg-gold/10 hover:text-gold hover:border-gold/30 no-underline"
         >
           전체
         </Link>
@@ -91,8 +91,8 @@ export default async function CategoryPage({
             href={`/blog/${getCategorySlug(cat)}`}
             className={`rounded-full px-6 py-2.5 text-sm font-medium font-heading transition-all duration-300 no-underline ${
               cat === category
-                ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold shadow-[0_4px_20px_rgba(201,162,39,0.15)]'
-                : 'border border-[rgba(201,162,39,0.2)] text-[#a49484] bg-transparent hover:bg-[#C9A227]/10 hover:text-[#C9A227] hover:border-[#C9A227]/30'
+                ? 'bg-gradient-to-r from-gold to-gold-soft text-background font-bold shadow-[0_4px_20px_hsl(var(--gold)/0.15)]'
+                : 'border border-[hsl(var(--gold)/0.2)] text-text-secondary bg-transparent hover:bg-gold/10 hover:text-gold hover:border-gold/30'
             }`}
           >
             {categoryEmoji(cat)} {cat}
@@ -102,11 +102,11 @@ export default async function CategoryPage({
 
       {/* Blog grid */}
       {posts.length === 0 ? (
-        <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 text-center">
-          <p className="text-[#a49484]">아직 작성된 글이 없습니다.</p>
+        <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8 text-center">
+          <p className="text-text-secondary">아직 작성된 글이 없습니다.</p>
           <Link
             href="/blog"
-            className="mt-4 inline-block rounded-full px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading no-underline"
+            className="mt-4 inline-block rounded-full px-8 py-3 bg-gradient-to-r from-gold to-gold-soft text-background font-bold font-heading no-underline"
           >
             전체 글 보기
           </Link>
@@ -119,9 +119,9 @@ export default async function CategoryPage({
               href={`/blog/${getCategorySlug(post.category)}/${post.slug}`}
               className="group no-underline"
             >
-              <article className="flex flex-col h-full bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300 hover:border-[rgba(201,162,39,0.25)] hover:shadow-[0_8px_32px_rgba(201,162,39,0.08)]">
+              <article className="flex flex-col h-full bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300 hover:border-[hsl(var(--gold)/0.25)] hover:shadow-[0_8px_32px_hsl(var(--gold)/0.08)]">
                 {/* Thumbnail placeholder */}
-                <div className="w-full h-[160px] bg-gradient-to-br from-[#1a1612] to-[#2b2219] rounded-xl mb-6 flex items-center justify-center text-5xl">
+                <div className="w-full h-[160px] bg-gradient-to-br from-surface to-surface-hover rounded-xl mb-6 flex items-center justify-center text-5xl">
                   {categoryEmoji(post.category)}
                 </div>
 
@@ -133,19 +133,19 @@ export default async function CategoryPage({
                 </div>
 
                 {/* Title */}
-                <h2 className="m-0 font-heading font-bold text-lg text-[var(--color-text-on-dark)] group-hover:text-[#C9A227] transition-colors duration-300 line-clamp-2">
+                <h2 className="m-0 font-heading font-bold text-lg text-text-primary group-hover:text-gold transition-colors duration-300 line-clamp-2">
                   {post.title}
                 </h2>
 
                 {/* Excerpt */}
-                <p className="text-[#a49484] text-sm leading-relaxed mt-3 flex-1 line-clamp-3">
+                <p className="text-text-secondary text-sm leading-relaxed mt-3 flex-1 line-clamp-3">
                   {post.excerpt}
                 </p>
 
                 {/* Date & Author */}
-                <div className="flex items-center justify-between mt-6 pt-4 border-t border-[rgba(201,162,39,0.08)]">
-                  <span className="text-xs text-[#a49484]/70">{formatDate(post.publishedAt)}</span>
-                  <span className="text-xs text-[#a49484]/70">{post.author}</span>
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-[hsl(var(--gold)/0.08)]">
+                  <span className="text-xs text-text-secondary/70">{formatDate(post.publishedAt)}</span>
+                  <span className="text-xs text-text-secondary/70">{post.author}</span>
                 </div>
               </article>
             </Link>

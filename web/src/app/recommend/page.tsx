@@ -40,25 +40,25 @@ function StarRating({ rating }: { rating: number }) {
   const full = Math.floor(rating);
   const hasHalf = rating - full >= 0.5;
   return (
-    <span className="inline-flex items-center gap-0.5 text-[#C9A227]">
+    <span className="inline-flex items-center gap-0.5 text-gold">
       {Array.from({ length: 5 }, (_, i) => (
         <svg
           key={i}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           className="w-4 h-4"
-          fill={i < full ? '#C9A227' : i === full && hasHalf ? 'url(#half)' : '#3a3128'}
+          fill={i < full ? 'hsl(var(--gold))' : i === full && hasHalf ? 'url(#half)' : 'hsl(var(--border-subtle))'}
         >
           <defs>
             <linearGradient id="half">
-              <stop offset="50%" stopColor="#C9A227" />
-              <stop offset="50%" stopColor="#3a3128" />
+              <stop offset="50%" stopColor="hsl(var(--gold))" />
+              <stop offset="50%" stopColor="hsl(var(--border-subtle))" />
             </linearGradient>
           </defs>
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
       ))}
-      <span className="text-xs ml-1 text-[#a49484]">{rating.toFixed(1)}</span>
+      <span className="text-xs ml-1 text-text-secondary">{rating.toFixed(1)}</span>
     </span>
   );
 }
@@ -66,7 +66,7 @@ function StarRating({ rating }: { rating: number }) {
 function ScoreBadge({ score }: { score: number }) {
   const pct = Math.round(score * 100);
   return (
-    <span className="inline-flex items-center gap-1 bg-[#C9A227]/15 text-[#C9A227] text-xs font-bold font-heading rounded-full px-3 py-1">
+    <span className="inline-flex items-center gap-1 bg-gold/15 text-gold text-xs font-bold font-heading rounded-full px-3 py-1">
       {pct}% 매칭
     </span>
   );
@@ -137,10 +137,10 @@ export default function RecommendPage() {
     <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-12 sm:py-16">
       {/* Page Header */}
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-black tracking-tight text-[var(--color-text-on-dark)] font-heading">
+        <h1 className="text-4xl font-black tracking-tight text-text-primary font-heading">
           나에게 맞는 상담사 찾기
         </h1>
-        <p className="text-[#a49484] text-lg leading-relaxed mt-3">
+        <p className="text-text-secondary text-lg leading-relaxed mt-3">
           몇 가지 질문에 답하면 맞춤 상담사를 추천해드려요
         </p>
       </div>
@@ -148,16 +148,16 @@ export default function RecommendPage() {
       {/* Personalized Section (if logged in) */}
       {me && step === 1 && (
         <section className="mb-12">
-          <h2 className="font-heading font-bold text-xl text-[var(--color-text-on-dark)] mb-6 text-center">
+          <h2 className="font-heading font-bold text-xl text-text-primary mb-6 text-center">
             나를 위한 추천
           </h2>
           {personalizedLoading ? (
             <div className="flex gap-4 overflow-x-auto pb-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="min-w-[260px] bg-black/30 border border-[rgba(201,162,39,0.1)] rounded-2xl p-6 animate-pulse">
-                  <div className="h-5 w-2/3 bg-[#1a1612] rounded mb-3" />
-                  <div className="h-4 w-1/2 bg-[#1a1612] rounded mb-3" />
-                  <div className="h-3 w-full bg-[#1a1612] rounded" />
+                <div key={i} className="min-w-[260px] bg-black/30 border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6 animate-pulse">
+                  <div className="h-5 w-2/3 bg-surface rounded mb-3" />
+                  <div className="h-4 w-1/2 bg-surface rounded mb-3" />
+                  <div className="h-3 w-full bg-surface rounded" />
                 </div>
               ))}
             </div>
@@ -166,20 +166,20 @@ export default function RecommendPage() {
               {personalized.map((c) => (
                 <div
                   key={c.counselorId}
-                  className="min-w-[280px] max-w-[320px] snap-start bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.15)] rounded-2xl p-6 flex-shrink-0"
+                  className="min-w-[280px] max-w-[320px] snap-start bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.15)] rounded-2xl p-6 flex-shrink-0"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-heading font-bold text-lg text-[var(--color-text-on-dark)]">{c.name}</h3>
+                    <h3 className="font-heading font-bold text-lg text-text-primary">{c.name}</h3>
                     <ScoreBadge score={c.matchScore} />
                   </div>
                   <Badge variant="secondary" className="font-heading font-bold text-xs rounded-full px-3 py-1 mb-3">
                     {c.specialty}
                   </Badge>
                   <StarRating rating={c.ratingAvg} />
-                  <p className="text-[#a49484] text-sm mt-3 leading-relaxed">{c.matchReason}</p>
+                  <p className="text-text-secondary text-sm mt-3 leading-relaxed">{c.matchReason}</p>
                   <Link
                     href={`/counselors/${c.counselorId}`}
-                    className="mt-4 inline-flex items-center justify-center w-full rounded-full px-6 py-2.5 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading text-sm transition-all hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)]"
+                    className="mt-4 inline-flex items-center justify-center w-full rounded-full px-6 py-2.5 bg-gradient-to-r from-gold to-gold-soft text-background font-bold font-heading text-sm transition-all hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)]"
                   >
                     상담 예약
                   </Link>
@@ -187,8 +187,8 @@ export default function RecommendPage() {
               ))}
             </div>
           ) : (
-            <div className="bg-black/20 border border-[rgba(201,162,39,0.1)] rounded-2xl p-6 text-center">
-              <p className="text-[#a49484]">아직 상담 이력이 없어 맞춤 추천을 준비 중이에요</p>
+            <div className="bg-black/20 border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6 text-center">
+              <p className="text-text-secondary">아직 상담 이력이 없어 맞춤 추천을 준비 중이에요</p>
             </div>
           )}
         </section>
@@ -196,9 +196,9 @@ export default function RecommendPage() {
 
       {/* Not logged in prompt */}
       {!me && step === 1 && (
-        <div className="mb-10 bg-black/20 border border-[rgba(201,162,39,0.1)] rounded-2xl p-6 text-center">
-          <p className="text-[#a49484]">
-            <Link href="/login" className="text-[#C9A227] font-bold hover:underline">로그인</Link>
+        <div className="mb-10 bg-black/20 border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6 text-center">
+          <p className="text-text-secondary">
+            <Link href="/login" className="text-gold font-bold hover:underline">로그인</Link>
             하면 맞춤 추천을 받을 수 있어요
           </p>
         </div>
@@ -213,14 +213,14 @@ export default function RecommendPage() {
                 className={cn(
                   'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-heading transition-all',
                   step >= s
-                    ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a]'
-                    : 'border border-[rgba(201,162,39,0.2)] text-[#a49484]'
+                    ? 'bg-gradient-to-r from-gold to-gold-soft text-background'
+                    : 'border border-[hsl(var(--gold)/0.2)] text-text-secondary'
                 )}
               >
                 {s}
               </div>
               {s < 2 && (
-                <div className={cn('w-16 h-0.5 transition-all', step > s ? 'bg-[#C9A227]' : 'bg-[rgba(201,162,39,0.15)]')} />
+                <div className={cn('w-16 h-0.5 transition-all', step > s ? 'bg-gold' : 'bg-[hsl(var(--gold)/0.15)]')} />
               )}
             </div>
           ))}
@@ -230,11 +230,11 @@ export default function RecommendPage() {
       {/* Step 1: Concern Selection */}
       {step === 1 && (
         <section>
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 sm:p-10">
-            <h2 className="font-heading font-bold text-2xl text-[var(--color-text-on-dark)] text-center mb-2">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8 sm:p-10">
+            <h2 className="font-heading font-bold text-2xl text-text-primary text-center mb-2">
               어떤 고민이 있으신가요?
             </h2>
-            <p className="text-[#a49484] text-center mb-8">
+            <p className="text-text-secondary text-center mb-8">
               관심 분야를 선택해주세요 (복수 선택 가능)
             </p>
 
@@ -248,8 +248,8 @@ export default function RecommendPage() {
                     className={cn(
                       'rounded-full px-6 py-3 text-sm font-medium font-heading transition-all duration-300',
                       isSelected
-                        ? 'border-2 border-[#C9A227] bg-[#C9A227]/10 text-[#C9A227] shadow-[0_0_12px_rgba(201,162,39,0.15)]'
-                        : 'border border-[rgba(201,162,39,0.2)] text-[#a49484] bg-transparent hover:bg-[#C9A227]/5 hover:text-[#C9A227] hover:border-[#C9A227]/30'
+                        ? 'border-2 border-gold bg-gold/10 text-gold shadow-[0_0_12px_hsl(var(--gold)/0.15)]'
+                        : 'border border-[hsl(var(--gold)/0.2)] text-text-secondary bg-transparent hover:bg-gold/5 hover:text-gold hover:border-[hsl(var(--gold)/0.3)]'
                     )}
                   >
                     {opt.label}
@@ -265,8 +265,8 @@ export default function RecommendPage() {
                 className={cn(
                   'rounded-full px-10 py-3.5 font-bold font-heading text-base transition-all',
                   selectedConcerns.length > 0
-                    ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)]'
-                    : 'bg-[#1a1612] text-[#a49484]/50 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-gold to-gold-soft text-background hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)]'
+                    : 'bg-surface text-text-secondary/50 cursor-not-allowed'
                 )}
               >
                 다음으로
@@ -279,11 +279,11 @@ export default function RecommendPage() {
       {/* Step 2: Style Selection */}
       {step === 2 && (
         <section>
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-8 sm:p-10">
-            <h2 className="font-heading font-bold text-2xl text-[var(--color-text-on-dark)] text-center mb-2">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8 sm:p-10">
+            <h2 className="font-heading font-bold text-2xl text-text-primary text-center mb-2">
               어떤 스타일의 상담을 원하시나요?
             </h2>
-            <p className="text-[#a49484] text-center mb-8">
+            <p className="text-text-secondary text-center mb-8">
               선호하는 상담 스타일을 선택해주세요
             </p>
 
@@ -297,17 +297,17 @@ export default function RecommendPage() {
                     className={cn(
                       'text-left rounded-xl p-5 transition-all duration-300',
                       isSelected
-                        ? 'border-2 border-[#C9A227] bg-[#C9A227]/10 shadow-[0_0_12px_rgba(201,162,39,0.15)]'
-                        : 'border border-[rgba(201,162,39,0.15)] bg-[#1a1612] hover:border-[#C9A227]/30'
+                        ? 'border-2 border-gold bg-gold/10 shadow-[0_0_12px_hsl(var(--gold)/0.15)]'
+                        : 'border border-[hsl(var(--gold)/0.15)] bg-surface hover:border-[hsl(var(--gold)/0.3)]'
                     )}
                   >
                     <span className={cn(
                       'block font-heading font-bold text-base mb-1',
-                      isSelected ? 'text-[#C9A227]' : 'text-[var(--color-text-on-dark)]'
+                      isSelected ? 'text-gold' : 'text-text-primary'
                     )}>
                       {opt.label}
                     </span>
-                    <span className="text-[#a49484] text-sm">{opt.desc}</span>
+                    <span className="text-text-secondary text-sm">{opt.desc}</span>
                   </button>
                 );
               })}
@@ -316,7 +316,7 @@ export default function RecommendPage() {
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => setStep(1)}
-                className="rounded-full px-8 py-3 border-2 border-[#C9A227]/30 text-[#C9A227] font-heading font-bold bg-transparent hover:bg-[#C9A227]/10 transition-all"
+                className="rounded-full px-8 py-3 border-2 border-gold/30 text-gold font-heading font-bold bg-transparent hover:bg-gold/10 transition-all"
               >
                 이전
               </button>
@@ -326,8 +326,8 @@ export default function RecommendPage() {
                 className={cn(
                   'rounded-full px-10 py-3 font-bold font-heading text-base transition-all',
                   selectedStyle
-                    ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)]'
-                    : 'bg-[#1a1612] text-[#a49484]/50 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-gold to-gold-soft text-background hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)]'
+                    : 'bg-surface text-text-secondary/50 cursor-not-allowed'
                 )}
               >
                 {loading ? '매칭 중...' : '상담사 찾기'}
@@ -341,26 +341,26 @@ export default function RecommendPage() {
       {step === 3 && (
         <section>
           <div className="text-center mb-8">
-            <h2 className="font-heading font-bold text-2xl text-[var(--color-text-on-dark)] mb-2">
+            <h2 className="font-heading font-bold text-2xl text-text-primary mb-2">
               추천 상담사
             </h2>
-            <p className="text-[#a49484]">
+            <p className="text-text-secondary">
               {selectedConcerns.join(', ')} 분야에 맞는 상담사를 찾았어요
             </p>
           </div>
 
           {results.length === 0 ? (
-            <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-10 text-center">
+            <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-10 text-center">
               <div className="text-4xl mb-4">🔍</div>
-              <p className="font-heading font-bold text-xl text-[var(--color-text-on-dark)] mb-2">
+              <p className="font-heading font-bold text-xl text-text-primary mb-2">
                 매칭되는 상담사가 없습니다
               </p>
-              <p className="text-[#a49484] text-sm mb-6">
+              <p className="text-text-secondary text-sm mb-6">
                 다른 분야나 스타일로 다시 시도해보세요
               </p>
               <button
                 onClick={resetQuiz}
-                className="rounded-full px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading transition-all hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)]"
+                className="rounded-full px-8 py-3 bg-gradient-to-r from-gold to-gold-soft text-background font-bold font-heading transition-all hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)]"
               >
                 다시 찾기
               </button>
@@ -373,7 +373,7 @@ export default function RecommendPage() {
                     key={c.counselorId}
                     className={cn(
                       'p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1',
-                      idx === 0 && 'border-2 border-[#C9A227]/40 shadow-[0_0_20px_rgba(201,162,39,0.1)]'
+                      idx === 0 && 'border-2 border-gold/40 shadow-[0_0_20px_hsl(var(--gold)/0.1)]'
                     )}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start gap-5">
@@ -384,7 +384,7 @@ export default function RecommendPage() {
                           </h3>
                           <ScoreBadge score={c.matchScore} />
                           {idx === 0 && (
-                            <Badge className="bg-[#C9A227] text-[#0f0d0a] font-heading font-bold text-xs rounded-full px-3 py-0.5">
+                            <Badge className="bg-gold text-background font-heading font-bold text-xs rounded-full px-3 py-0.5">
                               BEST
                             </Badge>
                           )}
@@ -395,7 +395,7 @@ export default function RecommendPage() {
                             {c.specialty}
                           </Badge>
                           <StarRating rating={c.ratingAvg} />
-                          <span className="text-xs text-[#a49484]">
+                          <span className="text-xs text-text-secondary">
                             상담 {c.totalSessions}회
                           </span>
                         </div>
@@ -403,7 +403,7 @@ export default function RecommendPage() {
                         <p className="text-muted-foreground text-sm leading-relaxed mb-1">
                           {c.intro}
                         </p>
-                        <p className="text-[#C9A227]/80 text-sm font-medium">
+                        <p className="text-gold/80 text-sm font-medium">
                           {c.matchReason}
                         </p>
                       </div>
@@ -411,7 +411,7 @@ export default function RecommendPage() {
                       <div className="sm:flex-shrink-0 sm:self-center">
                         <Link
                           href={`/counselors/${c.counselorId}`}
-                          className="inline-flex items-center justify-center w-full sm:w-auto rounded-full px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading text-sm transition-all hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)] no-underline"
+                          className="inline-flex items-center justify-center w-full sm:w-auto rounded-full px-8 py-3 bg-gradient-to-r from-gold to-gold-soft text-background font-bold font-heading text-sm transition-all hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)] no-underline"
                         >
                           예약하기
                         </Link>
@@ -424,7 +424,7 @@ export default function RecommendPage() {
               <div className="text-center mt-8">
                 <button
                   onClick={resetQuiz}
-                  className="rounded-full px-8 py-3 border-2 border-[#C9A227]/30 text-[#C9A227] font-heading font-bold bg-transparent hover:bg-[#C9A227]/10 transition-all"
+                  className="rounded-full px-8 py-3 border-2 border-gold/30 text-gold font-heading font-bold bg-transparent hover:bg-gold/10 transition-all"
                 >
                   다시 찾기
                 </button>

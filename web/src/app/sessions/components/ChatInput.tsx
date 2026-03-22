@@ -37,7 +37,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
   }
 
   return (
-    <div className="sticky bottom-0 z-40 border-t border-[rgba(201,162,39,0.15)] bg-[rgba(15,13,10,0.95)] backdrop-blur-md px-4 py-3">
+    <div className="sticky bottom-0 z-40 border-t border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--background)/0.95)] backdrop-blur-md px-4 py-3">
       <div className="max-w-[800px] mx-auto flex items-end gap-3">
         <textarea
           ref={textareaRef}
@@ -50,10 +50,10 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
           rows={1}
           className="
             flex-1 resize-none rounded-xl px-4 py-2.5
-            bg-[#1a1612] border border-[rgba(201,162,39,0.15)]
-            text-[var(--color-text-on-dark)] text-sm
-            placeholder:text-[var(--color-text-muted-dark)]
-            focus:border-[rgba(201,162,39,0.4)] focus:shadow-[0_0_0_2px_rgba(201,162,39,0.3)]
+            bg-surface border border-[hsl(var(--gold)/0.15)]
+            text-[hsl(var(--text-primary))] text-sm
+            placeholder:text-[hsl(var(--text-secondary))]
+            focus:border-[hsl(var(--gold)/0.4)] focus:shadow-[0_0_0_2px_hsl(var(--gold)/0.3)]
             focus:outline-none
             disabled:opacity-50 disabled:cursor-not-allowed
             min-h-[44px] max-h-[120px]
@@ -64,10 +64,10 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
           disabled={disabled || !text.trim()}
           className="
             flex-shrink-0 w-[44px] h-[44px] rounded-full
-            bg-gradient-to-r from-[#C9A227] to-[#D4A843]
-            text-[#0f0d0a] font-bold
+            bg-gradient-to-r from-gold to-gold-soft
+            text-background font-bold
             flex items-center justify-center
-            hover:from-[#b08d1f] hover:to-[#C9A227]
+            hover:from-[hsl(var(--gold)/0.85)] hover:to-gold
             disabled:opacity-40 disabled:cursor-not-allowed
             transition-all duration-150
           "

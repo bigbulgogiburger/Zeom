@@ -11,11 +11,11 @@ type QualityLevel = 'high' | 'medium' | 'low';
 function getQualityInfo(level: QualityLevel): { label: string; color: string; bars: number } {
   switch (level) {
     case 'high':
-      return { label: '상', color: '#2d6930', bars: 3 };
+      return { label: '상', color: 'hsl(var(--success))', bars: 3 };
     case 'medium':
-      return { label: '중', color: '#b8860b', bars: 2 };
+      return { label: '중', color: 'hsl(var(--warning))', bars: 2 };
     case 'low':
-      return { label: '하', color: '#8B0000', bars: 1 };
+      return { label: '하', color: 'hsl(var(--dancheong))', bars: 1 };
   }
 }
 

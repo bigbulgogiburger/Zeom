@@ -74,13 +74,13 @@ export default function ReviewPage() {
     return (
       <RequireLogin>
         <main className="py-8 px-6 grid gap-8 max-w-[600px] mx-auto">
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl p-12">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-12">
             <div className="text-center flex flex-col gap-6 items-center">
               <div className="text-5xl">&#9989;</div>
-              <div className="text-xl font-bold font-heading bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent">
+              <div className="text-xl font-bold font-heading bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent">
                 리뷰가 등록되었습니다
               </div>
-              <div className="text-sm text-[var(--color-text-muted-dark)]">
+              <div className="text-sm text-[hsl(var(--text-secondary))]">
                 소중한 의견 감사합니다. 잠시 후 상담 내역 페이지로 이동합니다.
               </div>
             </div>
@@ -97,7 +97,7 @@ export default function ReviewPage() {
           <PageTitle>상담 후기</PageTitle>
           <InlineError message={message} />
           <Card>
-            <div className="text-center py-8 text-[var(--color-text-muted-card)]">
+            <div className="text-center py-8 text-[hsl(var(--text-secondary))]">
               예약 정보를 불러오는 중...
             </div>
           </Card>
@@ -113,8 +113,8 @@ export default function ReviewPage() {
         <InlineError message={message} />
 
         <Card>
-          <div className="mb-6 p-4 bg-[#1a1612] rounded-xl">
-            <div className="text-sm text-[var(--color-text-muted-card)] mb-1">
+          <div className="mb-6 p-4 bg-[hsl(var(--surface))] rounded-xl">
+            <div className="text-sm text-[hsl(var(--text-secondary))] mb-1">
               상담 일시
             </div>
             <div className="text-base font-medium">
@@ -130,7 +130,7 @@ export default function ReviewPage() {
 
         <button
           onClick={() => router.push('/consultations')}
-          className="border-2 border-[#C9A227]/30 text-[#C9A227] rounded-full px-6 py-2 text-sm hover:bg-[#C9A227]/10 bg-transparent cursor-pointer"
+          className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full px-6 py-2 text-sm hover:bg-[hsl(var(--gold))]/10 bg-transparent cursor-pointer"
         >
           나중에 작성하기
         </button>

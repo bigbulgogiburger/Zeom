@@ -18,11 +18,11 @@ export default function MypageLayout({ children }: { children: React.ReactNode }
   return (
     <RequireLogin>
       <main
-        className="min-h-[100dvh] bg-[#0f0d0a] py-12 px-4 sm:px-6"
-        style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(201,162,39,0.05) 0%, transparent 70%)' }}
+        className="min-h-[100dvh] bg-background py-12 px-4 sm:px-6"
+        style={{ backgroundImage: 'radial-gradient(ellipse at center, hsl(var(--gold) / 0.05) 0%, transparent 70%)' }}
       >
         <div className="max-w-[720px] mx-auto">
-          <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-[#C9A227] to-[#D4A843] bg-clip-text text-transparent font-heading m-0 mb-8">
+          <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-gold to-gold-soft bg-clip-text text-transparent font-heading m-0 mb-8">
             마이페이지
           </h1>
 
@@ -36,8 +36,8 @@ export default function MypageLayout({ children }: { children: React.ReactNode }
                   className={cn(
                     'px-4 py-2 rounded-full text-sm font-bold font-heading whitespace-nowrap transition-all',
                     isActive
-                      ? 'bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a]'
-                      : 'text-[#a49484] hover:text-[#C9A227] hover:bg-[#C9A227]/10'
+                      ? 'bg-gradient-to-r from-gold to-gold-soft text-background'
+                      : 'text-text-secondary hover:text-gold hover:bg-gold/10'
                   )}
                 >
                   {item.label}

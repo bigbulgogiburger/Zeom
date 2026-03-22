@@ -145,16 +145,16 @@ export default function PreflightPage() {
             {/* Camera Permission */}
             <div className={`flex justify-between items-center p-4 rounded-xl ${
               cameraPermission === 'granted'
-                ? 'bg-[var(--color-success-light)]'
+                ? 'bg-[hsl(var(--success)/0.15)]'
                 : cameraPermission === 'denied'
-                  ? 'bg-[var(--color-danger-light)]'
-                  : 'bg-[#1a1612]'
+                  ? 'bg-[hsl(var(--dancheong)/0.15)]'
+                  : 'bg-[hsl(var(--surface))]'
             }`}>
               <div>
                 <div className="font-bold text-base">
                   카메라
                 </div>
-                <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
+                <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">
                   화상 상담을 위해 필요합니다
                 </div>
               </div>
@@ -166,16 +166,16 @@ export default function PreflightPage() {
             {/* Microphone Permission */}
             <div className={`flex justify-between items-center p-4 rounded-xl ${
               micPermission === 'granted'
-                ? 'bg-[var(--color-success-light)]'
+                ? 'bg-[hsl(var(--success)/0.15)]'
                 : micPermission === 'denied'
-                  ? 'bg-[var(--color-danger-light)]'
-                  : 'bg-[#1a1612]'
+                  ? 'bg-[hsl(var(--dancheong)/0.15)]'
+                  : 'bg-[hsl(var(--surface))]'
             }`}>
               <div>
                 <div className="font-bold text-base">
                   마이크
                 </div>
-                <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
+                <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">
                   음성 상담을 위해 필요합니다
                 </div>
               </div>
@@ -185,12 +185,12 @@ export default function PreflightPage() {
             </div>
 
             {/* Network Quality */}
-            <div className="flex justify-between items-center p-4 rounded-xl bg-[#1a1612]">
+            <div className="flex justify-between items-center p-4 rounded-xl bg-[hsl(var(--surface))]">
               <div>
                 <div className="font-bold text-base">
                   네트워크
                 </div>
-                <div className="text-xs text-[var(--color-text-muted-card)] mt-1">
+                <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">
                   {networkQuality === 'good' ? '원활함' : networkQuality === 'fair' ? '보통' : '불안정'}
                 </div>
               </div>
@@ -201,7 +201,7 @@ export default function PreflightPage() {
           </div>
 
           {(cameraPermission === 'denied' || micPermission === 'denied') && (
-            <div className="mt-6 p-4 bg-[var(--color-danger-light)] rounded-xl text-sm text-[var(--color-danger)]">
+            <div className="mt-6 p-4 bg-[hsl(var(--dancheong)/0.15)] rounded-xl text-sm text-[hsl(var(--dancheong))]">
               브라우저 설정에서 카메라와 마이크 권한을 허용해주세요.
             </div>
           )}
@@ -219,7 +219,7 @@ export default function PreflightPage() {
           <button
             onClick={checkPermissions}
             disabled={checking}
-            className={`bg-transparent text-[#C9A227] border border-[rgba(201,162,39,0.15)] rounded-full px-6 py-2 text-sm hover:bg-[#C9A227]/10 transition-colors ${
+            className={`bg-transparent text-[hsl(var(--gold))] border border-[hsl(var(--gold)/0.15)] rounded-full px-6 py-2 text-sm hover:bg-[hsl(var(--gold))]/10 transition-colors ${
               checking ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
             }`}
           >

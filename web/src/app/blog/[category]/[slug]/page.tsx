@@ -71,7 +71,7 @@ function renderMarkdown(md: string): string {
       if (/^\|[-\s|:]+\|$/.test(trimmed)) continue;
       const cells = trimmed.split('|').filter(Boolean).map((c) => c.trim());
       const tag = html.includes('<tr>') ? 'td' : 'th';
-      html += '<tr>' + cells.map((c) => `<${tag} class="border border-[rgba(201,162,39,0.15)] px-3 py-2 text-left">${c}</${tag}>`).join('') + '</tr>';
+      html += '<tr>' + cells.map((c) => `<${tag} class="border border-[hsl(var(--gold)/0.15)] px-3 py-2 text-left">${c}</${tag}>`).join('') + '</tr>';
       continue;
     }
     if (inTable && !trimmed.startsWith('|')) {
@@ -88,43 +88,43 @@ function renderMarkdown(md: string): string {
     // Headings
     if (trimmed.startsWith('#### ')) {
       if (inList) { html += '</ul>'; inList = false; }
-      html += `<h4 class="font-heading font-bold text-base text-[var(--color-text-on-dark)] mt-6 mb-2">${trimmed.slice(5)}</h4>`;
+      html += `<h4 class="font-heading font-bold text-base text-[hsl(var(--text-primary))] mt-6 mb-2">${trimmed.slice(5)}</h4>`;
       continue;
     }
     if (trimmed.startsWith('### ')) {
       if (inList) { html += '</ul>'; inList = false; }
-      html += `<h3 class="font-heading font-bold text-lg text-[var(--color-text-on-dark)] mt-8 mb-3">${trimmed.slice(4)}</h3>`;
+      html += `<h3 class="font-heading font-bold text-lg text-[hsl(var(--text-primary))] mt-8 mb-3">${trimmed.slice(4)}</h3>`;
       continue;
     }
     if (trimmed.startsWith('## ')) {
       if (inList) { html += '</ul>'; inList = false; }
-      html += `<h2 class="font-heading font-bold text-xl text-[var(--color-text-on-dark)] mt-10 mb-4">${trimmed.slice(3)}</h2>`;
+      html += `<h2 class="font-heading font-bold text-xl text-[hsl(var(--text-primary))] mt-10 mb-4">${trimmed.slice(3)}</h2>`;
       continue;
     }
 
     // List items
     if (trimmed.startsWith('- ')) {
       if (!inList) {
-        html += '<ul class="list-disc list-inside space-y-1.5 my-3 text-[#c4b69c]">';
+        html += '<ul class="list-disc list-inside space-y-1.5 my-3 text-[hsl(var(--text-secondary))]">';
         inList = true;
       }
-      const content = trimmed.slice(2).replace(/\*\*(.+?)\*\*/g, '<strong class="text-[var(--color-text-on-dark)]">$1</strong>');
+      const content = trimmed.slice(2).replace(/\*\*(.+?)\*\*/g, '<strong class="text-[hsl(var(--text-primary))]">$1</strong>');
       html += `<li class="text-sm leading-relaxed">${content}</li>`;
       continue;
     }
     // Numbered list
     if (/^\d+\.\s/.test(trimmed)) {
       if (inList) { html += '</ul>'; inList = false; }
-      const content = trimmed.replace(/^\d+\.\s/, '').replace(/\*\*(.+?)\*\*/g, '<strong class="text-[var(--color-text-on-dark)]">$1</strong>');
-      html += `<p class="text-sm leading-relaxed text-[#c4b69c] my-1.5">${trimmed.match(/^\d+/)![0]}. ${content}</p>`;
+      const content = trimmed.replace(/^\d+\.\s/, '').replace(/\*\*(.+?)\*\*/g, '<strong class="text-[hsl(var(--text-primary))]">$1</strong>');
+      html += `<p class="text-sm leading-relaxed text-[hsl(var(--text-secondary))] my-1.5">${trimmed.match(/^\d+/)![0]}. ${content}</p>`;
       continue;
     }
 
     if (inList) { html += '</ul>'; inList = false; }
 
     // Regular paragraph
-    const processed = trimmed.replace(/\*\*(.+?)\*\*/g, '<strong class="text-[var(--color-text-on-dark)]">$1</strong>');
-    html += `<p class="text-sm leading-relaxed text-[#c4b69c] my-3">${processed}</p>`;
+    const processed = trimmed.replace(/\*\*(.+?)\*\*/g, '<strong class="text-[hsl(var(--text-primary))]">$1</strong>');
+    html += `<p class="text-sm leading-relaxed text-[hsl(var(--text-secondary))] my-3">${processed}</p>`;
   }
 
   if (inList) html += '</ul>';
@@ -169,19 +169,19 @@ export default async function BlogPostPage({
       />
 
       {/* Breadcrumb */}
-      <nav className="mb-8 text-sm text-[#a49484]">
-        <Link href="/blog" className="hover:text-[#C9A227] transition-colors no-underline text-[#a49484]">
+      <nav className="mb-8 text-sm text-text-secondary">
+        <Link href="/blog" className="hover:text-gold transition-colors no-underline text-text-secondary">
           블로그
         </Link>
         <span className="mx-2">/</span>
         <Link
           href={`/blog/${getCategorySlug(post.category)}`}
-          className="hover:text-[#C9A227] transition-colors no-underline text-[#a49484]"
+          className="hover:text-gold transition-colors no-underline text-text-secondary"
         >
           {post.category}
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-[var(--color-text-on-dark)]">{post.title}</span>
+        <span className="text-text-primary">{post.title}</span>
       </nav>
 
       {/* Article header */}
@@ -191,10 +191,10 @@ export default async function BlogPostPage({
             {post.category}
           </span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[var(--color-text-on-dark)] font-heading leading-tight">
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[hsl(var(--text-primary))] font-heading leading-tight">
           {post.title}
         </h1>
-        <div className="flex items-center gap-4 mt-4 text-sm text-[#a49484]/70">
+        <div className="flex items-center gap-4 mt-4 text-sm text-text-secondary/70">
           <span>{formatDate(post.publishedAt)}</span>
           <span>{post.author}</span>
         </div>
@@ -207,16 +207,16 @@ export default async function BlogPostPage({
       />
 
       {/* CTA */}
-      <div className="mt-16 bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.15)] rounded-2xl p-8 sm:p-10 text-center">
-        <h3 className="font-heading font-bold text-xl text-[var(--color-text-on-dark)] mb-3">
+      <div className="mt-16 bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.15)] rounded-2xl p-8 sm:p-10 text-center">
+        <h3 className="font-heading font-bold text-xl text-[hsl(var(--text-primary))] mb-3">
           전문 상담사와 1:1 화상 상담
         </h3>
-        <p className="text-[#a49484] text-sm leading-relaxed mb-6">
+        <p className="text-text-secondary text-sm leading-relaxed mb-6">
           천지연꽃신당의 검증된 상담사에게 정확한 상담을 받아보세요.
         </p>
         <Link
           href="/counselors"
-          className="inline-block rounded-full px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading transition-all hover:shadow-[0_4px_20px_rgba(201,162,39,0.15)] no-underline"
+          className="inline-block rounded-full px-8 py-3 bg-gradient-to-r from-gold to-gold-soft text-background font-bold font-heading transition-all hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)] no-underline"
         >
           상담사 보기
         </Link>
@@ -226,7 +226,7 @@ export default async function BlogPostPage({
       <div className="mt-8 text-center">
         <Link
           href="/blog"
-          className="text-[#a49484] hover:text-[#C9A227] transition-colors text-sm no-underline"
+          className="text-text-secondary hover:text-gold transition-colors text-sm no-underline"
         >
           &larr; 블로그 목록으로
         </Link>

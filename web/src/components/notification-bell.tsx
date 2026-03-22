@@ -104,7 +104,7 @@ export default function NotificationBell() {
     <div ref={dropdownRef} className="relative">
       <button
         onClick={toggleDropdown}
-        className="relative p-2 rounded-full text-[#a49484] hover:text-[#C9A227] hover:bg-[rgba(201,162,39,0.1)] transition-colors duration-200"
+        className="relative p-2 rounded-full text-text-secondary hover:text-gold hover:bg-[hsl(var(--gold)/0.1)] transition-colors duration-200"
         aria-label="알림"
       >
         {/* Bell SVG icon */}
@@ -133,16 +133,16 @@ export default function NotificationBell() {
 
       {/* Dropdown */}
       {dropdownOpen && (
-        <div className="absolute right-0 top-full mt-2 w-[320px] bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 w-[320px] bg-surface border border-[hsl(var(--gold)/0.15)] rounded-xl shadow-2xl z-50 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(201,162,39,0.1)]">
-            <span className="text-sm font-bold text-[var(--color-text-on-dark)] font-heading">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--gold)/0.1)]">
+            <span className="text-sm font-bold text-[hsl(var(--text-primary))] font-heading">
               알림
             </span>
             <Link
               href="/notifications"
               onClick={() => setDropdownOpen(false)}
-              className="text-xs text-[#C9A227] hover:underline"
+              className="text-xs text-gold hover:underline"
             >
               전체 보기
             </Link>
@@ -151,19 +151,19 @@ export default function NotificationBell() {
           {/* Notification list */}
           <div className="max-h-[300px] overflow-y-auto">
             {loading ? (
-              <div className="px-4 py-6 text-center text-sm text-[#a49484]">
+              <div className="px-4 py-6 text-center text-sm text-text-secondary">
                 불러오는 중...
               </div>
             ) : notifications.length === 0 ? (
-              <div className="px-4 py-6 text-center text-sm text-[#a49484]">
+              <div className="px-4 py-6 text-center text-sm text-text-secondary">
                 알림이 없습니다
               </div>
             ) : (
               notifications.map(n => (
                 <div
                   key={n.id}
-                  className={`px-4 py-3 border-b border-[rgba(201,162,39,0.05)] cursor-pointer hover:bg-[rgba(201,162,39,0.05)] transition-colors ${
-                    !n.isRead ? 'bg-[rgba(201,162,39,0.08)]' : ''
+                  className={`px-4 py-3 border-b border-[hsl(var(--gold)/0.05)] cursor-pointer hover:bg-[hsl(var(--gold)/0.05)] transition-colors ${
+                    !n.isRead ? 'bg-[hsl(var(--gold)/0.08)]' : ''
                   }`}
                   onClick={() => {
                     if (!n.isRead) markAsRead(n.id);
@@ -175,16 +175,16 @@ export default function NotificationBell() {
                 >
                   <div className="flex items-start gap-2">
                     {!n.isRead && (
-                      <span className="mt-1.5 w-2 h-2 rounded-full bg-[#C9A227] flex-shrink-0" />
+                      <span className="mt-1.5 w-2 h-2 rounded-full bg-gold flex-shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[var(--color-text-on-dark)] truncate">
+                      <p className="text-sm font-medium text-[hsl(var(--text-primary))] truncate">
                         {n.title}
                       </p>
-                      <p className="text-xs text-[#a49484] mt-0.5 line-clamp-2">
+                      <p className="text-xs text-text-secondary mt-0.5 line-clamp-2">
                         {n.body}
                       </p>
-                      <p className="text-[10px] text-[#6b5c4d] mt-1">
+                      <p className="text-[10px] text-text-muted mt-1">
                         {formatTime(n.createdAt)}
                       </p>
                     </div>

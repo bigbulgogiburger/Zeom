@@ -110,10 +110,10 @@ export default function ConsultationSummaryPage() {
       <main className="max-w-2xl mx-auto px-4 py-8 grid gap-6">
         {/* Header */}
         <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[var(--color-success-light)] flex items-center justify-center">
-            <span className="text-4xl text-[#2d6930]">&#10003;</span>
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[hsl(var(--success)/0.15)] flex items-center justify-center">
+            <span className="text-4xl text-[hsl(var(--success))]">&#10003;</span>
           </div>
-          <h1 className="text-2xl font-bold font-heading text-[var(--color-text-on-dark)]">
+          <h1 className="text-2xl font-bold font-heading text-[hsl(var(--text-primary))]">
             상담이 완료되었습니다
           </h1>
           {summary?.endReason && (
@@ -131,14 +131,14 @@ export default function ConsultationSummaryPage() {
 
         {/* Summary Card */}
         {summary && (
-          <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
+          <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
             <CardHeader>
               <CardTitle className="text-lg font-heading">상담 요약</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
               {/* Counselor */}
               <div className="flex items-center gap-4 p-3 bg-white/50 rounded-xl">
-                <div className="w-12 h-12 rounded-full bg-[#1a1612] flex items-center justify-center text-xl text-[#C9A227]">
+                <div className="w-12 h-12 rounded-full bg-[hsl(var(--surface))] flex items-center justify-center text-xl text-[hsl(var(--gold))]">
                   &#128100;
                 </div>
                 <div>
@@ -166,7 +166,7 @@ export default function ConsultationSummaryPage() {
                 {summary.durationSec != null && summary.durationSec > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">상담 시간</span>
-                    <span className="font-bold text-[#C9A227]">{formatDuration(summary.durationSec)}</span>
+                    <span className="font-bold text-[hsl(var(--gold))]">{formatDuration(summary.durationSec)}</span>
                   </div>
                 )}
               </div>
@@ -176,7 +176,7 @@ export default function ConsultationSummaryPage() {
               {/* Credits */}
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">소모 상담권</span>
-                <span className="font-bold text-lg text-[#C9A227]">{summary.creditsUsed}회</span>
+                <span className="font-bold text-lg text-[hsl(var(--gold))]">{summary.creditsUsed}회</span>
               </div>
             </CardContent>
           </Card>
@@ -184,7 +184,7 @@ export default function ConsultationSummaryPage() {
 
         {/* Counselor Memo */}
         {summary?.memo && (
-          <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
+          <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
             <CardHeader>
               <CardTitle className="text-lg font-heading">상담사 메모</CardTitle>
             </CardHeader>
@@ -200,7 +200,7 @@ export default function ConsultationSummaryPage() {
         <div className="grid gap-3">
           <Button
             onClick={() => router.push(`/consultation/${sessionId}/review`)}
-            className="w-full rounded-full py-5 text-base font-heading font-bold bg-[#C9A227] text-[#0f0d0a] hover:bg-[#b08d1f]"
+            className="w-full rounded-full py-5 text-base font-heading font-bold bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold)/0.85)]"
           >
             리뷰 작성하기
           </Button>
@@ -208,7 +208,7 @@ export default function ConsultationSummaryPage() {
             <Button
               variant="outline"
               onClick={() => router.push(`/counselors/${summary.reservationId}`)}
-              className="w-full rounded-full py-5 text-base font-heading font-bold border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10"
+              className="w-full rounded-full py-5 text-base font-heading font-bold border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10"
             >
               다시 예약하기
             </Button>

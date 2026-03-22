@@ -185,9 +185,9 @@ export default function ChatConsultationPage() {
 
   if (loading) {
     return (
-      <main className="flex flex-col h-[calc(100vh-64px)] bg-[#2b2219]">
+      <main className="flex flex-col h-[calc(100vh-64px)] bg-[hsl(var(--surface))]">
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-[#a49484] animate-pulse">채팅방 로딩중...</div>
+          <div className="text-[hsl(var(--text-secondary))] animate-pulse">채팅방 로딩중...</div>
         </div>
       </main>
     );
@@ -195,13 +195,13 @@ export default function ChatConsultationPage() {
 
   if (error && !room) {
     return (
-      <main className="flex flex-col h-[calc(100vh-64px)] bg-[#2b2219]">
+      <main className="flex flex-col h-[calc(100vh-64px)] bg-[hsl(var(--surface))]">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-[#8B0000] mb-4">{error}</p>
+            <p className="text-[hsl(var(--dancheong))] mb-4">{error}</p>
             <button
               onClick={() => router.push('/bookings/me')}
-              className="text-[#C9A227] font-heading font-bold hover:underline"
+              className="text-[hsl(var(--gold))] font-heading font-bold hover:underline"
             >
               내 예약으로 돌아가기
             </button>
@@ -214,13 +214,13 @@ export default function ChatConsultationPage() {
   const isClosed = room?.status === 'CLOSED';
 
   return (
-    <main className="flex flex-col h-[calc(100vh-64px)] bg-[#2b2219]">
+    <main className="flex flex-col h-[calc(100vh-64px)] bg-[hsl(var(--surface))]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(201,162,39,0.15)] bg-black/30 backdrop-blur-xl shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--gold)/0.15)] bg-black/30 backdrop-blur-xl shrink-0">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/bookings/me')}
-            className="text-[#a49484] hover:text-[#C9A227] transition-colors"
+            className="text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] transition-colors"
             aria-label="뒤로가기"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -228,12 +228,12 @@ export default function ChatConsultationPage() {
             </svg>
           </button>
           <div>
-            <h2 className="m-0 font-heading font-bold text-base text-[var(--color-text-on-dark)]">
+            <h2 className="m-0 font-heading font-bold text-base text-[hsl(var(--text-primary))]">
               {counselorName || '상담사'}
             </h2>
             <span className={cn(
               'text-xs font-medium',
-              isClosed ? 'text-[#8B0000]' : 'text-[#4A90D9]'
+              isClosed ? 'text-[hsl(var(--dancheong))]' : 'text-[hsl(var(--gold-soft))]'
             )}>
               {isClosed ? '상담 종료' : '채팅 상담중'}
             </span>
@@ -243,7 +243,7 @@ export default function ChatConsultationPage() {
           <button
             onClick={handleClose}
             disabled={closing}
-            className="px-4 py-1.5 rounded-full border border-[#8B0000]/30 text-[#8B0000] font-heading font-bold text-xs hover:bg-[#8B0000]/10 transition-all duration-200 disabled:opacity-50"
+            className="px-4 py-1.5 rounded-full border border-[hsl(var(--dancheong))]/30 text-[hsl(var(--dancheong))] font-heading font-bold text-xs hover:bg-[hsl(var(--dancheong))]/10 transition-all duration-200 disabled:opacity-50"
           >
             상담 종료
           </button>
@@ -254,7 +254,7 @@ export default function ChatConsultationPage() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-[#a49484] text-sm text-center">
+            <p className="text-[hsl(var(--text-secondary))] text-sm text-center">
               {isClosed ? '상담이 종료되었습니다.' : '채팅 상담이 시작되었습니다.\n메시지를 입력해주세요.'}
             </p>
           </div>
@@ -269,7 +269,7 @@ export default function ChatConsultationPage() {
             >
               <div className={cn('max-w-[75%] min-w-[80px]')}>
                 {!isOwn && (
-                  <span className="text-xs text-[#a49484] font-medium mb-1 block">
+                  <span className="text-xs text-[hsl(var(--text-secondary))] font-medium mb-1 block">
                     {msg.senderName}
                   </span>
                 )}
@@ -277,15 +277,15 @@ export default function ChatConsultationPage() {
                   className={cn(
                     'rounded-2xl px-4 py-2.5 text-sm leading-relaxed break-words',
                     isOwn
-                      ? 'bg-[#C9A227] text-white rounded-br-md'
-                      : 'bg-[#f9f5ed] text-[#2b2219] rounded-bl-md'
+                      ? 'bg-[hsl(var(--gold))] text-white rounded-br-md'
+                      : 'bg-[hsl(var(--text-primary))] text-[hsl(var(--background))] rounded-bl-md'
                   )}
                 >
                   {msg.content}
                 </div>
                 <span
                   className={cn(
-                    'text-[10px] text-[#a49484] mt-1 block',
+                    'text-[10px] text-[hsl(var(--text-secondary))] mt-1 block',
                     isOwn ? 'text-right' : 'text-left'
                   )}
                 >
@@ -300,24 +300,24 @@ export default function ChatConsultationPage() {
 
       {/* Error */}
       {error && room && (
-        <div className="px-4 py-2 bg-[#8B0000]/10 text-[#8B0000] text-xs text-center">
+        <div className="px-4 py-2 bg-[hsl(var(--dancheong))]/10 text-[hsl(var(--dancheong))] text-xs text-center">
           {error}
         </div>
       )}
 
       {/* Input Area */}
       {isClosed ? (
-        <div className="px-4 py-4 border-t border-[rgba(201,162,39,0.15)] bg-black/30 text-center shrink-0">
-          <p className="text-[#a49484] text-sm mb-3">상담이 종료되었습니다.</p>
+        <div className="px-4 py-4 border-t border-[hsl(var(--gold)/0.15)] bg-black/30 text-center shrink-0">
+          <p className="text-[hsl(var(--text-secondary))] text-sm mb-3">상담이 종료되었습니다.</p>
           <button
             onClick={() => router.push('/bookings/me')}
-            className="text-[#C9A227] font-heading font-bold text-sm hover:underline"
+            className="text-[hsl(var(--gold))] font-heading font-bold text-sm hover:underline"
           >
             내 예약으로 돌아가기
           </button>
         </div>
       ) : (
-        <div className="flex items-center gap-2 px-4 py-3 border-t border-[rgba(201,162,39,0.15)] bg-black/30 backdrop-blur-xl shrink-0">
+        <div className="flex items-center gap-2 px-4 py-3 border-t border-[hsl(var(--gold)/0.15)] bg-black/30 backdrop-blur-xl shrink-0">
           <input
             ref={inputRef}
             type="text"
@@ -326,7 +326,7 @@ export default function ChatConsultationPage() {
             onKeyDown={handleKeyDown}
             placeholder="메시지를 입력하세요..."
             maxLength={2000}
-            className="flex-1 bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-full px-4 py-2.5 text-sm text-[var(--color-text-on-dark)] placeholder:text-[#a49484]/50 focus:outline-none focus:border-[#C9A227]/50 transition-colors"
+            className="flex-1 bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-full px-4 py-2.5 text-sm text-[hsl(var(--text-primary))] placeholder:text-[hsl(var(--text-secondary))]/50 focus:outline-none focus:border-[hsl(var(--gold))]/50 transition-colors"
           />
           <button
             onClick={sendMessage}
@@ -334,8 +334,8 @@ export default function ChatConsultationPage() {
             className={cn(
               'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shrink-0',
               input.trim()
-                ? 'bg-[#C9A227] text-white hover:bg-[#D4A843]'
-                : 'bg-[#1a1612] text-[#a49484]/50'
+                ? 'bg-[hsl(var(--gold))] text-white hover:bg-[hsl(var(--gold-soft))]'
+                : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))]/50'
             )}
             aria-label="전송"
           >

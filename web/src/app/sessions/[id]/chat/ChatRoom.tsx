@@ -156,7 +156,7 @@ export default function ChatRoom({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-[var(--color-text-muted-dark)] text-sm">채팅을 불러오는 중...</div>
+        <div className="text-[hsl(var(--text-secondary))] text-sm">채팅을 불러오는 중...</div>
       </div>
     );
   }
@@ -171,19 +171,19 @@ export default function ChatRoom({
       />
 
       {/* Header with counselor name and end button */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-[rgba(15,13,10,0.6)] border-b border-[rgba(201,162,39,0.1)]">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-[hsl(var(--background)/0.6)] border-b border-[hsl(var(--gold)/0.1)]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#2b2219] border border-[rgba(201,162,39,0.2)] flex items-center justify-center text-xs font-bold text-[var(--color-gold)]">
+          <div className="w-8 h-8 rounded-full bg-surface-hover border border-[hsl(var(--gold)/0.2)] flex items-center justify-center text-xs font-bold text-[hsl(var(--gold))]">
             {counselorName.charAt(0)}
           </div>
-          <span className="text-sm font-medium text-[var(--color-text-on-dark)]">
+          <span className="text-sm font-medium text-[hsl(var(--text-primary))]">
             {counselorName} 상담사
           </span>
         </div>
         {!ended && (
           <button
             onClick={() => setShowEndConfirm(true)}
-            className="text-xs px-3 py-1.5 rounded-full border border-[var(--color-danger)] text-[var(--color-danger)] hover:bg-[var(--color-danger)] hover:text-white transition-colors duration-150"
+            className="text-xs px-3 py-1.5 rounded-full border border-[hsl(var(--destructive))] text-[hsl(var(--destructive))] hover:bg-[hsl(var(--destructive))] hover:text-white transition-colors duration-150"
           >
             상담 종료
           </button>
@@ -192,7 +192,7 @@ export default function ChatRoom({
 
       {/* Error banner */}
       {error && (
-        <div className="px-4 py-2 bg-[rgba(139,0,0,0.2)] border-b border-[#8B0000] text-sm text-[var(--color-danger-light)]">
+        <div className="px-4 py-2 bg-[hsl(var(--dancheong)/0.2)] border-b border-dancheong text-sm text-[hsl(var(--destructive-foreground))]">
           {error}
           <button onClick={() => setError('')} className="ml-2 underline text-xs">
             닫기
@@ -208,7 +208,7 @@ export default function ChatRoom({
       >
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center text-[var(--color-text-muted-dark)] text-sm">
+            <div className="text-center text-[hsl(var(--text-secondary))] text-sm">
               <p className="mb-1">채팅 상담이 시작되었습니다</p>
               <p className="text-xs">메시지를 보내 대화를 시작하세요</p>
             </div>
@@ -231,21 +231,21 @@ export default function ChatRoom({
       {/* Ended overlay */}
       {ended && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-[var(--color-bg-card)] text-[var(--color-text-on-card)] rounded-2xl p-8 max-w-sm mx-4 text-center shadow-xl">
+          <div className="bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] rounded-2xl p-8 max-w-sm mx-4 text-center shadow-xl">
             <h3 className="text-xl font-bold font-heading mb-2">상담이 종료되었습니다</h3>
-            <p className="text-sm text-[var(--color-text-muted-card)] mb-6">
+            <p className="text-sm text-[hsl(var(--muted-foreground))] mb-6">
               {counselorName} 상담사와의 채팅 상담이 종료되었습니다.
             </p>
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => router.push(`/reviews/new?sessionId=${sessionId}`)}
-                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4A843] text-[#0f0d0a] font-bold font-heading text-sm hover:from-[#b08d1f] hover:to-[#C9A227] transition-all"
+                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-gold to-gold-soft text-background font-bold font-heading text-sm hover:from-[hsl(var(--gold)/0.85)] hover:to-gold transition-all"
               >
                 리뷰 작성
               </button>
               <button
                 onClick={() => router.push('/consultations')}
-                className="px-6 py-2.5 rounded-full border border-[var(--color-border-card)] text-[var(--color-text-on-card)] font-heading font-bold text-sm hover:bg-[var(--color-bg-card-hover)] transition-colors"
+                className="px-6 py-2.5 rounded-full border border-[hsl(var(--border))] text-[hsl(var(--card-foreground))] font-heading font-bold text-sm hover:bg-[hsl(var(--surface-hover))] transition-colors"
               >
                 돌아가기
               </button>

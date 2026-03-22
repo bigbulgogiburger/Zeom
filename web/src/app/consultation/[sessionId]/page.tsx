@@ -448,13 +448,13 @@ export default function ConsultationRoomPage() {
     return (
       <RequireLogin>
         <main className="max-w-6xl mx-auto px-6 py-8 grid gap-8">
-          <h1 className="text-3xl font-bold font-heading tracking-tight text-[var(--color-text-on-dark)]">상담실</h1>
+          <h1 className="text-3xl font-bold font-heading tracking-tight text-[hsl(var(--text-primary))]">상담실</h1>
           {message && (
-            <Alert variant="destructive" className="rounded-2xl border-[rgba(201,162,39,0.15)]">
+            <Alert variant="destructive" className="rounded-2xl border-[hsl(var(--gold)/0.15)]">
               <AlertDescription>{message}</AlertDescription>
             </Alert>
           )}
-          <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
+          <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
             <CardContent className="text-center py-8 text-muted-foreground">
               세션을 불러오는 중...
             </CardContent>
@@ -469,17 +469,17 @@ export default function ConsultationRoomPage() {
   return (
     <RequireLogin>
       <main className="max-w-6xl mx-auto px-6 py-8 grid gap-6">
-        <h1 className="text-3xl font-bold font-heading tracking-tight text-[var(--color-text-on-dark)]">상담실</h1>
+        <h1 className="text-3xl font-bold font-heading tracking-tight text-[hsl(var(--text-primary))]">상담실</h1>
 
         {message && (
           <Alert
             variant={connectionState === ConnectionState.NO_ANSWER ? 'default' : 'destructive'}
-            className="rounded-2xl border-[rgba(201,162,39,0.15)]"
+            className="rounded-2xl border-[hsl(var(--gold)/0.15)]"
           >
             <AlertDescription className="flex items-center justify-between flex-wrap gap-2">
               <span>{message}</span>
               {connectionState === ConnectionState.NO_ANSWER && (
-                <Button variant="outline" size="sm" onClick={handleRetryDial} className="rounded-full border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10">
+                <Button variant="outline" size="sm" onClick={handleRetryDial} className="rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10">
                   다시 호출
                 </Button>
               )}
@@ -498,7 +498,7 @@ export default function ConsultationRoomPage() {
             onGracePeriodEnd={handleGracePeriodEnd}
           />
 
-          <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
+          <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-heading">상담사 정보</CardTitle>
@@ -520,7 +520,7 @@ export default function ConsultationRoomPage() {
           </Card>
 
           {callConnected && (
-            <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
+            <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
               <CardContent className="flex flex-col justify-center h-full py-3">
                 <NetworkQuality call={currentCallRef.current} />
               </CardContent>
@@ -538,11 +538,11 @@ export default function ConsultationRoomPage() {
 
         {/* Connection Status Banner (ringing / reconnecting) */}
         {(connectionState === ConnectionState.RINGING || connectionState === ConnectionState.RECONNECTING) && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl px-6 py-4">
-            <div className="text-center text-[var(--color-text-on-dark)]">
+          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl px-6 py-4">
+            <div className="text-center text-[hsl(var(--text-primary))]">
               {connectionState === ConnectionState.RINGING && (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-[#C9A227] animate-pulse" />
+                  <span className="inline-block w-2 h-2 rounded-full bg-[hsl(var(--gold))] animate-pulse" />
                   선생님 호출 중... 잠시만 기다려주세요
                 </span>
               )}
@@ -556,11 +556,11 @@ export default function ConsultationRoomPage() {
         {/* Video + Chat Area */}
         <div className={`grid gap-4 ${chatOpen ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
           {/* Video Area */}
-          <Card className={`rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#1a1612] shadow-lg ${chatOpen ? 'lg:col-span-2' : ''}`}>
+          <Card className={`rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] shadow-lg ${chatOpen ? 'lg:col-span-2' : ''}`}>
             <CardContent className="p-4">
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2 min-h-[400px]">
                 {/* Remote Video */}
-                <div className="bg-[#0f0d0a] rounded-2xl relative overflow-hidden min-h-[300px] border border-[rgba(201,162,39,0.15)]">
+                <div className="bg-[hsl(var(--background))] rounded-2xl relative overflow-hidden min-h-[300px] border border-[hsl(var(--gold)/0.15)]">
                   <video
                     ref={remoteVideoRef}
                     autoPlay
@@ -579,7 +579,7 @@ export default function ConsultationRoomPage() {
                       )}
                     </div>
                   )}
-                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-[#C9A227] px-3 py-1 rounded-full text-xs font-heading font-bold">
+                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-[hsl(var(--gold))] px-3 py-1 rounded-full text-xs font-heading font-bold">
                     상담사
                   </div>
                   {callConnected && (
@@ -590,7 +590,7 @@ export default function ConsultationRoomPage() {
                 </div>
 
                 {/* Local Video */}
-                <div className="bg-[#0f0d0a] rounded-2xl relative overflow-hidden min-h-[300px] border border-[rgba(201,162,39,0.15)]">
+                <div className="bg-[hsl(var(--background))] rounded-2xl relative overflow-hidden min-h-[300px] border border-[hsl(var(--gold)/0.15)]">
                   <video
                     ref={localVideoRef}
                     autoPlay
@@ -604,7 +604,7 @@ export default function ConsultationRoomPage() {
                       <div>나</div>
                     </div>
                   )}
-                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-[#C9A227] px-3 py-1 rounded-full text-xs font-heading font-bold">
+                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-[hsl(var(--gold))] px-3 py-1 rounded-full text-xs font-heading font-bold">
                     나
                   </div>
                 </div>
@@ -614,7 +614,7 @@ export default function ConsultationRoomPage() {
 
           {/* Chat Panel */}
           {chatOpen && tokenData && (
-            <div className="min-h-[400px] rounded-2xl overflow-hidden border border-[rgba(201,162,39,0.15)]">
+            <div className="min-h-[400px] rounded-2xl overflow-hidden border border-[hsl(var(--gold)/0.15)]">
               <ConsultationChat
                 channelUrl={channelUrl}
                 sendbirdAppId={tokenData.sendbirdAppId || ''}
@@ -628,7 +628,7 @@ export default function ConsultationRoomPage() {
         </div>
 
         {/* Control Bar */}
-        <div className="flex gap-3 justify-center flex-wrap bg-black/30 backdrop-blur-xl border border-[rgba(201,162,39,0.1)] rounded-2xl px-6 py-4">
+        <div className="flex gap-3 justify-center flex-wrap bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl px-6 py-4">
           <Button
             variant={audioEnabled ? 'secondary' : 'destructive'}
             disabled={!callConnected}
@@ -651,7 +651,7 @@ export default function ConsultationRoomPage() {
             variant={chatOpen ? 'default' : 'outline'}
             disabled={!tokenData}
             onClick={() => setChatOpen(!chatOpen)}
-            className={`rounded-full px-6 font-heading font-bold ${chatOpen ? 'bg-[#C9A227] text-[#0f0d0a] hover:bg-[#b08d1f]' : 'border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10'}`}
+            className={`rounded-full px-6 font-heading font-bold ${chatOpen ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold)/0.85)]' : 'border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10'}`}
           >
             {chatOpen ? '채팅 닫기' : '채팅'}
           </Button>
@@ -661,7 +661,7 @@ export default function ConsultationRoomPage() {
               variant={pipActive ? 'default' : 'outline'}
               disabled={!callConnected}
               onClick={togglePip}
-              className={`rounded-full px-6 font-heading font-bold ${pipActive ? 'bg-[#C9A227] text-[#0f0d0a] hover:bg-[#b08d1f]' : 'border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10'}`}
+              className={`rounded-full px-6 font-heading font-bold ${pipActive ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold)/0.85)]' : 'border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10'}`}
             >
               {pipActive ? 'PIP 끄기' : 'PIP'}
             </Button>
@@ -671,7 +671,7 @@ export default function ConsultationRoomPage() {
             <Button
               variant="outline"
               onClick={handleRetryDial}
-              className="rounded-full px-6 font-heading font-bold border-2 border-[#C9A227]/30 text-[#C9A227] hover:bg-[#C9A227]/10"
+              className="rounded-full px-6 font-heading font-bold border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10"
             >
               다시 연결
             </Button>

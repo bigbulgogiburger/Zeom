@@ -47,10 +47,10 @@ export default function SessionTimer({ startedAt, durationMinutes, onTimeUp }: S
         sticky top-[64px] z-50 flex items-center justify-center gap-3 px-4 py-3
         border-b backdrop-blur-md transition-colors duration-300
         ${isCritical
-          ? 'bg-[rgba(139,0,0,0.9)] border-[#8B0000] text-white'
+          ? 'bg-[hsl(var(--dancheong)/0.9)] border-dancheong text-white'
           : isWarning
-            ? 'bg-[rgba(184,134,11,0.9)] border-[#b8860b] text-white'
-            : 'bg-[rgba(15,13,10,0.9)] border-[rgba(201,162,39,0.15)] text-[var(--color-text-on-dark)]'
+            ? 'bg-[hsl(var(--warning)/0.9)] border-warning text-white'
+            : 'bg-[hsl(var(--background)/0.9)] border-[hsl(var(--gold)/0.15)] text-[hsl(var(--text-primary))]'
         }
       `}
     >

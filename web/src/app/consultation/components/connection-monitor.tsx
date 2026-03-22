@@ -155,8 +155,8 @@ export default function ConnectionMonitor({ call, onReconnect, onAudioOnlyFallba
     <>
       {/* Audio-only fallback suggestion */}
       {videoQualityPoor && status === 'connected' && (
-        <div className="bg-[var(--color-warning-light)] border border-[var(--color-warning)] rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
-          <div className="text-sm text-[var(--color-warning)]">
+        <div className="bg-[hsl(var(--warning)/0.15)] border border-[hsl(var(--warning))] rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+          <div className="text-sm text-[hsl(var(--warning))]">
             <p className="font-bold">영상 품질이 불안정합니다</p>
             <p className="text-xs mt-0.5">음성 전용 모드로 전환하면 안정적인 통화가 가능합니다.</p>
           </div>
@@ -164,7 +164,7 @@ export default function ConnectionMonitor({ call, onReconnect, onAudioOnlyFallba
             variant="outline"
             size="sm"
             onClick={onAudioOnlyFallback}
-            className="shrink-0 rounded-full border-[var(--color-warning)] text-[var(--color-warning)] hover:bg-[var(--color-warning)]/10 text-xs"
+            className="shrink-0 rounded-full border-[hsl(var(--warning))] text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning))]/10 text-xs"
           >
             음성 전용
           </Button>
@@ -174,16 +174,16 @@ export default function ConnectionMonitor({ call, onReconnect, onAudioOnlyFallba
       {/* Reconnection overlay */}
       {(status === 'disconnected' || status === 'reconnecting') && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-2xl p-8 max-w-sm mx-4 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full border-4 border-[#C9A227] border-t-transparent animate-spin" />
-            <h2 className="text-xl font-bold font-heading text-[var(--color-text-on-dark)] mb-2">
+          <div className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-2xl p-8 max-w-sm mx-4 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full border-4 border-[hsl(var(--gold))] border-t-transparent animate-spin" />
+            <h2 className="text-xl font-bold font-heading text-[hsl(var(--text-primary))] mb-2">
               연결 중...
             </h2>
             <p className="text-sm text-muted-foreground mb-1">
               재연결 시도 {reconnectAttempt}/{MAX_RECONNECT_ATTEMPTS}
             </p>
             {countdown > 0 && (
-              <p className="text-2xl font-bold text-[#C9A227] my-3">{countdown}초</p>
+              <p className="text-2xl font-bold text-[hsl(var(--gold))] my-3">{countdown}초</p>
             )}
             <p className="text-xs text-muted-foreground">
               네트워크 연결을 확인해주세요
@@ -195,11 +195,11 @@ export default function ConnectionMonitor({ call, onReconnect, onAudioOnlyFallba
       {/* Failed state */}
       {status === 'failed' && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-[#1a1612] border border-[rgba(201,162,39,0.15)] rounded-2xl p-8 max-w-sm mx-4 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--color-danger-light)] flex items-center justify-center">
-              <span className="text-3xl text-[#8B0000]">!</span>
+          <div className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-2xl p-8 max-w-sm mx-4 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[hsl(var(--dancheong)/0.15)] flex items-center justify-center">
+              <span className="text-3xl text-[hsl(var(--dancheong))]">!</span>
             </div>
-            <h2 className="text-xl font-bold font-heading text-[var(--color-text-on-dark)] mb-2">
+            <h2 className="text-xl font-bold font-heading text-[hsl(var(--text-primary))] mb-2">
               연결할 수 없습니다
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
@@ -207,7 +207,7 @@ export default function ConnectionMonitor({ call, onReconnect, onAudioOnlyFallba
             </p>
             <Button
               onClick={handleManualRetry}
-              className="rounded-full px-8 py-3 bg-[#C9A227] text-[#0f0d0a] hover:bg-[#b08d1f] font-heading font-bold"
+              className="rounded-full px-8 py-3 bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold)/0.85)] font-heading font-bold"
             >
               다시 시도
             </Button>

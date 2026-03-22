@@ -222,7 +222,7 @@ export default function WaitingRoomPage() {
       <main className="max-w-3xl mx-auto px-4 py-8 grid gap-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-2xl font-bold font-heading text-[var(--color-text-on-dark)]">
+          <h1 className="text-2xl font-bold font-heading text-[hsl(var(--text-primary))]">
             상담 대기실
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -237,12 +237,12 @@ export default function WaitingRoomPage() {
         )}
 
         {/* Countdown */}
-        <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
+        <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
           <CardContent className="py-8 text-center">
             {secondsLeft !== null && secondsLeft > 0 ? (
               <>
                 <p className="text-sm text-muted-foreground mb-2">상담 시작까지</p>
-                <p className="text-4xl font-bold font-heading text-[#C9A227]">
+                <p className="text-4xl font-bold font-heading text-[hsl(var(--gold))]">
                   {formatCountdown(secondsLeft)}
                 </p>
                 {scheduledTime && (
@@ -253,7 +253,7 @@ export default function WaitingRoomPage() {
               </>
             ) : (
               <>
-                <p className="text-lg font-bold font-heading text-[#2d6930]">
+                <p className="text-lg font-bold font-heading text-[hsl(var(--success))]">
                   상담 시간이 되었습니다
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -267,13 +267,13 @@ export default function WaitingRoomPage() {
         {/* Counselor Info + Media Preview */}
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           {/* Counselor Info */}
-          <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
+          <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-heading">상담사 정보</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-[#1a1612] flex items-center justify-center text-3xl text-[#C9A227]">
+                <div className="w-16 h-16 rounded-full bg-[hsl(var(--surface))] flex items-center justify-center text-3xl text-[hsl(var(--gold))]">
                   &#128100;
                 </div>
                 <div>
@@ -294,8 +294,8 @@ export default function WaitingRoomPage() {
               </div>
 
               {counselorReady && canEnter && (
-                <div className="mt-2 p-3 bg-[var(--color-success-light)] rounded-xl text-center">
-                  <p className="text-sm font-bold text-[#2d6930]">
+                <div className="mt-2 p-3 bg-[hsl(var(--success)/0.15)] rounded-xl text-center">
+                  <p className="text-sm font-bold text-[hsl(var(--success))]">
                     상담사가 준비되었습니다
                   </p>
                 </div>
@@ -304,7 +304,7 @@ export default function WaitingRoomPage() {
           </Card>
 
           {/* Camera/Mic Preview */}
-          <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
+          <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-heading">카메라 미리보기</CardTitle>
             </CardHeader>
@@ -325,12 +325,12 @@ export default function WaitingRoomPage() {
               </div>
               <div className="flex gap-2">
                 <div className={`flex-1 text-center py-2 rounded-xl text-sm font-medium ${
-                  cameraReady ? 'bg-[var(--color-success-light)] text-[#2d6930]' : 'bg-[var(--color-danger-light)] text-[#8B0000]'
+                  cameraReady ? 'bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]' : 'bg-[hsl(var(--dancheong)/0.15)] text-[hsl(var(--dancheong))]'
                 }`}>
                   카메라 {cameraReady ? '정상' : '확인 필요'}
                 </div>
                 <div className={`flex-1 text-center py-2 rounded-xl text-sm font-medium ${
-                  micReady ? 'bg-[var(--color-success-light)] text-[#2d6930]' : 'bg-[var(--color-danger-light)] text-[#8B0000]'
+                  micReady ? 'bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]' : 'bg-[hsl(var(--dancheong)/0.15)] text-[hsl(var(--dancheong))]'
                 }`}>
                   마이크 {micReady ? '정상' : '확인 필요'}
                 </div>
@@ -340,7 +340,7 @@ export default function WaitingRoomPage() {
         </div>
 
         {/* Etiquette Tips */}
-        <Card className="rounded-2xl border border-[rgba(201,162,39,0.15)] bg-[#f9f5ed] shadow-lg">
+        <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-heading">상담 에티켓</CardTitle>
           </CardHeader>
@@ -348,7 +348,7 @@ export default function WaitingRoomPage() {
             <ul className="grid gap-2">
               {ETIQUETTE_TIPS.map((tip, i) => (
                 <li key={i} className="flex gap-3 text-sm text-card-foreground">
-                  <span className="text-[#C9A227] font-bold shrink-0">{i + 1}.</span>
+                  <span className="text-[hsl(var(--gold))] font-bold shrink-0">{i + 1}.</span>
                   <span>{tip}</span>
                 </li>
               ))}
@@ -363,7 +363,7 @@ export default function WaitingRoomPage() {
             disabled={!canEnter}
             className={`w-full rounded-full py-6 text-lg font-heading font-bold ${
               canEnter
-                ? 'bg-[#C9A227] text-[#0f0d0a] hover:bg-[#b08d1f]'
+                ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold)/0.85)]'
                 : 'bg-muted text-muted-foreground cursor-not-allowed'
             }`}
           >

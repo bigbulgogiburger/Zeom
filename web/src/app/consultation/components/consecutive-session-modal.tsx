@@ -68,14 +68,14 @@ export default function ConsecutiveSessionModal({
       backdropFilter: 'blur(4px)',
     }}>
       <div style={{
-        background: '#f9f5ed',
+        background: 'hsl(var(--text-primary))',
         borderRadius: '16px',
         padding: '32px',
         maxWidth: '420px',
         width: '90%',
         textAlign: 'center',
         boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-        border: '2px solid #C9A227',
+        border: '2px solid hsl(var(--gold))',
       }}>
         <div style={{ fontSize: '40px', marginBottom: '16px' }}>
           🔔
@@ -83,14 +83,14 @@ export default function ConsecutiveSessionModal({
         <h2 style={{
           fontSize: '20px',
           fontWeight: 700,
-          color: '#2b2219',
+          color: 'hsl(var(--background))',
           marginBottom: '8px',
         }}>
           다음 예약이 있습니다
         </h2>
         <p style={{
           fontSize: '14px',
-          color: '#666',
+          color: 'hsl(var(--text-secondary))',
           marginBottom: '20px',
         }}>
           {formatTime(nextSlotStartAt)} ~ {formatTime(nextSlotEndAt)} 예약 티켓이 있습니다.
@@ -110,7 +110,7 @@ export default function ConsecutiveSessionModal({
               padding: '12px 24px',
               borderRadius: '8px',
               border: 'none',
-              background: '#C9A227',
+              background: 'hsl(var(--gold))',
               color: '#FFF',
               fontWeight: 700,
               fontSize: '15px',
@@ -127,9 +127,9 @@ export default function ConsecutiveSessionModal({
             style={{
               padding: '12px 24px',
               borderRadius: '8px',
-              border: '1px solid #ccc',
+              border: '1px solid hsl(var(--border-subtle))',
               background: 'transparent',
-              color: '#666',
+              color: 'hsl(var(--text-secondary))',
               fontWeight: 600,
               fontSize: '15px',
               cursor: 'pointer',
@@ -141,14 +141,14 @@ export default function ConsecutiveSessionModal({
         </div>
 
         {error && (
-          <p style={{ fontSize: '13px', color: '#8B0000', marginBottom: '8px' }}>
+          <p style={{ fontSize: '13px', color: 'hsl(var(--dancheong))', marginBottom: '8px' }}>
             {error}
           </p>
         )}
 
         <p style={{
           fontSize: '12px',
-          color: '#999',
+          color: 'hsl(var(--text-secondary))',
         }}>
           {countdown}초 후 자동으로 종료됩니다
         </p>

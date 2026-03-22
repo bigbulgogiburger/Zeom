@@ -18,9 +18,9 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 const toastColors: Record<ToastType, string> = {
-  success: '#2d6930',
-  error: '#8B0000',
-  info: '#C9A227',
+  success: 'hsl(var(--success))',
+  error: 'hsl(var(--dancheong))',
+  info: 'hsl(var(--gold))',
 };
 
 let nextId = 0;
