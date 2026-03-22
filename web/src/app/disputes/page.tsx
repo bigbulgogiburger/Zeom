@@ -22,7 +22,7 @@ type Dispute = {
 const STATUS_MAP: Record<string, { label: string; className: string }> = {
   OPEN: {
     label: '접수됨',
-    className: 'bg-[hsl(var(--warning))] text-[var(--color-warning-light)] hover:bg-[hsl(var(--warning))]',
+    className: 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]',
   },
   IN_REVIEW: {
     label: '검토중',
@@ -30,7 +30,7 @@ const STATUS_MAP: Record<string, { label: string; className: string }> = {
   },
   RESOLVED: {
     label: '해결됨',
-    className: 'bg-[hsl(var(--success))] text-[var(--color-success-light)] hover:bg-[hsl(var(--success))]',
+    className: 'bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]',
   },
 };
 

@@ -44,23 +44,23 @@ export default function CreditIndicator({
     <div
       className="flex flex-col gap-1"
       style={{
-        background: 'var(--color-bg-card)',
+        background: 'hsl(var(--surface))',
         borderRadius: 'var(--radius-md)',
         padding: 'var(--spacing-sm) var(--spacing-md)',
-        border: showWarning ? '2px solid var(--color-warning)' : '1px solid var(--color-border-card)',
+        border: showWarning ? '2px solid hsl(var(--warning))' : '1px solid hsl(var(--border-subtle))',
       }}
     >
       <div className="flex items-center justify-between">
         <span
           className="text-xs font-medium"
-          style={{ color: 'var(--color-text-muted-card)', fontFamily: 'var(--font-heading)' }}
+          style={{ color: 'hsl(var(--text-secondary))', fontFamily: 'var(--font-heading)' }}
         >
           상담권
         </span>
         <span
           className="text-sm font-bold"
           style={{
-            color: creditsConsumed >= totalCredits ? 'var(--color-danger)' : 'var(--color-gold)',
+            color: creditsConsumed >= totalCredits ? 'hsl(var(--dancheong))' : 'hsl(var(--gold))',
             fontFamily: 'var(--font-heading)',
           }}
         >
@@ -73,7 +73,7 @@ export default function CreditIndicator({
         style={{
           width: '100%',
           height: '4px',
-          background: 'var(--color-border-card)',
+          background: 'hsl(var(--border-subtle))',
           borderRadius: '2px',
           overflow: 'hidden',
         }}
@@ -82,7 +82,7 @@ export default function CreditIndicator({
           style={{
             width: `${progressPct}%`,
             height: '100%',
-            background: showWarning ? 'var(--color-warning)' : 'var(--color-gold)',
+            background: showWarning ? 'hsl(var(--warning))' : 'hsl(var(--gold))',
             borderRadius: '2px',
             transition: 'width 1s linear',
           }}
@@ -92,7 +92,7 @@ export default function CreditIndicator({
       {showWarning && (
         <div
           className="text-[10px] font-medium"
-          style={{ color: 'var(--color-warning)' }}
+          style={{ color: 'hsl(var(--warning))' }}
         >
           {Math.ceil(timeUntilNextBoundary / 60)}분 후 다음 상담권 차감
         </div>

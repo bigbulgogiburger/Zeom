@@ -128,19 +128,19 @@ export default function NewRefundPage() {
             환불 정책
           </h3>
           <div className="grid gap-2 text-sm">
-            <div className="p-4 bg-[var(--color-success-light)] rounded-xl">
+            <div className="p-4 bg-[hsl(var(--success)/0.1)] rounded-xl">
               <span className="font-bold text-[hsl(var(--success))]">
                 24시간 이상 전:
               </span>
               <span className="ml-2">100% 환불</span>
             </div>
-            <div className="p-4 bg-[var(--color-warning-light)] rounded-xl">
+            <div className="p-4 bg-[hsl(var(--warning)/0.1)] rounded-xl">
               <span className="font-bold text-[hsl(var(--warning))]">
                 1시간 ~ 24시간 전:
               </span>
               <span className="ml-2">50% 환불</span>
             </div>
-            <div className="p-4 bg-[var(--color-danger-light)] rounded-xl">
+            <div className="p-4 bg-[hsl(var(--dancheong)/0.1)] rounded-xl">
               <span className="font-bold text-[hsl(var(--dancheong))]">
                 1시간 미만:
               </span>

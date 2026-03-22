@@ -56,7 +56,7 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
           fontSize: 'var(--font-size-lg)',
           fontWeight: 'var(--font-weight-bold)',
           fontFamily: 'var(--font-heading)',
-          color: 'var(--color-text-on-dark)',
+          color: 'hsl(var(--text-primary))',
         }}>
           {counselorName} 상담사님과의 상담은 어떠셨나요?
         </div>
@@ -69,7 +69,7 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
           marginBottom: 'var(--spacing-sm)',
           fontSize: 'var(--font-size-sm)',
           fontWeight: 'var(--font-weight-medium)',
-          color: 'var(--color-text-on-dark)',
+          color: 'hsl(var(--text-primary))',
         }}>
           별점 평가
         </label>
@@ -103,7 +103,7 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
               aria-label={`${star}점`}
             >
               <span style={{
-                color: star <= displayRating ? 'var(--color-gold)' : 'var(--color-text-muted-dark)',
+                color: star <= displayRating ? 'hsl(var(--gold))' : 'hsl(var(--text-secondary))',
                 transition: 'color var(--transition-fast)',
               }}>
                 ★
@@ -115,7 +115,7 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
           <div style={{
             textAlign: 'center',
             fontSize: 'var(--font-size-sm)',
-            color: 'var(--color-gold)',
+            color: 'hsl(var(--gold))',
             fontWeight: 'var(--font-weight-bold)',
             fontFamily: 'var(--font-heading)',
           }}>
@@ -131,7 +131,7 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
           marginBottom: 'var(--spacing-sm)',
           fontSize: 'var(--font-size-sm)',
           fontWeight: 'var(--font-weight-medium)',
-          color: 'var(--color-text-on-dark)',
+          color: 'hsl(var(--text-primary))',
         }}>
           리뷰 내용
         </label>
@@ -145,10 +145,10 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
           style={{
             width: '100%',
             padding: 'var(--spacing-md)',
-            border: `2px solid var(--color-border-dark)`,
+            border: `2px solid hsl(var(--border-subtle))`,
             borderRadius: 'var(--radius-md)',
-            background: 'var(--color-bg-secondary)',
-            color: 'var(--color-text-on-dark)',
+            background: 'hsl(var(--surface))',
+            color: 'hsl(var(--text-primary))',
             fontSize: 'var(--font-size-base)',
             fontFamily: 'inherit',
             lineHeight: 'var(--line-height-normal)',
@@ -157,7 +157,7 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
         />
         <div style={{
           fontSize: 'var(--font-size-xs)',
-          color: 'var(--color-text-muted-dark)',
+          color: 'hsl(var(--text-secondary))',
           marginTop: 'var(--spacing-xs)',
         }}>
           {comment.length} / 500자
@@ -171,7 +171,7 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
           marginBottom: 'var(--spacing-sm)',
           fontSize: 'var(--font-size-sm)',
           fontWeight: 'var(--font-weight-medium)',
-          color: 'var(--color-text-on-dark)',
+          color: 'hsl(var(--text-primary))',
         }}>
           사진 URL (선택)
         </label>
@@ -185,17 +185,17 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
           style={{
             width: '100%',
             padding: 'var(--spacing-md)',
-            border: '2px solid var(--color-border-dark)',
+            border: '2px solid hsl(var(--border-subtle))',
             borderRadius: 'var(--radius-md)',
-            background: 'var(--color-bg-secondary)',
-            color: 'var(--color-text-on-dark)',
+            background: 'hsl(var(--surface))',
+            color: 'hsl(var(--text-primary))',
             fontSize: 'var(--font-size-base)',
             fontFamily: 'inherit',
           }}
         />
         <div style={{
           fontSize: 'var(--font-size-xs)',
-          color: 'var(--color-text-muted-dark)',
+          color: 'hsl(var(--text-secondary))',
           marginTop: 'var(--spacing-xs)',
         }}>
           여러 장은 콤마(,)로 구분해 주세요
@@ -209,14 +209,14 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
         gap: 'var(--spacing-sm)',
         cursor: 'pointer',
         fontSize: 'var(--font-size-sm)',
-        color: 'var(--color-text-on-dark)',
+        color: 'hsl(var(--text-primary))',
       }}>
         <input
           type="checkbox"
           checked={isAnonymous}
           onChange={(e) => setIsAnonymous(e.target.checked)}
           disabled={loading}
-          style={{ width: '18px', height: '18px', accentColor: 'var(--color-gold)' }}
+          style={{ width: '18px', height: '18px', accentColor: 'hsl(var(--gold))' }}
         />
         익명으로 작성
       </label>

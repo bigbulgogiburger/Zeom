@@ -31,7 +31,7 @@ function formatTime(ts: number): string {
 
 function linkify(text: string): string {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--color-gold);text-decoration:underline">$1</a>');
+  return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:hsl(var(--gold));text-decoration:underline">$1</a>');
 }
 
 export default function ConsultationChat({
@@ -182,8 +182,8 @@ export default function ConsultationChat({
     <div
       className="flex flex-col border-2 rounded-lg overflow-hidden"
       style={{
-        background: 'var(--color-bg-card)',
-        borderColor: 'var(--color-border-card)',
+        background: 'hsl(var(--surface))',
+        borderColor: 'hsl(var(--border-subtle))',
         height: '100%',
         minHeight: '300px',
         maxHeight: '500px',
@@ -193,11 +193,11 @@ export default function ConsultationChat({
       <div
         className="flex items-center justify-between px-3 py-2"
         style={{
-          background: 'var(--color-bg-card-hover)',
-          borderBottom: '1px solid var(--color-border-card)',
+          background: 'hsl(var(--surface-hover))',
+          borderBottom: '1px solid hsl(var(--border-subtle))',
         }}
       >
-        <span className="font-heading font-bold text-sm" style={{ color: 'var(--color-text-on-card)' }}>
+        <span className="font-heading font-bold text-sm" style={{ color: 'hsl(var(--text-primary))' }}>
           채팅
         </span>
         <button
@@ -205,7 +205,7 @@ export default function ConsultationChat({
           style={{
             background: 'transparent',
             border: 'none',
-            color: 'var(--color-text-muted-card)',
+            color: 'hsl(var(--text-secondary))',
             cursor: 'pointer',
             padding: '2px 6px',
             fontSize: '16px',
@@ -224,17 +224,17 @@ export default function ConsultationChat({
         style={{ minHeight: 0 }}
       >
         {!connected && !error && (
-          <div className="text-center py-8 text-sm" style={{ color: 'var(--color-text-muted-card)' }}>
+          <div className="text-center py-8 text-sm" style={{ color: 'hsl(var(--text-secondary))' }}>
             채팅 연결 중...
           </div>
         )}
         {error && (
-          <div className="text-center py-4 text-sm" style={{ color: 'var(--color-danger)' }}>
+          <div className="text-center py-4 text-sm" style={{ color: 'hsl(var(--dancheong))' }}>
             {error}
           </div>
         )}
         {connected && messages.length === 0 && (
-          <div className="text-center py-8 text-sm" style={{ color: 'var(--color-text-muted-card)' }}>
+          <div className="text-center py-8 text-sm" style={{ color: 'hsl(var(--text-secondary))' }}>
             아직 메시지가 없습니다
           </div>
         )}
@@ -244,19 +244,19 @@ export default function ConsultationChat({
             className={`mb-2 flex flex-col ${msg.isMyMessage ? 'items-end' : 'items-start'}`}
           >
             {!msg.isMyMessage && (
-              <span className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted-card)' }}>
+              <span className="text-xs mb-0.5" style={{ color: 'hsl(var(--text-secondary))' }}>
                 {msg.sender}
               </span>
             )}
             <div
               className="rounded-lg px-3 py-1.5 max-w-[80%] text-sm break-words"
               style={{
-                background: msg.isMyMessage ? 'var(--color-gold)' : 'var(--color-bg-card-hover)',
-                color: msg.isMyMessage ? 'var(--color-bg-primary)' : 'var(--color-text-on-card)',
+                background: msg.isMyMessage ? 'hsl(var(--gold))' : 'hsl(var(--surface-hover))',
+                color: msg.isMyMessage ? 'hsl(var(--background))' : 'hsl(var(--text-primary))',
               }}
               dangerouslySetInnerHTML={{ __html: linkify(msg.message) }}
             />
-            <span className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-muted-card)' }}>
+            <span className="text-[10px] mt-0.5" style={{ color: 'hsl(var(--text-secondary))' }}>
               {formatTime(msg.createdAt)}
             </span>
           </div>
@@ -266,7 +266,7 @@ export default function ConsultationChat({
       {/* Input */}
       <div
         className="flex gap-2 px-3 py-2"
-        style={{ borderTop: '1px solid var(--color-border-card)' }}
+        style={{ borderTop: '1px solid hsl(var(--border-subtle))' }}
       >
         <input
           type="text"
@@ -277,18 +277,18 @@ export default function ConsultationChat({
           disabled={!connected || sending}
           className="flex-1 text-sm"
           style={{
-            background: 'var(--color-bg-card-hover)',
-            border: '1px solid var(--color-border-card)',
+            background: 'hsl(var(--surface-hover))',
+            border: '1px solid hsl(var(--border-subtle))',
             borderRadius: 'var(--radius-md)',
             padding: '6px 10px',
-            color: 'var(--color-text-on-card)',
+            color: 'hsl(var(--text-primary))',
             minHeight: '36px',
           }}
         />
         <Button
           onClick={handleSend}
           disabled={!connected || sending || !inputText.trim()}
-          className="bg-[var(--color-gold)] text-[var(--color-bg-primary)] font-heading font-bold hover:bg-[var(--color-gold-hover)] text-sm px-3"
+          className="bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold))/0.85] text-sm px-3"
           style={{ minHeight: '36px', opacity: (!connected || sending || !inputText.trim()) ? 0.5 : 1 }}
         >
           전송

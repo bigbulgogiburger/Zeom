@@ -11,13 +11,13 @@ type QualityLevel = 'good' | 'fair' | 'poor' | 'unknown';
 function getQualityInfo(level: QualityLevel): { label: string; color: string; bars: number } {
   switch (level) {
     case 'good':
-      return { label: '양호', color: 'var(--color-success)', bars: 4 };
+      return { label: '양호', color: 'hsl(var(--success))', bars: 4 };
     case 'fair':
-      return { label: '보통', color: 'var(--color-warning)', bars: 2 };
+      return { label: '보통', color: 'hsl(var(--warning))', bars: 2 };
     case 'poor':
-      return { label: '불량', color: 'var(--color-danger)', bars: 1 };
+      return { label: '불량', color: 'hsl(var(--dancheong))', bars: 1 };
     default:
-      return { label: '측정 중', color: 'var(--color-text-muted-dark)', bars: 0 };
+      return { label: '측정 중', color: 'hsl(var(--text-secondary))', bars: 0 };
   }
 }
 
@@ -105,7 +105,7 @@ export default function NetworkQuality({ call }: NetworkQualityProps) {
               width: '4px',
               height: `${6 + i * 4}px`,
               borderRadius: '1px',
-              background: i < info.bars ? info.color : 'var(--color-border-dark)',
+              background: i < info.bars ? info.color : 'hsl(var(--border-subtle))',
               transition: 'background 0.3s ease',
             }}
           />
@@ -120,7 +120,7 @@ export default function NetworkQuality({ call }: NetworkQualityProps) {
       {rtt !== null && (
         <span
           className="text-[10px]"
-          style={{ color: 'var(--color-text-muted-dark)' }}
+          style={{ color: 'hsl(var(--text-secondary))' }}
         >
           {rtt}ms
         </span>

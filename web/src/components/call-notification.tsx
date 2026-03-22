@@ -68,12 +68,12 @@ export default function CallNotification({
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="bg-[var(--color-bg-card)] text-[var(--color-text-on-card)] border-[var(--color-border-card)] max-w-[420px]">
+      <DialogContent className="bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] border-[hsl(var(--border-subtle))] max-w-[420px]">
         <DialogHeader>
           <DialogTitle className="font-heading font-bold text-lg text-center">
             상담 요청
           </DialogTitle>
-          <DialogDescription className="text-[var(--color-text-muted-card)] text-sm text-center">
+          <DialogDescription className="text-[hsl(var(--text-secondary))] text-sm text-center">
             고객님이 상담을 요청하고 있습니다
           </DialogDescription>
         </DialogHeader>
@@ -85,17 +85,17 @@ export default function CallNotification({
           </div>
           <div className="flex flex-wrap gap-2 justify-center">
             {callerInfo.bookingTime && (
-              <Badge className="bg-[var(--color-bg-secondary)] text-[var(--color-text-muted-card)]">
+              <Badge className="bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))]">
                 {callerInfo.bookingTime}
               </Badge>
             )}
             {callerInfo.specialty && (
-              <Badge className="bg-[var(--color-gold)]/20 text-[var(--color-gold)]">
+              <Badge className="bg-[hsl(var(--gold))]/20 text-[hsl(var(--gold))]">
                 {callerInfo.specialty}
               </Badge>
             )}
             {callerInfo.durationMinutes && (
-              <Badge className="bg-[var(--color-bg-secondary)] text-[var(--color-text-muted-card)]">
+              <Badge className="bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))]">
                 {callerInfo.durationMinutes}분
               </Badge>
             )}
@@ -106,13 +106,13 @@ export default function CallNotification({
           <Button
             onClick={onDecline}
             variant="outline"
-            className="border-2 border-[var(--color-danger)] text-[var(--color-danger)] bg-transparent font-heading font-bold hover:bg-[var(--color-danger)] hover:text-white min-w-[100px]"
+            className="border-2 border-[hsl(var(--dancheong))] text-[hsl(var(--dancheong))] bg-transparent font-heading font-bold hover:bg-[hsl(var(--dancheong))] hover:text-white min-w-[100px]"
           >
             거절
           </Button>
           <Button
             onClick={onAccept}
-            className="bg-[var(--color-success)] text-white font-heading font-bold hover:bg-[var(--color-success)]/90 min-w-[100px] px-8"
+            className="bg-[hsl(var(--success))] text-white font-heading font-bold hover:bg-[hsl(var(--success))]/90 min-w-[100px] px-8"
           >
             수락
           </Button>

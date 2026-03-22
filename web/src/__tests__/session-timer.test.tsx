@@ -55,7 +55,7 @@ describe('SessionTimer', () => {
 
     // Check background color change (warning state)
     const timerDiv = container.querySelector('div');
-    expect(timerDiv).toHaveStyle({ background: 'var(--color-danger)' });
+    expect(timerDiv).toHaveStyle({ background: 'hsl(var(--dancheong))' });
   });
 
   it('does not show warning when more than 5 minutes remaining', () => {
@@ -68,7 +68,7 @@ describe('SessionTimer', () => {
     expect(screen.queryByText('⚠️ 곧 종료됩니다')).not.toBeInTheDocument();
 
     const timerDiv = container.querySelector('div');
-    expect(timerDiv).toHaveStyle({ background: 'var(--color-bg-card)' });
+    expect(timerDiv).toHaveStyle({ background: 'hsl(var(--surface))' });
   });
 
   it('calls onTimeUp callback when timer reaches 0', () => {
