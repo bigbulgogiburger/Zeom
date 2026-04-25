@@ -24,6 +24,43 @@ class AppColors {
   static const Color error = darkRed;
   static const Color success = Color(0xFF2D5016);
   static const Color border = Color(0xFFD4C4B0);
+
+  // --- Canvas extensions (MOBILE_DESIGN.md §2) ---
+  /// Gradient terminus, pressed surface, tag background.
+  static const Color hanjiDeep = Color(0xFFEDE0CC);
+
+  /// Warm-accent card variant.
+  static const Color hanjiCard = Color(0xFFFBF3E4);
+
+  // --- Text scale (ink hierarchy) ---
+  /// Alias of [inkBlack] for clarity in text roles.
+  static const Color ink = Color(0xFF111111);
+  static const Color ink2 = Color(0xFF333333);
+  static const Color ink3 = Color(0xFF666666);
+  static const Color ink4 = Color(0xFF999999);
+
+  // --- Gold variants ---
+  /// Gradient highlight.
+  static const Color goldSoft = Color(0xFFD9B74A);
+
+  /// Fill bg for "오늘의 운세" label.
+  static const Color goldBg = Color(0xFFF5E8B8);
+
+  // --- Functional states ---
+  /// Jade/seal success tone; alias of [success] for role clarity.
+  static const Color jadeSuccess = Color(0xFF2D5016);
+
+  /// Cash-insufficient, caution boxes.
+  static const Color warning = Color(0xFFB87333);
+
+  // --- Borders ---
+  /// Card internal 1px border (most common).
+  static const Color borderSoft = Color(0xFFE8DDC9);
+
+  // --- Extended chat / network status (consultation room) ---
+  static const Color chatOtherBg = Color.fromRGBO(255, 255, 255, 0.08);
+  static const Color networkGoodBg = Color.fromRGBO(45, 80, 22, 0.3);
+  static const Color networkGoodFg = Color(0xFFA8C47A);
 }
 
 class AppTheme {

@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshMe = async () => {
     setLoading(true);
     try {
-      const r = await apiFetch('/api/v1/auth/me', { cache: 'no-store' });
+      const r = await apiFetch('/api/v1/auth/me', { cache: 'no-store', silent: true });
       if (!r.ok) {
         setMe(null);
       } else {

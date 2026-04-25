@@ -14,7 +14,8 @@ dependencies:
   go_router: ^13.0.0
   flutter_secure_storage: ^9.0.0
   shared_preferences: ^2.2.2
-  google_fonts: ^5.1.0
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
   permission_handler: ^11.3.0
   connectivity_plus: ^6.0.3
   uuid: ^4.2.1
@@ -29,6 +30,14 @@ dependencies:
 
 flutter:
   uses-material-design: true
+  # TODO: Pretendard Variable local bundle planned in a follow-up PR.
+  # Will register under `fonts:` as `family: Pretendard` with the
+  # variable font asset from orioncactus/pretendard (v1.3.9+). Until
+  # then, ZeomType._pretendard() resolves to GoogleFonts.notoSans().
+  # fonts:
+  #   - family: Pretendard
+  #     fonts:
+  #       - asset: assets/fonts/PretendardVariable.ttf
 dev_dependencies:
   integration_test:
     sdk: flutter

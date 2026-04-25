@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS booking_slots (
   CONSTRAINT fk_bs_booking FOREIGN KEY (booking_id) REFERENCES bookings(id),
   CONSTRAINT fk_bs_slot FOREIGN KEY (slot_id) REFERENCES counselor_slots(id)
 );
-CREATE INDEX IF NOT EXISTS idx_booking_slots_booking ON booking_slots(booking_id);
+CREATE INDEX idx_booking_slots_booking ON booking_slots(booking_id);
 
--- Make slot_id nullable in bookings for multi-slot support (H2 compatible)
-ALTER TABLE bookings ALTER COLUMN slot_id BIGINT NULL;
+-- Make slot_id nullable in bookings for multi-slot support
+ALTER TABLE bookings MODIFY COLUMN slot_id BIGINT NULL;

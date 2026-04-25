@@ -1,373 +1,180 @@
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_filex/open_filex.dart';
-import '../../core/api_client.dart';
+
+import '../../shared/providers/wallet_provider.dart';
 import '../../shared/theme.dart';
+import '../../shared/typography.dart';
+import '../../shared/widgets/zeom_button.dart';
+import '../../shared/widgets/zeom_hero_card.dart';
 
-final walletProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.getWallet();
-  return response.data as Map<String, dynamic>;
-});
-
-final creditBalanceProvider =
-    FutureProvider<Map<String, dynamic>>((ref) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.getCreditBalance();
-  return response.data as Map<String, dynamic>;
-});
-
-final transactionsProvider =
-    FutureProvider<Map<String, dynamic>>((ref) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.getWalletTransactions();
-  return response.data as Map<String, dynamic>;
-});
-
-String _formatCurrency(dynamic value) {
-  final number = (value is int) ? value : (value as num).toInt();
-  return number.toString().replaceAllMapped(
-    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-    (Match m) => '${m[1]},',
-  );
-}
-
+/// S14 지갑 — tab root rendered inside [MainScreen].
+///
+/// Per MOBILE_DESIGN_PLAN.md §3.14:
+/// * Hero card with lotus mandala (top-right) surfacing cash balance
+/// * Dual CTAs — gold 충전 → `/wallet/cash-buy`, dark outline 환불 요청 →
+///   `/refund/request`
+/// * Grouped transaction history seeded locally (today / yesterday /
+///   YYYY-MM-DD buckets)
+///
+/// Renders as a plain [Column] + [SingleChildScrollView] (no local
+/// [Scaffold]) because [MainScreen] already owns the scaffold.
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final walletAsync = ref.watch(walletProvider);
-    final creditAsync = ref.watch(creditBalanceProvider);
-    final transactionsAsync = ref.watch(transactionsProvider);
+    final int balance = ref.watch(walletProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('내 지갑'),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 90),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 16),
+            child: _Header(),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _WalletHeroCard(balance: balance),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+            child: _TransactionsSection(),
+          ),
+        ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(walletProvider);
-          ref.invalidate(creditBalanceProvider);
-          ref.invalidate(transactionsProvider);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------
+// Header
+// ---------------------------------------------------------------------
+
+class _Header extends StatelessWidget {
+  const _Header();
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '지갑',
+      style: ZeomType.pageTitle.copyWith(color: AppColors.ink),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------
+// Hero card (balance + CTAs)
+// ---------------------------------------------------------------------
+
+class _WalletHeroCard extends StatelessWidget {
+  const _WalletHeroCard({required this.balance});
+
+  final int balance;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isEmpty = balance == 0;
+
+    return ZeomHeroCard(
+      mandalaSize: 200,
+      mandalaPosition: Alignment.topRight,
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '보유 캐시',
+            style: ZeomType.micro.copyWith(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 1.0,
+              color: AppColors.hanji.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              // Balance card - dark gradient matching React
-              walletAsync.when(
-                data: (wallet) {
-                  final balance =
-                      wallet['balanceCash'] ?? wallet['balance'] ?? 0;
-                  return Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 32,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.inkBlack,
-                          AppColors.inkBlack.withOpacity(0.85),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: AppColors.gold.withOpacity(0.1),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          '현재 잔액',
-                          style: GoogleFonts.notoSerif(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.gold,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          '${_formatCurrency(balance)}원',
-                          style: GoogleFonts.notoSerif(
-                            fontSize: 36,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.gold,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: () => context.push('/wallet/cash-buy'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.gold,
-                              foregroundColor: AppColors.inkBlack,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              '충전하기',
-                              style: GoogleFonts.notoSerif(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                loading: () => Container(
-                  height: 200,
-                  margin: const EdgeInsets.all(16),
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-                error: (err, stack) => Container(
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.error_outline,
-                          color: AppColors.error, size: 40),
-                      const SizedBox(height: 8),
-                      const Text('잔액을 불러올 수 없습니다'),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () => ref.invalidate(walletProvider),
-                        child: const Text('다시 시도'),
-                      ),
-                    ],
-                  ),
+              Text(
+                _formatCash(balance),
+                style: ZeomType.displayLg.copyWith(
+                  color: AppColors.gold,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: kTabularNums,
                 ),
               ),
-
-              // Credit balance card
-              creditAsync.when(
-                data: (credit) {
-                  final remaining = credit['remainingUnits'] ?? credit['remaining'] ?? 0;
-                  final used = credit['usedUnits'] ?? credit['used'] ?? 0;
-                  return Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: AppColors.gold.withOpacity(0.4),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.gold.withOpacity(0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: AppColors.gold.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              child: const Icon(
-                                Icons.confirmation_number,
-                                color: AppColors.gold,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                '보유 상담권: $remaining회',
-                                style: GoogleFonts.notoSerif(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if ((used as num) > 0) ...[
-                          const SizedBox(height: 4),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 48),
-                              child: Text(
-                                '($used회 사용됨)',
-                                style: GoogleFonts.notoSans(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 44,
-                          child: OutlinedButton(
-                            onPressed: () =>
-                                context.push('/credits/buy'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.gold,
-                              side: const BorderSide(
-                                color: AppColors.gold,
-                                width: 1.5,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(22),
-                              ),
-                            ),
-                            child: Text(
-                              '상담권 구매',
-                              style: GoogleFonts.notoSerif(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                loading: () => Container(
-                  height: 100,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-                error: (err, stack) => const SizedBox.shrink(),
-              ),
-              const SizedBox(height: 20),
-
-              // Transaction history header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  '거래 내역',
-                  style: GoogleFonts.notoSerif(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+              const SizedBox(width: 6),
+              Text(
+                '캐시',
+                style: ZeomType.body.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.hanji,
                 ),
               ),
-              const SizedBox(height: 12),
-
-              transactionsAsync.when(
-                data: (data) {
-                  final transactions =
-                      List<Map<String, dynamic>>.from(data['content'] ?? []);
-
-                  if (transactions.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.all(40),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.receipt_long,
-                              size: 48,
-                              color:
-                                  AppColors.textSecondary.withOpacity(0.5),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              '거래 내역이 없습니다',
-                              style: GoogleFonts.notoSerif(
-                                fontSize: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '지갑을 충전하여 상담 서비스를 이용해보세요',
-                              style: GoogleFonts.notoSans(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: transactions.length,
-                    itemBuilder: (context, index) {
-                      final tx = transactions[index];
-                      return _TransactionItem(transaction: tx);
-                    },
-                  );
-                },
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (err, stack) => Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        const Text('거래 내역을 불러올 수 없습니다'),
-                        const SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: () =>
-                              ref.invalidate(transactionsProvider),
-                          child: const Text('다시 시도'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
             ],
+          ),
+          if (isEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              '지금 충전해보세요',
+              style: ZeomType.meta.copyWith(
+                color: AppColors.hanji.withOpacity(0.7),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              ZeomButton(
+                label: '충전',
+                variant: ZeomButtonVariant.gold,
+                size: ZeomButtonSize.md,
+                onPressed: () => context.push('/wallet/cash-buy'),
+              ),
+              const SizedBox(width: 8),
+              _DarkOutlineButton(
+                label: '환불 요청',
+                onTap: () => context.push('/refund/request'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Dark-card secondary CTA: 10r, rgba(255,255,255,0.12) fill, hanji label.
+class _DarkOutlineButton extends StatelessWidget {
+  const _DarkOutlineButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color.fromRGBO(255, 255, 255, 0.12),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: ZeomType.bodyLg.copyWith(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.hanji,
+            height: 1.2,
           ),
         ),
       ),
@@ -375,211 +182,240 @@ class WalletScreen extends ConsumerWidget {
   }
 }
 
-class _TransactionItem extends ConsumerWidget {
-  final Map<String, dynamic> transaction;
+// ---------------------------------------------------------------------
+// Transactions section
+// ---------------------------------------------------------------------
 
-  const _TransactionItem({required this.transaction});
+/// Local seed of transactions for this iteration. Tuple shape:
+/// (groupKey, sign, amount, description, icon, isIncomeBadge)
+///
+/// `isIncomeBadge` governs both the icon tint (jade vs ink2) and the
+/// right-side amount color (jade vs ink). A refund counts as income.
+class _SeedTx {
+  final String group;
+  final String sign;
+  final int amount;
+  final String desc;
+  final IconData icon;
+  final bool isIncome;
 
-  String _getTypeLabel(String type) {
-    switch (type) {
-      case 'CHARGE':
-        return '충전';
-      case 'CONFIRM':
-      case 'USE':
-        return '사용';
-      case 'REFUND':
-        return '환불';
-      default:
-        return type;
-    }
-  }
+  const _SeedTx(
+    this.group,
+    this.sign,
+    this.amount,
+    this.desc,
+    this.icon,
+    this.isIncome,
+  );
+}
 
-  /// Transaction type colors matching React:
-  /// CHARGE = green (success), USE/CONFIRM = red (danger), REFUND = gold
-  Color _getTypeColor(String type) {
-    switch (type) {
-      case 'CHARGE':
-        return AppColors.success;
-      case 'CONFIRM':
-      case 'USE':
-        return AppColors.darkRed;
-      case 'REFUND':
-        return AppColors.gold;
-      default:
-        return AppColors.textSecondary;
-    }
-  }
+const List<_SeedTx> _kSeedTx = <_SeedTx>[
+  _SeedTx('today', '-', 60000, '지혜 상담사 · 60분 예약', Icons.remove, false),
+  _SeedTx('today', '+', 60000, '캐시 충전', Icons.add, true),
+  _SeedTx('yesterday', '+', 1000, '후기 감사 캐시', Icons.add, true),
+  _SeedTx('2026-04-17', '-', 50000, '성주 상담사 · 60분 예약', Icons.remove, false),
+  _SeedTx('2026-04-17', '+', 100000, '캐시 충전 · 2회 패키지', Icons.add, true),
+  _SeedTx('2026-04-15', '-', 30000, '미사용 환불 처리', Icons.replay, true),
+];
 
-  IconData _getTypeIcon(String type) {
-    switch (type) {
-      case 'CHARGE':
-        return Icons.add_circle;
-      case 'CONFIRM':
-      case 'USE':
-        return Icons.remove_circle;
-      case 'REFUND':
-        return Icons.replay_circle_filled;
-      default:
-        return Icons.circle;
-    }
-  }
-
-  Future<void> _downloadReceipt(BuildContext context, WidgetRef ref, int txId) async {
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.getTransactionReceiptPdf(txId);
-      final bytes = Uint8List.fromList(response.data!);
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/receipt_$txId.pdf');
-      await file.writeAsBytes(bytes);
-      await OpenFilex.open(file.path);
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('영수증을 다운로드할 수 없습니다')),
-        );
-      }
-    }
-  }
+class _TransactionsSection extends StatelessWidget {
+  const _TransactionsSection();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final type = (transaction['type'] ?? '') as String;
-    final amount = transaction['amount'] ?? 0;
-    final balanceAfter = transaction['balanceAfter'];
-    final refType = transaction['refType'];
-    final refId = transaction['refId'];
-    final txId = transaction['id'];
-    final createdAt = transaction['createdAt']?.toString();
-    final isPositive = type == 'CHARGE' || type == 'REFUND';
-    final color = _getTypeColor(type);
-
-    String dateStr = '';
-    if (createdAt != null) {
-      try {
-        final dt = DateTime.parse(createdAt);
-        dateStr =
-            '${dt.year}.${dt.month.toString().padLeft(2, '0')}.${dt.day.toString().padLeft(2, '0')} '
-            '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-      } catch (_) {
-        dateStr = createdAt;
-      }
+  Widget build(BuildContext context) {
+    if (_kSeedTx.isEmpty) {
+      return const _EmptyState();
     }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
+    // Preserve the seed order while grouping by the first tuple element.
+    final List<String> groupOrder = <String>[];
+    final Map<String, List<_SeedTx>> grouped = <String, List<_SeedTx>>{};
+    for (final _SeedTx tx in _kSeedTx) {
+      if (!grouped.containsKey(tx.group)) {
+        groupOrder.add(tx.group);
+        grouped[tx.group] = <_SeedTx>[];
+      }
+      grouped[tx.group]!.add(tx);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
+            Text(
+              '거래 내역',
+              style: ZeomType.section.copyWith(color: AppColors.ink),
+            ),
+            const Spacer(),
+            TextButton(
+              onPressed: null,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 0),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                foregroundColor: AppColors.ink3,
+                disabledForegroundColor: AppColors.ink3,
               ),
-              child: Icon(
-                _getTypeIcon(type),
-                color: color,
-                size: 22,
+              child: Text(
+                '전체 보기 ›',
+                style: ZeomType.meta.copyWith(color: AppColors.ink3),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          _getTypeLabel(type),
-                          style: GoogleFonts.notoSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: color,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (refType != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '$refType${refId != null ? ' #$refId' : ''}',
-                      style: GoogleFonts.notoSans(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 4),
-                  Text(
-                    dateStr,
-                    style: GoogleFonts.notoSans(
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${isPositive ? '+' : '-'}${_formatCurrency((amount as num).abs())}원',
-                  style: GoogleFonts.notoSerif(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        for (final String key in groupOrder) ...[
+          _GroupHeader(label: _groupLabel(key)),
+          Column(
+            children: <Widget>[
+              for (final _SeedTx tx in grouped[key]!)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _TxRow(tx: tx),
                 ),
-                if (balanceAfter != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    '잔액: ${_formatCurrency(balanceAfter)}원',
-                    style: GoogleFonts.notoSans(
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-                if (txId != null) ...[
-                  const SizedBox(height: 4),
-                  GestureDetector(
-                    onTap: () => _downloadReceipt(context, ref, txId as int),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.receipt_outlined, size: 12, color: AppColors.gold),
-                        const SizedBox(width: 2),
-                        Text(
-                          '영수증',
-                          style: GoogleFonts.notoSans(
-                            fontSize: 11,
-                            color: AppColors.gold,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  static String _groupLabel(String key) {
+    switch (key) {
+      case 'today':
+        return '오늘';
+      case 'yesterday':
+        return '어제';
+      default:
+        return key;
+    }
+  }
+}
+
+class _GroupHeader extends StatelessWidget {
+  const _GroupHeader({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Text(
+        label,
+        style: ZeomType.micro.copyWith(
+          color: AppColors.ink3,
+          letterSpacing: 1.0,
+        ),
+      ),
+    );
+  }
+}
+
+class _TxRow extends StatelessWidget {
+  const _TxRow({required this.tx});
+
+  final _SeedTx tx;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bubbleBg =
+        tx.isIncome ? AppColors.goldBg : AppColors.hanjiDeep;
+    final Color iconColor =
+        tx.isIncome ? AppColors.jadeSuccess : AppColors.ink2;
+    final Color amountColor =
+        tx.isIncome ? AppColors.jadeSuccess : AppColors.ink;
+    final String amountPrefix = tx.isIncome ? '+' : '-';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft, width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: bubbleBg,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            alignment: Alignment.center,
+            child: Icon(tx.icon, size: 16, color: iconColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              tx.desc,
+              style: ZeomType.body.copyWith(
+                color: AppColors.ink,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$amountPrefix${_formatCash(tx.amount)}',
+            style: ZeomType.tabularNums(
+              base: ZeomType.cardTitle.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: amountColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 60),
+      child: Center(
+        child: Column(
+          children: [
+            const Text('🪷', style: TextStyle(fontSize: 32)),
+            const SizedBox(height: 12),
+            Text(
+              '아직 거래 내역이 없어요',
+              style: ZeomType.body.copyWith(color: AppColors.ink3),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
       ),
     );
   }
+}
+
+// ---------------------------------------------------------------------
+// Utilities
+// ---------------------------------------------------------------------
+
+/// Formats a cash balance with thousands separators (no "원" suffix —
+/// callers append the unit label themselves).
+String _formatCash(int value) {
+  final int abs = value < 0 ? -value : value;
+  final String digits = abs.toString();
+  final StringBuffer buf = StringBuffer();
+  for (int i = 0; i < digits.length; i++) {
+    final int remaining = digits.length - i;
+    buf.write(digits[i]);
+    if (remaining > 1 && remaining % 3 == 1) {
+      buf.write(',');
+    }
+  }
+  return value < 0 ? '-$buf' : buf.toString();
 }

@@ -1,10 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../core/api_client.dart';
-import '../../shared/theme.dart';
 
+import '../../shared/animations/zeom_animations.dart';
+import '../../shared/providers/active_session_provider.dart';
+import '../../shared/providers/bookings_provider.dart';
+import '../../shared/providers/wallet_provider.dart';
+import '../../shared/theme.dart';
+import '../../shared/typography.dart';
+import '../../shared/widgets/zeom_app_bar.dart';
+import '../../shared/widgets/zeom_avatar.dart';
+import '../../shared/widgets/zeom_button.dart';
+import '../../shared/widgets/zeom_chip.dart';
+import '../../shared/widgets/zeom_star_rating.dart';
+
+/// S11 — 후기 작성 (MOBILE_DESIGN_PLAN.md §3.11)
+///
+/// Form consists of four cards: session meta, rating, tag Wrap, free-form
+/// review. A sticky gold CTA at the bottom surfaces the incentive copy
+/// ("후기 등록 · +1,000캐시"). On submit, we credit the wallet, mark the
+/// booking reviewed, fade into a "고맙습니다" success screen, then auto-
+/// route to `/bookings` after 1.5s.
 class ReviewScreen extends ConsumerStatefulWidget {
   final int bookingId;
   final int? counselorId;
@@ -19,473 +37,179 @@ class ReviewScreen extends ConsumerStatefulWidget {
   ConsumerState<ReviewScreen> createState() => _ReviewScreenState();
 }
 
-class _ReviewScreenState extends ConsumerState<ReviewScreen>
-    with SingleTickerProviderStateMixin {
-  int _rating = 5;
-  final _commentController = TextEditingController();
-  bool _isLoading = false;
-  bool _submitted = false;
-  Map<String, dynamic>? _reservation;
-  String? _loadError;
+class _ReviewScreenState extends ConsumerState<ReviewScreen> {
+  static const List<String> _tagOptions = <String>[
+    '차분해요',
+    '현실적이에요',
+    '깊이 있어요',
+    '공감 잘해요',
+    '명쾌해요',
+    '따뜻해요',
+  ];
 
-  late AnimationController _successAnimController;
-  late Animation<double> _successScaleAnim;
+  int _rating = 0;
+  final Set<String> _tags = <String>{};
+  String _text = '';
+  bool _submitting = false;
+  bool _submitted = false;
+  Timer? _redirectTimer;
+  final TextEditingController _textController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _successAnimController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _successScaleAnim = CurvedAnimation(
-      parent: _successAnimController,
-      curve: Curves.elasticOut,
-    );
-    _loadReservation();
+    _textController.addListener(() {
+      if (_text != _textController.text) {
+        setState(() => _text = _textController.text);
+      }
+    });
   }
 
   @override
   void dispose() {
-    _commentController.dispose();
-    _successAnimController.dispose();
+    _redirectTimer?.cancel();
+    _textController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadReservation() async {
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.dio.get(
-        '/api/v1/reservations/${widget.bookingId}',
-      );
-      if (mounted) {
-        setState(() {
-          _reservation = response.data as Map<String, dynamic>;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loadError = '예약 정보를 불러오는 중 오류가 발생했습니다.';
-        });
-      }
-    }
-  }
+  Future<void> _submit() async {
+    setState(() => _submitting = true);
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
+    if (!mounted) return;
 
-  Future<void> _submitReview() async {
-    if (_commentController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('리뷰 내용을 입력해주세요')),
-      );
-      return;
+    ref.read(walletProvider.notifier).credit(1000);
+    final session = ref.read(activeSessionProvider);
+    if (session != null) {
+      ref.read(bookingsProvider.notifier).markReviewed(session.booking.id);
     }
 
     setState(() {
-      _isLoading = true;
+      _submitting = false;
+      _submitted = true;
     });
 
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      await apiClient.dio.post(
-        '/api/v1/reservations/${widget.bookingId}/reviews',
-        data: {
-          'rating': _rating,
-          'comment': _commentController.text.trim(),
-        },
-      );
-
-      if (mounted) {
-        setState(() {
-          _submitted = true;
-        });
-        _successAnimController.forward();
-
-        // Redirect after 2 seconds (matches React behavior)
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            context.go('/home');
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('리뷰 등록 실패: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  String _formatDateTime(String? isoString) {
-    if (isoString == null) return '';
-    try {
-      final dt = DateTime.parse(isoString);
-      return '${dt.year}년 ${dt.month}월 ${dt.day}일 '
-          '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return isoString;
-    }
+    _redirectTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+      ref.read(activeSessionProvider.notifier).clear();
+      context.go('/bookings');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Success state with animation
     if (_submitted) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('상담 후기')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Container(
-              padding: const EdgeInsets.all(40),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.inkBlack,
-                    AppColors.inkBlack.withOpacity(0.85),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppColors.gold.withOpacity(0.15),
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ScaleTransition(
-                    scale: _successScaleAnim,
-                    child: Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(36),
-                      ),
-                      child: const Icon(
-                        Icons.check_circle,
-                        size: 48,
-                        color: AppColors.success,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    '리뷰가 등록되었습니다',
-                    style: GoogleFonts.notoSerif(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.gold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '소중한 의견 감사합니다.\n잠시 후 홈 페이지로 이동합니다.',
-                    style: GoogleFonts.notoSans(
-                      fontSize: 14,
-                      color: AppColors.hanji.withOpacity(0.6),
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
+      return _SuccessView();
     }
 
+    final session = ref.watch(activeSessionProvider);
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('상담 후기 작성')),
+      backgroundColor: AppColors.hanji,
+      appBar: const ZeomAppBar(title: '후기 작성'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_loadError != null)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.darkRed.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _loadError!,
-                  style: GoogleFonts.notoSans(
-                    fontSize: 13,
-                    color: AppColors.darkRed,
-                  ),
-                ),
-              ),
-
-            // Consultation metadata card (matches React)
-            if (_reservation != null) ...[
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: AppColors.inkBlack.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '상담 일시',
-                              style: GoogleFonts.notoSans(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _formatDateTime(
-                                  _reservation!['startAt']?.toString()),
-                              style: GoogleFonts.notoSans(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            if (_reservation!['counselorName'] != null) ...[
-                              const SizedBox(height: 10),
-                              Text(
-                                '상담사',
-                                style: GoogleFonts.notoSans(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _reservation!['counselorName'].toString(),
-                                style: GoogleFonts.notoSans(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Rating section
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              '상담은 어떠셨나요?',
-                              style: GoogleFonts.notoSerif(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(5, (index) {
-                                return IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _rating = index + 1;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    index < _rating
-                                        ? Icons.star
-                                        : Icons.star_border,
-                                    size: 44,
-                                    color: AppColors.gold,
-                                  ),
-                                );
-                              }),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _getRatingText(_rating),
-                              style: GoogleFonts.notoSans(
-                                fontSize: 15,
-                                color: AppColors.gold,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-
-                      // Comment section
-                      Text(
-                        '상세 리뷰',
-                        style: GoogleFonts.notoSerif(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _commentController,
-                        maxLines: 8,
-                        maxLength: 2000,
-                        decoration: const InputDecoration(
-                          hintText: '상담에 대한 의견을 자유롭게 작성해주세요',
-                          alignLabelWithHint: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ] else if (_loadError == null) ...[
-              // Loading state
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(height: 12),
-                        Text(
-                          '예약 정보를 불러오는 중...',
-                          style: GoogleFonts.notoSans(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ] else ...[
-              // Error state but still show the form
-              Center(
-                child: Column(
-                  children: [
-                    Text(
-                      '상담은 어떠셨나요?',
-                      style: GoogleFonts.notoSerif(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (index) {
-                        return IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _rating = index + 1;
-                            });
-                          },
-                          icon: Icon(
-                            index < _rating ? Icons.star : Icons.star_border,
-                            size: 44,
-                            color: AppColors.gold,
-                          ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _getRatingText(_rating),
-                      style: GoogleFonts.notoSans(
-                        fontSize: 15,
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                '상세 리뷰',
-                style: GoogleFonts.notoSerif(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _commentController,
-                maxLines: 8,
-                maxLength: 2000,
-                decoration: const InputDecoration(
-                  hintText: '상담에 대한 의견을 자유롭게 작성해주세요',
-                  alignLabelWithHint: true,
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // Submit button
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _submitReview,
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text('리뷰 등록'),
-              ),
+            if (session != null) _SessionHeaderCard(session: session),
+            if (session != null) const SizedBox(height: 16),
+            _RatingCard(
+              rating: _rating,
+              onChanged: (v) => setState(() => _rating = v),
             ),
             const SizedBox(height: 12),
+            _TagsCard(
+              options: _tagOptions,
+              selected: _tags,
+              onToggle: (t) {
+                setState(() {
+                  if (_tags.contains(t)) {
+                    _tags.remove(t);
+                  } else {
+                    _tags.add(t);
+                  }
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            _TextReviewCard(
+              controller: _textController,
+              length: _text.length,
+            ),
+          ],
+        ),
+      ),
+      bottomSheet: Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(20, 14, 20, safeBottom + 14),
+        decoration: const BoxDecoration(
+          color: AppColors.hanji,
+          border: Border(
+            top: BorderSide(color: AppColors.borderSoft, width: 1),
+          ),
+        ),
+        child: ZeomButton(
+          label: _ctaLabel(),
+          variant: _rating > 0
+              ? ZeomButtonVariant.primary
+              : ZeomButtonVariant.ghost,
+          size: ZeomButtonSize.md,
+          width: double.infinity,
+          loading: _submitting,
+          onPressed: _rating > 0 && !_submitting ? _submit : null,
+        ),
+      ),
+    );
+  }
 
-            // Skip button
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: OutlinedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () => context.go('/home'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.gold,
-                  side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
-                ),
-                child: Text(
-                  '나중에 작성하기',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 14,
-                    color: AppColors.gold,
+  String _ctaLabel() {
+    if (_rating == 0) return '별점을 선택해주세요';
+    if (_submitting) return '등록 중\u2026';
+    return '후기 등록 · +1,000캐시';
+  }
+}
+
+/// Top session meta card — avatar + counselor name + formatted date.
+class _SessionHeaderCard extends StatelessWidget {
+  final ActiveSession session;
+
+  const _SessionHeaderCard({required this.session});
+
+  @override
+  Widget build(BuildContext context) {
+    final booking = session.booking;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ZeomAvatar(initials: booking.counselorInitials, size: 44),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    booking.counselorName,
+                    style: ZeomType.cardTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatDate(booking.when),
+                    style: ZeomType.meta.copyWith(color: AppColors.ink3),
+                  ),
+                ],
               ),
             ),
           ],
@@ -494,20 +218,263 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen>
     );
   }
 
-  String _getRatingText(int rating) {
+  String _formatDate(DateTime when) {
+    final month = when.month.toString().padLeft(2, '0');
+    final day = when.day.toString().padLeft(2, '0');
+    final hour = when.hour.toString().padLeft(2, '0');
+    final minute = when.minute.toString().padLeft(2, '0');
+    return '${when.year}.$month.$day $hour:$minute';
+  }
+}
+
+/// Rating card — interactive [ZeomStarRating] + tier-label feedback.
+class _RatingCard extends StatelessWidget {
+  final int rating;
+  final ValueChanged<int> onChanged;
+
+  const _RatingCard({required this.rating, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('상담은 어떠셨나요?', style: ZeomType.cardTitle),
+          const SizedBox(height: 16),
+          Center(
+            child: ZeomStarRating(
+              value: rating.toDouble(),
+              size: 36,
+              interactive: true,
+              onChanged: onChanged,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: Text(
+              _label(rating),
+              style: ZeomType.meta.copyWith(color: AppColors.ink3),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _label(int rating) {
     switch (rating) {
-      case 5:
-        return '매우 만족';
-      case 4:
-        return '만족';
-      case 3:
-        return '보통';
-      case 2:
-        return '불만족';
       case 1:
-        return '매우 불만족';
+        return '아쉬웠어요';
+      case 2:
+        return '보통이에요';
+      case 3:
+        return '괜찮아요';
+      case 4:
+        return '좋았어요';
+      case 5:
+        return '완벽했어요';
       default:
-        return '';
+        return '별점을 선택해주세요';
     }
+  }
+}
+
+/// Tag card — 6 toggleable category chips laid out in a Wrap.
+class _TagsCard extends StatelessWidget {
+  final List<String> options;
+  final Set<String> selected;
+  final ValueChanged<String> onToggle;
+
+  const _TagsCard({
+    required this.options,
+    required this.selected,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('어떤 점이 좋았나요?', style: ZeomType.cardTitle),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final t in options)
+                ZeomChip(
+                  label: t,
+                  variant: ZeomChipVariant.category,
+                  active: selected.contains(t),
+                  onTap: () => onToggle(t),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Freeform text review card with inline counter.
+class _TextReviewCard extends StatelessWidget {
+  final TextEditingController controller;
+  final int length;
+
+  const _TextReviewCard({required this.controller, required this.length});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text('자세한 후기', style: ZeomType.cardTitle),
+              const SizedBox(width: 6),
+              Text(
+                '(선택)',
+                style: ZeomType.meta.copyWith(color: AppColors.ink3),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: controller,
+            minLines: 5,
+            maxLines: 5,
+            maxLength: 500,
+            style: ZeomType.body,
+            buildCounter: (
+              BuildContext context, {
+              required int currentLength,
+              required bool isFocused,
+              int? maxLength,
+            }) =>
+                null,
+            decoration: InputDecoration(
+              hintText: '상담 과정에서 좋았던 부분, 아쉬웠던 부분을 남겨주세요',
+              hintStyle: ZeomType.body.copyWith(color: AppColors.ink4),
+              filled: true,
+              fillColor: AppColors.hanji,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    const BorderSide(color: AppColors.borderSoft, width: 1),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    const BorderSide(color: AppColors.borderSoft, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    const BorderSide(color: AppColors.ink, width: 1.5),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              '$length/500',
+              style: ZeomType.micro.copyWith(color: AppColors.ink3),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-screen success view rendered after `_submitted = true`. Auto-
+/// navigates to `/bookings` after 1.5s (timer lives on the parent state).
+class _SuccessView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.hanji,
+      body: SafeArea(
+        child: ZeomFadeSlideIn(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 84,
+                    height: 84,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.goldSoft, AppColors.gold],
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      '\u{1FAB7}', // 🪷
+                      style: TextStyle(fontSize: 36, height: 1.0),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '고맙습니다',
+                    textAlign: TextAlign.center,
+                    style: ZeomType.displaySm.copyWith(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '후기 감사 캐시 +1,000 적립',
+                    textAlign: TextAlign.center,
+                    style: ZeomType.body.copyWith(color: AppColors.ink3),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '보여주신 후기는 다른 분들에게 큰 도움이 됩니다',
+                    textAlign: TextAlign.center,
+                    style: ZeomType.meta.copyWith(color: AppColors.ink3),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

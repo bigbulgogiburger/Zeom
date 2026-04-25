@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../../services/kakao_login_service.dart';
 import '../../services/naver_login_service.dart';
+import '../../shared/animations/zeom_animations.dart';
 import '../../shared/theme.dart';
+import '../../shared/typography.dart';
+import '../../shared/widgets/zeom_button.dart';
+import '../../shared/widgets/zeom_lotus_mandala.dart';
 import 'auth_provider.dart';
 
+/// S01 로그인 — MOBILE_DESIGN_PLAN.md §3.1 준수.
+///
+/// Layout: Scaffold(hanji → hanjiDeep gradient) → SafeArea → Stack
+///   ├─ Decorative ZeomLotusMandala watermark (top 60, size 280, opacity 0.08)
+///   └─ Column(spaceBetween)
+///       ├─ Top block: BrandOrb + brand title + subcopy
+///       └─ Bottom block: 3 social buttons + or-divider + phone CTA + legal
+///
+/// Auth wiring preserved from previous revision:
+///   - 카카오 / 네이버 → service SDK.login() → ref.read(authProvider.notifier)
+///       .socialLogin(provider: 'kakao'|'naver', accessToken: token)
+///   - Apple → TODO (service not implemented yet), button disabled.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -15,356 +31,409 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
-  bool _socialLoading = false;
+  /// Currently loading provider key: 'kakao' | 'naver' | 'apple' | null.
+  String? _loading;
 
   final _kakaoLoginService = KakaoLoginService();
   final _naverLoginService = NaverLoginService();
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  Future<void> _loginWith(String provider) async {
+    if (_loading != null) return;
+    setState(() => _loading = provider);
 
-  Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final success = await ref.read(authProvider.notifier).login(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
-
-    if (mounted) {
-      if (success) {
-        context.go('/home');
-      } else {
-        final error = ref.read(authProvider).error;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? '로그인에 실패했습니다'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _handleSocialLogin(String provider) async {
-    if (_socialLoading) return;
-
-    setState(() => _socialLoading = true);
+    // 의례적 대기 — 공간을 여는 900ms (§3.1 "의례적 대기")
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
 
     try {
-      String socialToken;
-      String providerKey;
-
-      if (provider == '카카오') {
-        providerKey = 'kakao';
-        socialToken = await _kakaoLoginService.login();
-      } else {
-        providerKey = 'naver';
-        socialToken = await _naverLoginService.login();
+      switch (provider) {
+        case 'kakao':
+          final token = await _kakaoLoginService.login();
+          if (!mounted) return;
+          await ref.read(authProvider.notifier).socialLogin(
+                provider: 'kakao',
+                accessToken: token,
+              );
+          break;
+        case 'naver':
+          final token = await _naverLoginService.login();
+          if (!mounted) return;
+          await ref.read(authProvider.notifier).socialLogin(
+                provider: 'naver',
+                accessToken: token,
+              );
+          break;
+        case 'apple':
+          // TODO: Apple Sign-In 미구현 — AppleLoginService 추가 후 연결.
+          throw Exception('apple-not-implemented');
       }
-
-      if (!mounted) return;
-
-      final success = await ref.read(authProvider.notifier).socialLogin(
-            provider: providerKey,
-            accessToken: socialToken,
-          );
-
-      if (mounted) {
-        if (success) {
-          context.go('/home');
-        } else {
-          final error = ref.read(authProvider).error;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(error ?? '$provider 로그인에 실패했습니다'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-      }
+      // Router redirect will navigate on authState change.
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$provider 로그인 중 오류가 발생했습니다'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+      if (!mounted) return;
+      final msg = e.toString();
+      final display = msg.toLowerCase().contains('cancel')
+          ? '취소되었습니다'
+          : '연결이 불안정합니다. 다시 시도해주세요';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(display)),
+      );
     } finally {
-      if (mounted) {
-        setState(() => _socialLoading = false);
-      }
+      if (mounted) setState(() => _loading = null);
     }
-  }
-
-  void _handleForgotPassword() {
-    // Placeholder for forgot password flow
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('비밀번호 재설정 기능은 준비 중입니다'),
-        backgroundColor: AppColors.textSecondary,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
+    final bool busy = _loading != null;
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 60),
-                // Logo/Title
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [AppColors.gold, Color(0xFFD4A843)],
-                  ).createShader(bounds),
-                  child: Text(
-                    '천지연꽃신당',
-                    style: GoogleFonts.notoSerif(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.hanji, AppColors.hanjiDeep],
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Decorative watermark behind content.
+              const Positioned(
+                top: 60,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: ZeomLotusMandala(
+                    variant: ZeomMandalaVariant.full,
+                    size: 280,
+                    opacity: 0.08,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '진심을 담은 상담',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
-                // Email field
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: '이메일',
-                    hintText: 'example@email.com',
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '이메일을 입력해주세요';
-                    }
-                    if (!value.contains('@')) {
-                      return '올바른 이메일 형식이 아닙니다';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Password field
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: '비밀번호',
-                    prefixIcon: const Icon(Icons.lock_outlined),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '비밀번호를 입력해주세요';
-                    }
-                    if (value.length < 8) {
-                      return '비밀번호는 최소 8자 이상이어야 합니다';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-                // Login button
-                ElevatedButton(
-                  onPressed: authState.isLoading ? null : _handleLogin,
-                  child: authState.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.hanji,
-                            ),
-                          ),
-                        )
-                      : const Text('로그인'),
-                ),
-                const SizedBox(height: 20),
-                // Divider "또는"
-                Row(
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: Divider(
-                        color: AppColors.border.withOpacity(0.5),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        '또는',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
+                    // ─── Top block ─────────────────────────────────────
+                    ZeomFadeSlideIn(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 100),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const _BrandOrb(),
+                            const SizedBox(height: 20),
+                            _buildBrandTitle(),
+                            const SizedBox(height: 14),
+                            Text(
+                              '마음이 복잡한 밤,\n조용히 이야기 나눌 한 분을 찾으세요.',
+                              style: ZeomType.body.copyWith(
+                                color: AppColors.ink3,
+                                height: 1.6,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: Divider(
-                        color: AppColors.border.withOpacity(0.5),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Kakao login button
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _socialLoading
-                        ? null
-                        : () => _handleSocialLogin('카카오'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFEE500),
-                      foregroundColor: const Color(0xFF191919),
-                      disabledBackgroundColor:
-                          const Color(0xFFFEE500).withOpacity(0.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _socialLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFF191919),
-                              ),
+
+                    // ─── Bottom block ──────────────────────────────────
+                    ZeomFadeSlideIn(
+                      delay: const Duration(milliseconds: 120),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 32),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _SocialButton(
+                              kind: _SocialKind.kakao,
+                              loading: _loading == 'kakao',
+                              ignoreTaps: busy && _loading != 'kakao',
+                              onTap: () => _loginWith('kakao'),
                             ),
-                          )
-                        : Text(
-                            '카카오로 로그인',
-                            style: GoogleFonts.notoSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                            const SizedBox(height: 10),
+                            _SocialButton(
+                              kind: _SocialKind.naver,
+                              loading: _loading == 'naver',
+                              ignoreTaps: busy && _loading != 'naver',
+                              onTap: () => _loginWith('naver'),
                             ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // Naver login button
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _socialLoading
-                        ? null
-                        : () => _handleSocialLogin('네이버'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF03C75A),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor:
-                          const Color(0xFF03C75A).withOpacity(0.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _socialLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
+                            const SizedBox(height: 10),
+                            // Apple: 미구현. 스펙 지시에 따라 disable + TODO 주석.
+                            _SocialButton(
+                              kind: _SocialKind.apple,
+                              loading: false,
+                              ignoreTaps: true,
+                              dimmed: true,
+                              onTap: null,
                             ),
-                          )
-                        : Text(
-                            '네이버로 로그인',
-                            style: GoogleFonts.notoSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // Forgot password
-                Center(
-                  child: TextButton(
-                    onPressed: _handleForgotPassword,
-                    child: Text(
-                      '비밀번호를 잊으셨나요?',
-                      style: GoogleFonts.notoSans(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // Sign up link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '계정이 없으신가요?',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    TextButton(
-                      onPressed: () => context.push('/signup'),
-                      child: Text(
-                        '회원가입',
-                        style:
-                            Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.gold,
-                                  fontWeight: FontWeight.w600,
+                            const SizedBox(height: 18),
+                            const _OrDivider(),
+                            const SizedBox(height: 18),
+                            IgnorePointer(
+                              ignoring: busy,
+                              child: Opacity(
+                                opacity: busy ? 0.4 : 1.0,
+                                child: ZeomButton(
+                                  label: '휴대폰 번호로 시작',
+                                  variant: ZeomButtonVariant.outline,
+                                  size: ZeomButtonSize.md,
+                                  width: double.infinity,
+                                  onPressed: () => context.push('/signup'),
                                 ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              '만 19세 이상만 이용 가능합니다\n로그인 시 이용약관 및 개인정보 처리방침에 동의한 것으로 간주됩니다.',
+                              style: ZeomType.meta.copyWith(
+                                fontSize: 11,
+                                color: AppColors.ink3,
+                                height: 1.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "천지연꽃신당" — 가운데 "꽃" 글자 gold 강조.
+  Widget _buildBrandTitle() {
+    final base = ZeomType.display.copyWith(
+      color: AppColors.ink,
+      letterSpacing: -0.5,
+    );
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: base,
+        children: [
+          const TextSpan(text: '천지연'),
+          TextSpan(
+            text: '꽃',
+            style: base.copyWith(color: AppColors.gold),
+          ),
+          const TextSpan(text: '신당'),
+        ],
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// Brand orb — 72×72 gold radial gradient with "꽃" glyph.
+// =====================================================================
+
+class _BrandOrb extends StatelessWidget {
+  const _BrandOrb();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const RadialGradient(
+          colors: [AppColors.goldSoft, AppColors.gold],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.gold.withOpacity(0.4),
+            offset: const Offset(0, 8),
+            blurRadius: 24,
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        '꽃',
+        style: ZeomType.display.copyWith(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          color: AppColors.hanji,
+          height: 1.0,
+        ),
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// OrDivider — thin borderSoft rules flanking "또는".
+// =====================================================================
+
+class _OrDivider extends StatelessWidget {
+  const _OrDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(
+          child: Divider(height: 1, thickness: 1, color: AppColors.borderSoft),
+        ),
+        const SizedBox(width: 16),
+        Text(
+          '또는',
+          style: ZeomType.meta.copyWith(color: AppColors.ink3),
+        ),
+        const SizedBox(width: 16),
+        const Expanded(
+          child: Divider(height: 1, thickness: 1, color: AppColors.borderSoft),
+        ),
+      ],
+    );
+  }
+}
+
+// =====================================================================
+// Social buttons — brand-coloured, custom (not ZeomButton).
+// =====================================================================
+
+enum _SocialKind { kakao, naver, apple }
+
+class _SocialButton extends StatelessWidget {
+  const _SocialButton({
+    required this.kind,
+    required this.loading,
+    required this.ignoreTaps,
+    required this.onTap,
+    this.dimmed = false,
+  });
+
+  final _SocialKind kind;
+  final bool loading;
+  final bool ignoreTaps;
+  final bool dimmed;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = _paletteFor(kind);
+    final double opacity = (ignoreTaps || dimmed) ? 0.4 : 1.0;
+
+    final Widget label = Text(
+      palette.label,
+      style: ZeomType.bodyLg.copyWith(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: palette.fg,
+        height: 1.2,
+      ),
+    );
+
+    final Widget child = loading
+        ? SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(palette.fg),
+            ),
+          )
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildIcon(palette),
+              const SizedBox(width: 8),
+              label,
+            ],
+          );
+
+    final bool tappable = onTap != null && !ignoreTaps && !loading && !dimmed;
+
+    return IgnorePointer(
+      ignoring: ignoreTaps || !tappable,
+      child: Opacity(
+        opacity: opacity,
+        child: Material(
+          color: palette.bg,
+          borderRadius: BorderRadius.circular(10),
+          child: InkWell(
+            onTap: tappable ? onTap : null,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              height: 52,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: child,
             ),
           ),
         ),
       ),
     );
   }
+
+  Widget _buildIcon(_SocialPalette p) {
+    switch (kind) {
+      case _SocialKind.kakao:
+        // 말풍선 이모지(대체 아이콘)
+        return Text(
+          '\u{1F4AC}',
+          style: TextStyle(fontSize: 16, color: p.fg, height: 1.0),
+        );
+      case _SocialKind.naver:
+        return Text(
+          'N',
+          style: ZeomType.bodyLg.copyWith(
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            color: p.fg,
+            height: 1.0,
+          ),
+        );
+      case _SocialKind.apple:
+        return Icon(Icons.apple, size: 18, color: p.fg);
+    }
+  }
+
+  _SocialPalette _paletteFor(_SocialKind k) {
+    switch (k) {
+      case _SocialKind.kakao:
+        return const _SocialPalette(
+          bg: Color(0xFFFEE500),
+          fg: AppColors.ink,
+          label: '카카오로 시작하기',
+        );
+      case _SocialKind.naver:
+        return const _SocialPalette(
+          bg: Color(0xFF03C75A),
+          fg: AppColors.hanji,
+          label: '네이버로 시작하기',
+        );
+      case _SocialKind.apple:
+        return const _SocialPalette(
+          bg: AppColors.ink,
+          fg: AppColors.hanji,
+          label: 'Apple로 시작하기',
+        );
+    }
+  }
+}
+
+class _SocialPalette {
+  final Color bg;
+  final Color fg;
+  final String label;
+  const _SocialPalette({
+    required this.bg,
+    required this.fg,
+    required this.label,
+  });
 }

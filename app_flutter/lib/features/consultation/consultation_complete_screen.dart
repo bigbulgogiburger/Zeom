@@ -1,67 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../core/api_client.dart';
+
+import '../../shared/animations/zeom_animations.dart';
+import '../../shared/providers/active_session_provider.dart';
+import '../../shared/providers/bookings_provider.dart';
 import '../../shared/theme.dart';
+import '../../shared/typography.dart';
+import '../../shared/widgets/zeom_avatar.dart';
+import '../../shared/widgets/zeom_button.dart';
 
-final settlementProvider =
-    FutureProvider.family<Map<String, dynamic>?, int>((ref, sessionId) async {
-  final apiClient = ref.read(apiClientProvider);
-  try {
-    final response = await apiClient.getSettlementBySession(sessionId);
-    return response.data as Map<String, dynamic>;
-  } catch (_) {
-    return null;
-  }
-});
-
-final sessionDataProvider =
-    FutureProvider.family<Map<String, dynamic>?, int>((ref, sessionId) async {
-  final apiClient = ref.read(apiClientProvider);
-  try {
-    final response = await apiClient.dio.get('/api/v1/sessions/$sessionId');
-    return response.data as Map<String, dynamic>;
-  } catch (_) {
-    return null;
-  }
-});
-
-String _formatDuration(int seconds) {
-  final mins = seconds ~/ 60;
-  final secs = seconds % 60;
-  if (mins == 0) return '$secs초';
-  return secs > 0 ? '$mins분 $secs초' : '$mins분';
-}
-
-String _formatDateTime(String? isoString) {
-  if (isoString == null) return '';
-  try {
-    final dt = DateTime.parse(isoString);
-    return '${dt.year}년 ${dt.month}월 ${dt.day}일 '
-        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  } catch (_) {
-    return isoString;
-  }
-}
-
-String _getEndReasonLabel(String? reason) {
-  switch (reason) {
-    case 'COMPLETED':
-      return '정상 종료';
-    case 'TIMEOUT':
-      return '시간 만료';
-    case 'CLIENT_DISCONNECT':
-      return '고객 연결 해제';
-    case 'COUNSELOR_DISCONNECT':
-      return '상담사 연결 해제';
-    case 'ERROR':
-      return '오류 발생';
-    default:
-      return reason ?? '종료';
-  }
-}
-
+/// S10 — 상담 완료 (MOBILE_DESIGN_PLAN.md §3.10)
+///
+/// Scaffold `hanji` bg, no AppBar. Back gesture is explicitly blocked with
+/// `PopScope(canPop: false)` per spec (상담 후 되돌아가기 방지). Surface layout:
+/// 84px gold-gradient lotus 🪷 → display title → description → session
+/// summary card → "후기 작성하고 1,000캐시 받기" (gold md) → "홈으로" (outline md).
+///
+/// Router preserves `bookingId` (path param) + optional `sessionId` (extra)
+/// so existing navigations from the consultation room keep working. The
+/// screen primarily reads from [activeSessionProvider] which is seeded when
+/// the room launches the call.
 class ConsultationCompleteScreen extends ConsumerWidget {
   final int bookingId;
   final int? sessionId;
@@ -76,413 +35,210 @@ class ConsultationCompleteScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settlementAsync =
-        sessionId != null ? ref.watch(settlementProvider(sessionId!)) : null;
-    final sessionAsync =
-        sessionId != null ? ref.watch(sessionDataProvider(sessionId!)) : null;
+    final session = ref.watch(activeSessionProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('상담 완료'),
-        automaticallyImplyLeading: false,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-
-            // Success icon with checkmark (matches React)
-            TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.0, end: 1.0),
-              duration: const Duration(milliseconds: 600),
-              curve: Curves.elasticOut,
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: value,
-                  child: child,
-                );
-              },
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: const Icon(
-                  Icons.check_circle,
-                  size: 48,
-                  color: AppColors.success,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '상담이 종료되었습니다',
-              style: GoogleFonts.notoSerif(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-
-            // End reason badge (matches React)
-            if (sessionAsync != null)
-              sessionAsync.when(
-                data: (session) {
-                  if (session == null) return const SizedBox.shrink();
-                  final endReason = session['endReason'] as String?;
-                  if (endReason == null) return const SizedBox.shrink();
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.textSecondary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (_) {},
+      child: Scaffold(
+        backgroundColor: AppColors.hanji,
+        body: SafeArea(
+          child: ZeomFadeSlideIn(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(40),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Center(child: _LotusBadge()),
+                    const SizedBox(height: 24),
+                    Center(
                       child: Text(
-                        _getEndReasonLabel(endReason),
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                        '상담이 끝났어요',
+                        textAlign: TextAlign.center,
+                        style: ZeomType.displaySm.copyWith(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
                         ),
                       ),
                     ),
-                  );
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
-
-            const SizedBox(height: 24),
-
-            // Session summary card (matches React)
-            if (sessionAsync != null)
-              sessionAsync.when(
-                data: (session) {
-                  if (session == null) return const SizedBox.shrink();
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '상담 요약',
-                            style: GoogleFonts.notoSerif(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const Divider(height: 24),
-                          _SummaryRow(
-                            label: '시작 시간',
-                            value: _formatDateTime(
-                                session['startedAt']?.toString()),
-                          ),
-                          if (session['endedAt'] != null) ...[
-                            const SizedBox(height: 8),
-                            _SummaryRow(
-                              label: '종료 시간',
-                              value: _formatDateTime(
-                                  session['endedAt']?.toString()),
-                            ),
-                          ],
-                          if (session['durationSec'] != null &&
-                              (session['durationSec'] as num) > 0) ...[
-                            const SizedBox(height: 8),
-                            _SummaryRow(
-                              label: '실제 상담 시간',
-                              value: _formatDuration(
-                                  (session['durationSec'] as num).toInt()),
-                              valueColor: AppColors.gold,
-                              valueBold: true,
-                            ),
-                          ],
-                        ],
+                    const SizedBox(height: 12),
+                    Text(
+                      _buildSubtitle(session),
+                      textAlign: TextAlign.center,
+                      softWrap: true,
+                      style: ZeomType.body.copyWith(
+                        color: AppColors.ink3,
+                        height: 1.7,
                       ),
                     ),
-                  );
-                },
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: CircularProgressIndicator(),
-                ),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
-
-            const SizedBox(height: 12),
-
-            // Settlement details
-            if (settlementAsync != null)
-              settlementAsync.when(
-                data: (settlement) {
-                  if (settlement == null) {
-                    return _buildNoSettlement(context);
-                  }
-                  return _buildSettlementCard(context, settlement);
-                },
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: CircularProgressIndicator(),
-                ),
-                error: (_, __) => _buildNoSettlement(context),
-              )
-            else
-              _buildNoSettlement(context),
-
-            const SizedBox(height: 32),
-
-            // Action buttons (matches React: Review, History, Home)
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  context.push(
-                    '/consultation/$bookingId/review',
-                    extra: {'counselorId': counselorId},
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.gold,
-                  foregroundColor: AppColors.inkBlack,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  '리뷰 작성하기',
-                  style: GoogleFonts.notoSerif(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                    const SizedBox(height: 24),
+                    if (session != null)
+                      _SessionSummaryCard(session: session),
+                    const SizedBox(height: 28),
+                    if (session != null) ...[
+                      ZeomButton(
+                        label: '후기 작성하고 1,000캐시 받기',
+                        variant: ZeomButtonVariant.gold,
+                        size: ZeomButtonSize.md,
+                        width: double.infinity,
+                        onPressed: () {
+                          context.go(
+                            '/consultation/${session.booking.id}/review',
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    ZeomButton(
+                      label: '홈으로',
+                      variant: ZeomButtonVariant.outline,
+                      size: ZeomButtonSize.md,
+                      width: double.infinity,
+                      onPressed: () {
+                        ref.read(activeSessionProvider.notifier).clear();
+                        context.go('/home');
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: OutlinedButton(
-                onPressed: () {
-                  context.push('/consultation/history');
-                },
-                child: const Text('상담 이용 내역'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: TextButton(
-                onPressed: () {
-                  context.go('/home');
-                },
-                child: const Text('홈으로'),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildNoSettlement(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Icon(
-              Icons.receipt_long,
-              size: 40,
-              color: AppColors.textSecondary.withOpacity(0.5),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '정산 정보가 아직 처리 중입니다.',
-              style: GoogleFonts.notoSans(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '잠시 후 다시 확인해주세요.',
-              style: GoogleFonts.notoSans(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettlementCard(
-      BuildContext context, Map<String, dynamic> settlement) {
-    final creditsReserved = settlement['creditsReserved'] as int? ?? 0;
-    final creditsConsumed = settlement['creditsConsumed'] as int? ?? 0;
-    final creditsRefunded = settlement['creditsRefunded'] as int? ?? 0;
-    final actualDurationSec = settlement['actualDurationSec'] as int? ?? 0;
-    final settlementType = settlement['settlementType'] as String? ?? '';
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.receipt_long, color: AppColors.gold),
-                const SizedBox(width: 8),
-                Text(
-                  '정산 결과',
-                  style: GoogleFonts.notoSerif(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 24),
-
-            _SummaryRow(
-              label: '예약 상담권',
-              value: '$creditsReserved회',
-            ),
-            const SizedBox(height: 8),
-            _SummaryRow(
-              label: '사용 상담권',
-              value: '$creditsConsumed회',
-              valueBold: true,
-            ),
-            if (creditsRefunded > 0) ...[
-              const SizedBox(height: 8),
-              _SummaryRow(
-                label: '환불 상담권',
-                value: '$creditsRefunded회',
-                valueColor: AppColors.success,
-                valueBold: true,
-              ),
-            ],
-            const Divider(height: 24),
-            _SummaryRow(
-              label: '실제 상담 시간',
-              value: _formatDuration(actualDurationSec),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '정산 유형',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                _buildSettlementTypeBadge(context, settlementType),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettlementTypeBadge(BuildContext context, String type) {
-    String label;
-    Color color;
-
-    switch (type) {
-      case 'NORMAL':
-        label = '정상';
-        color = AppColors.success;
-      case 'EARLY_END':
-        label = '조기 종료';
-        color = AppColors.gold;
-      case 'TIMEOUT':
-        label = '시간 만료';
-        color = AppColors.gold;
-      case 'NETWORK_SHORT':
-        label = '네트워크 오류 (전액 환불)';
-        color = AppColors.error;
-      case 'NETWORK_PARTIAL':
-        label = '네트워크 오류 (부분 환불)';
-        color = AppColors.error;
-      case 'ADMIN_REFUND':
-        label = '관리자 환불';
-        color = AppColors.textSecondary;
-      default:
-        label = type;
-        color = AppColors.textSecondary;
+  String _buildSubtitle(ActiveSession? session) {
+    if (session == null) {
+      return '상담이 완료되었습니다.';
     }
+    final name = session.booking.counselorName;
+    final minutes = session.booking.durationMinutes;
+    return '$name님과 $minutes분의 이야기가 마무리되었습니다.\n'
+        '오늘의 마음에도 작은 쉼이 되었기를.';
+  }
+}
 
+/// 84px gold-gradient (goldSoft → gold @135°) circle with a centered 🪷
+/// glyph (36px). Anchored above the title per MOBILE_DESIGN_PLAN §3.10.
+class _LotusBadge extends StatelessWidget {
+  const _LotusBadge();
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.notoSans(
-          fontSize: 12,
-          color: color,
-          fontWeight: FontWeight.w600,
+      width: 84,
+      height: 84,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.goldSoft, AppColors.gold],
         ),
+      ),
+      alignment: Alignment.center,
+      child: const Text(
+        '\u{1FAB7}', // 🪷
+        style: TextStyle(fontSize: 36, height: 1.0),
       ),
     );
   }
 }
 
-class _SummaryRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color? valueColor;
-  final bool valueBold;
+/// Session summary card for the 상담 완료 surface.
+///
+/// White card (14r, 1px borderSoft, padding 16) rendering the counselor's
+/// avatar + name/meta + a gold "완료" pill. Mirrors the list variant used
+/// on the bookings screen but tightened for the post-call context.
+class _SessionSummaryCard extends StatelessWidget {
+  final ActiveSession session;
 
-  const _SummaryRow({
-    required this.label,
-    required this.value,
-    this.valueColor,
-    this.valueBold = false,
-  });
+  const _SessionSummaryCard({required this.session});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.notoSans(
-            fontSize: 14,
-            color: AppColors.textSecondary,
+    final booking = session.booking;
+    final channelLabel =
+        booking.channel == BookingChannel.video ? '영상' : '음성';
+    final meta =
+        '${_formatDate(booking.when)} · ${booking.durationMinutes}분 · $channelLabel';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft, width: 1),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ZeomAvatar(initials: booking.counselorInitials, size: 48),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  booking.counselorName,
+                  style: ZeomType.cardTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  meta,
+                  style: ZeomType.meta.copyWith(color: AppColors.ink3),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
+          const _DonePill(),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime when) {
+    final month = when.month.toString().padLeft(2, '0');
+    final day = when.day.toString().padLeft(2, '0');
+    final hour = when.hour.toString().padLeft(2, '0');
+    final minute = when.minute.toString().padLeft(2, '0');
+    return '${when.year}.$month.$day $hour:$minute';
+  }
+}
+
+/// Gold pill badge — `goldBg` fill, `gold` text, 10px/700, 2/8 padding.
+class _DonePill extends StatelessWidget {
+  const _DonePill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.goldBg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        '완료',
+        style: ZeomType.tag.copyWith(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: AppColors.gold,
+          letterSpacing: 0,
+          height: 1.2,
         ),
-        Text(
-          value,
-          style: GoogleFonts.notoSans(
-            fontSize: 14,
-            fontWeight: valueBold ? FontWeight.bold : FontWeight.w500,
-            color: valueColor ?? AppColors.textPrimary,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

@@ -1,12 +1,29 @@
-import 'package:dio/dio.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../core/api_client.dart';
-import '../../shared/theme.dart';
 
+import '../../shared/providers/active_session_provider.dart';
+import '../../shared/providers/bookings_provider.dart';
+import '../../shared/providers/pending_booking_provider.dart';
+import '../../shared/providers/wallet_provider.dart';
+import '../../shared/theme.dart';
+import '../../shared/typography.dart';
+import '../../shared/widgets/zeom_app_bar.dart';
+import '../../shared/widgets/zeom_avatar.dart';
+import '../../shared/widgets/zeom_button.dart';
+
+/// S05 예약 확인 — MOBILE_DESIGN_PLAN.md §3.5.
+///
+/// Reads draft from [pendingBookingProvider] (populated by P1-E3 before
+/// routing into this screen). On confirm: debits wallet, inserts a
+/// [Booking] into [bookingsProvider], sets [activeSessionProvider], clears
+/// the pending draft, shows a snackbar, then routes back to `/bookings`.
 class BookingCreateScreen extends ConsumerStatefulWidget {
+  // Constructor preserved so the GoRouter builder at router.dart L87 keeps
+  // compiling. None of these values are consumed on this screen — the
+  // draft lives in `pendingBookingProvider`.
   final int counselorId;
   final String? initialSlotStart;
   final List<int>? initialSlotIds;
@@ -26,256 +43,79 @@ class BookingCreateScreen extends ConsumerStatefulWidget {
 }
 
 class _BookingCreateScreenState extends ConsumerState<BookingCreateScreen> {
-  static const int _maxSlots = 3;
+  bool _refundAgreed = false;
+  bool _privacyAgreed = false;
+  bool _isLoading = false;
 
-  Map<String, dynamic>? _counselor;
-  List<Map<String, dynamic>> _slots = [];
-  final Set<int> _selectedSlotIds = {};
-  String _consultationType = 'VIDEO';
-  bool _isLoadingSlots = true;
-  bool _isBooking = false;
-  String? _loadError;
-  String? _maxWarning;
-  bool _showConfirm = false;
-  String? _bookingError;
-  bool _bookingSuccess = false;
-  int? _creditBalance;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCreditBalance();
-    if (widget.counselorData != null) {
-      _initFromCounselorData(widget.counselorData!);
-    } else {
-      _loadCounselorSlots();
-    }
-  }
-
-  Future<void> _loadCreditBalance() async {
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.getCreditBalance();
-      final data = response.data as Map<String, dynamic>;
-      if (mounted) {
-        setState(() {
-          _creditBalance = data['remainingUnits'] as int? ?? 0;
-        });
-      }
-    } catch (_) {
-      // Credit balance is informational; don't block booking flow
-    }
-  }
-
-  void _initFromCounselorData(Map<String, dynamic> data) {
-    _counselor = data;
-    final rawSlots = data['slots'] as List<dynamic>? ?? [];
-    _slots = rawSlots.cast<Map<String, dynamic>>();
-    _isLoadingSlots = false;
-
-    // Pre-select slots passed from counselor detail screen
-    if (widget.initialSlotIds != null && widget.initialSlotIds!.isNotEmpty) {
-      final validIds = widget.initialSlotIds!
-          .where((id) => _slots.any((s) => s['id'] == id))
-          .toSet();
-      _selectedSlotIds.addAll(validIds);
-      if (_selectedSlotIds.isNotEmpty) {
-        _showConfirm = true;
-      }
-    }
-  }
-
-  Future<void> _loadCounselorSlots() async {
-    setState(() {
-      _isLoadingSlots = true;
-      _loadError = null;
-    });
-
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.getCounselorSlots(widget.counselorId);
-      final data = response.data as Map<String, dynamic>;
-
-      setState(() {
-        _initFromCounselorData(data);
-      });
-    } catch (e) {
-      setState(() {
-        _loadError = '상담사 정보를 불러오지 못했습니다.';
-        _isLoadingSlots = false;
-      });
-    }
-  }
-
-  void _toggleSlot(int slotId) {
-    setState(() {
-      if (_selectedSlotIds.contains(slotId)) {
-        _selectedSlotIds.remove(slotId);
-        _maxWarning = null;
-      } else {
-        if (_selectedSlotIds.length >= _maxSlots) {
-          _maxWarning = '최대 $_maxSlots개 슬롯까지 선택할 수 있습니다.';
-          return;
-        }
-        _selectedSlotIds.add(slotId);
-        _maxWarning = null;
-      }
-      _showConfirm = false;
-      _bookingError = null;
-    });
-  }
-
-  List<Map<String, dynamic>> get _selectedSlots {
-    return _slots.where((s) => _selectedSlotIds.contains(s['id'])).toList();
-  }
-
-  Map<String, List<Map<String, dynamic>>> _groupSlotsByDate() {
-    final groups = <String, List<Map<String, dynamic>>>{};
-    for (final slot in _slots) {
-      final startAt = slot['startAt'] as String;
-      final dt = DateTime.parse(startAt);
-      final dateKey =
-          '${dt.year}년 ${dt.month}월 ${dt.day}일 (${_weekdayLabel(dt.weekday)})';
-      groups.putIfAbsent(dateKey, () => []).add(slot);
-    }
-    return groups;
-  }
-
-  String _weekdayLabel(int weekday) {
-    const labels = ['월', '화', '수', '목', '금', '토', '일'];
-    return labels[weekday - 1];
-  }
-
-  String _formatTime(String isoString) {
-    final dt = DateTime.parse(isoString);
-    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  }
-
-  String _formatDate(String isoString) {
-    final dt = DateTime.parse(isoString);
-    return '${dt.year}년 ${dt.month}월 ${dt.day}일 (${_weekdayLabel(dt.weekday)})';
-  }
-
-  Future<void> _createBooking() async {
-    if (_selectedSlots.isEmpty) return;
-
-    setState(() {
-      _isBooking = true;
-      _bookingError = null;
-    });
-
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      await apiClient.createBooking(
-        counselorId: widget.counselorId,
-        slotIds: _selectedSlotIds.toList(),
-        consultationType: _consultationType,
-      );
-
-      setState(() {
-        _bookingSuccess = true;
-        _isBooking = false;
-      });
-
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted) {
-        context.go('/bookings');
-      }
-    } on DioException catch (e) {
-      String errorMsg = '예약에 실패했습니다.';
-      final data = e.response?.data;
-      if (data is Map<String, dynamic> && data['message'] != null) {
-        errorMsg = data['message'] as String;
-      }
-      setState(() {
-        _bookingError = errorMsg;
-        _isBooking = false;
-      });
-    } catch (_) {
-      setState(() {
-        _bookingError = '네트워크 오류가 발생했습니다.';
-        _isBooking = false;
-      });
-    }
-  }
+  bool get _bothAgreed => _refundAgreed && _privacyAgreed;
 
   @override
   Widget build(BuildContext context) {
-    if (_bookingSuccess) {
-      return Scaffold(
-        backgroundColor: AppColors.hanji,
-        appBar: AppBar(title: const Text('예약 완료')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.gold.withOpacity(0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.check_circle,
-                      color: AppColors.gold, size: 48),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  '예약이 완료되었습니다!',
-                  style: GoogleFonts.notoSerif(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.inkBlack,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '내 예약 페이지로 이동합니다...',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+    final pending = ref.watch(pendingBookingProvider);
+    final balance = ref.watch(walletProvider);
 
     return Scaffold(
       backgroundColor: AppColors.hanji,
-      appBar: AppBar(title: const Text('예약하기')),
-      body: _isLoadingSlots
-          ? const Center(child: CircularProgressIndicator())
-          : _loadError != null
-              ? _buildErrorView()
-              : _buildContent(),
+      appBar: const ZeomAppBar(title: '예약 확인'),
+      body: pending == null
+          ? _buildEmptyState(context)
+          : _buildContent(context, pending, balance),
+      bottomSheet: pending == null
+          ? null
+          : _ConfirmCtaBar(
+              pending: pending,
+              balance: balance,
+              agreed: _bothAgreed,
+              isLoading: _isLoading,
+              onConfirm: _handleConfirm,
+            ),
     );
   }
 
-  Widget _buildErrorView() {
+  Widget _buildContent(
+    BuildContext context,
+    PendingBooking pending,
+    int balance,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SummaryCard(pending: pending),
+          const SizedBox(height: 16),
+          _PaymentCard(pending: pending, balance: balance),
+          const SizedBox(height: 16),
+          _AgreementsCard(
+            refundAgreed: _refundAgreed,
+            privacyAgreed: _privacyAgreed,
+            onRefundChanged: (v) => setState(() => _refundAgreed = v),
+            onPrivacyChanged: (v) => setState(() => _privacyAgreed = v),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(60),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline,
-                size: 48, color: AppColors.error.withOpacity(0.6)),
+            const Icon(
+              Icons.event_busy_outlined,
+              size: 48,
+              color: AppColors.ink4,
+            ),
             const SizedBox(height: 16),
-            Text(
-              _loadError!,
-              style: GoogleFonts.notoSans(
-                  fontSize: 16, color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _loadCounselorSlots,
-              child: const Text('다시 시도'),
+            Text('예약 정보가 없어요', style: ZeomType.body.copyWith(color: AppColors.ink3)),
+            const SizedBox(height: 16),
+            ZeomButton(
+              label: '홈으로',
+              variant: ZeomButtonVariant.outline,
+              onPressed: () => context.go('/home'),
             ),
           ],
         ),
@@ -283,576 +123,436 @@ class _BookingCreateScreenState extends ConsumerState<BookingCreateScreen> {
     );
   }
 
-  Widget _buildContent() {
-    final slotsByDate = _groupSlotsByDate();
-    final counselorName = _counselor?['name'] ?? '상담사';
-    final supportedTypes =
-        _counselor?['supportedConsultationTypes'] as String? ?? 'VIDEO';
+  Future<void> _handleConfirm() async {
+    setState(() => _isLoading = true);
+    await Future<void>.delayed(const Duration(milliseconds: 900));
 
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Counselor info header
-                _buildCounselorHeader(counselorName),
-                const SizedBox(height: 24),
-
-                // Consultation type selector
-                if (supportedTypes.contains('CHAT'))
-                  ...[_buildConsultationTypeSelector(), const SizedBox(height: 24)],
-
-                // Slot selection section
-                _buildSlotSection(slotsByDate),
-
-                // Max warning
-                if (_maxWarning != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.gold.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.gold.withOpacity(0.3)),
-                    ),
-                    child: Text(
-                      _maxWarning!,
-                      style: GoogleFonts.notoSans(
-                          fontSize: 13, color: AppColors.gold),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-
-                // Selected slot summary
-                if (_selectedSlots.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  _buildSelectedSummary(),
-                ],
-
-                // Confirmation dialog
-                if (_showConfirm && _selectedSlots.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _buildConfirmationCard(counselorName),
-                ],
-
-                const SizedBox(height: 100), // space for bottom button
-              ],
-            ),
-          ),
-        ),
-
-        // Bottom CTA
-        if (_selectedSlots.isNotEmpty && !_showConfirm)
-          _buildBottomCTA(),
-      ],
-    );
-  }
-
-  Widget _buildCounselorHeader(String counselorName) {
-    final specialty = _counselor?['specialty'] as String? ?? '';
-    final intro = _counselor?['intro'] as String? ?? '';
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Text(
-              counselorName,
-              style: GoogleFonts.notoSerif(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.inkBlack,
-              ),
-            ),
-            if (specialty.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.gold.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.gold.withOpacity(0.3)),
-                ),
-                child: Text(
-                  specialty,
-                  style: GoogleFonts.notoSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.gold,
-                  ),
-                ),
-              ),
-            ],
-            if (intro.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(
-                intro,
-                style: GoogleFonts.notoSans(
-                    fontSize: 14, color: AppColors.textSecondary),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildConsultationTypeSelector() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '상담 유형 선택',
-              style: GoogleFonts.notoSerif(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.inkBlack,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _ConsultationTypeChip(
-                    label: '화상상담',
-                    subtitle: '상담권 1회/슬롯',
-                    isSelected: _consultationType == 'VIDEO',
-                    selectedColor: AppColors.gold,
-                    onTap: () => setState(() => _consultationType = 'VIDEO'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ConsultationTypeChip(
-                    label: '채팅상담',
-                    subtitle: '상담권 0.7회/슬롯',
-                    isSelected: _consultationType == 'CHAT',
-                    selectedColor: const Color(0xFF4A90D9),
-                    onTap: () => setState(() => _consultationType = 'CHAT'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSlotSection(Map<String, List<Map<String, dynamic>>> slotsByDate) {
-    if (_slots.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            children: [
-              Icon(Icons.event_busy,
-                  size: 48, color: AppColors.textSecondary.withOpacity(0.5)),
-              const SizedBox(height: 16),
-              Text(
-                '현재 가능한 슬롯이 없어요',
-                style: GoogleFonts.notoSerif(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.inkBlack),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '다른 상담사 또는 시간대를 확인해주세요.',
-                style: GoogleFonts.notoSans(
-                    fontSize: 14, color: AppColors.textSecondary),
-              ),
-            ],
-          ),
-        ),
-      );
+    final pending = ref.read(pendingBookingProvider);
+    if (pending == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '예약 가능 슬롯',
-          style: GoogleFonts.notoSerif(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: AppColors.inkBlack,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...slotsByDate.entries.map((entry) => _buildDateGroup(entry.key, entry.value)),
-      ],
+    ref.read(walletProvider.notifier).debit(pending.priceCash);
+
+    final newBooking = Booking(
+      id: 'b${DateTime.now().millisecondsSinceEpoch}',
+      counselorId: pending.counselorId,
+      counselorName: pending.counselorName,
+      counselorInitials: pending.counselorInitials,
+      when: pending.when,
+      durationMinutes: pending.durationMinutes,
+      channel: pending.channel,
+      priceCash: pending.priceCash,
+      status: BookingStatus.upcoming,
+      hasReview: false,
     );
-  }
+    ref.read(bookingsProvider.notifier).add(newBooking);
+    ref.read(activeSessionProvider.notifier).set(newBooking);
+    ref.read(pendingBookingProvider.notifier).state = null;
 
-  Widget _buildDateGroup(String dateLabel, List<Map<String, dynamic>> slots) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            dateLabel,
-            style: GoogleFonts.notoSerif(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.inkBlack,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: slots.map((slot) {
-              final slotId = slot['id'] as int;
-              final isSelected = _selectedSlotIds.contains(slotId);
-              final startTime = _formatTime(slot['startAt'] as String);
-              final endTime = _formatTime(slot['endAt'] as String);
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
-              return GestureDetector(
-                onTap: () => _toggleSlot(slotId),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.inkBlack
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.inkBlack
-                          : AppColors.border,
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (isSelected) ...[
-                        Icon(Icons.check,
-                            size: 16,
-                            color: AppColors.hanji),
-                        const SizedBox(width: 4),
-                      ],
-                      Text(
-                        '$startTime ~ $endTime',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.normal,
-                          color: isSelected
-                              ? AppColors.hanji
-                              : AppColors.inkBlack,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('예약이 확정되었습니다 🪷'),
+        duration: Duration(milliseconds: 2400),
+        behavior: SnackBarBehavior.floating,
       ),
     );
+    context.go('/bookings');
   }
+}
 
-  Widget _buildSelectedSummary() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.gold.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.gold.withOpacity(0.3)),
-          ),
-          child: Text(
-            '${_selectedSlots.length}개 슬롯 선택됨 (${_selectedSlots.length * 30}분)',
-            style: GoogleFonts.notoSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.gold,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.inkBlack.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            '상담권 ${_selectedSlots.length}회 사용',
-            style: GoogleFonts.notoSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.inkBlack,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+// ---------------------------------------------------------------------------
+// Summary card (counselor + 4 info tiles)
+// ---------------------------------------------------------------------------
 
-  Widget _buildConfirmationCard(String counselorName) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text(
-                '예약 확인',
-                style: GoogleFonts.notoSerif(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.inkBlack,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+class _SummaryCard extends StatelessWidget {
+  final PendingBooking pending;
+  const _SummaryCard({required this.pending});
 
-            // Counselor name
-            _confirmRow('상담사', counselorName),
-            const SizedBox(height: 12),
+  @override
+  Widget build(BuildContext context) {
+    final when = pending.when;
+    final dateText =
+        '${when.month}월 ${when.day}일 (${_weekdayKo(when.weekday)})';
+    final timeText = '${when.hour}:${when.minute.toString().padLeft(2, '0')}';
+    final channelText =
+        pending.channel == BookingChannel.video ? '화상' : '음성';
+    final durationText = '${pending.durationMinutes}분';
+    final channelLabel =
+        pending.channel == BookingChannel.video ? '화상' : '음성';
 
-            // Consultation type
-            _confirmRow(
-              '상담 유형',
-              _consultationType == 'CHAT' ? '채팅상담' : '화상상담',
-            ),
-            const SizedBox(height: 12),
-
-            // Selected time slots
-            ..._selectedSlots.map((slot) {
-              final startAt = slot['startAt'] as String;
-              final endAt = slot['endAt'] as String;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _confirmRow(
-                  '시간',
-                  '${_formatDate(startAt)} ${_formatTime(startAt)} ~ ${_formatTime(endAt)}',
-                ),
-              );
-            }),
-
-            const Divider(height: 24),
-
-            _confirmRow('총 소요시간', '${_selectedSlots.length * 30}분'),
-            const SizedBox(height: 8),
-            _confirmRow('사용 상담권', '${_selectedSlots.length}회'),
-            if (_creditBalance != null) ...[
-              const SizedBox(height: 8),
-              _confirmRow(
-                '잔여 상담권',
-                '${_creditBalance! - _selectedSlots.length}회',
-              ),
-              if (_creditBalance! < _selectedSlots.length) ...[
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.darkRed.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border:
-                        Border.all(color: AppColors.darkRed.withOpacity(0.3)),
-                  ),
-                  child: Text(
-                    '상담권이 부족합니다 (보유: $_creditBalance회 / 필요: ${_selectedSlots.length}회)',
-                    style: GoogleFonts.notoSans(
-                        fontSize: 13, color: AppColors.darkRed),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ],
-
-            // Booking error
-            if (_bookingError != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.error.withOpacity(0.3)),
-                ),
-                child: Text(
-                  _bookingError!,
-                  style: GoogleFonts.notoSans(
-                      fontSize: 13, color: AppColors.error),
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 20),
-
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _isBooking
-                        ? null
-                        : () => setState(() {
-                              _showConfirm = false;
-                              _bookingError = null;
-                            }),
-                    child: const Text('취소'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isBooking ||
-                            (_creditBalance != null &&
-                                _creditBalance! < _selectedSlots.length)
-                        ? null
-                        : _createBooking,
-                    child: _isBooking
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Text('예약 확정'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _confirmRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.notoSans(
-              fontSize: 14, color: AppColors.textSecondary),
-        ),
-        Flexible(
-          child: Text(
-            value,
-            style: GoogleFonts.notoSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.inkBlack,
-            ),
-            textAlign: TextAlign.end,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomCTA() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft, width: 1),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ZeomAvatar(initials: pending.counselorInitials, size: 48),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pending.counselorName,
+                      style: ZeomType.cardTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$channelLabel · $durationText',
+                      style: ZeomType.meta.copyWith(color: AppColors.ink3),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(
+            height: 1,
+            thickness: 1,
+            color: AppColors.borderSoft,
+          ),
+          const SizedBox(height: 14),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 2.4,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            children: [
+              _InfoTile(label: '날짜', value: dateText),
+              _InfoTile(label: '시간', value: timeText),
+              _InfoTile(label: '방식', value: channelText),
+              _InfoTile(label: '소요', value: durationText),
+            ],
           ),
         ],
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 48,
-        child: ElevatedButton(
-          onPressed: () => setState(() {
-            _showConfirm = true;
-            _bookingError = null;
-          }),
-          child:
-              Text('예약하기 (${_selectedSlots.length}개 슬롯)'),
-        ),
       ),
     );
   }
 }
 
-class _ConsultationTypeChip extends StatelessWidget {
+class _InfoTile extends StatelessWidget {
   final String label;
-  final String subtitle;
-  final bool isSelected;
-  final Color selectedColor;
-  final VoidCallback onTap;
+  final String value;
+  const _InfoTile({required this.label, required this.value});
 
-  const _ConsultationTypeChip({
-    required this.label,
-    required this.subtitle,
-    required this.isSelected,
-    required this.selectedColor,
-    required this.onTap,
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.hanjiDeep,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: ZeomType.micro.copyWith(
+              color: AppColors.ink3,
+              letterSpacing: 1,
+            ),
+          ),
+          Text(
+            value,
+            style: ZeomType.cardTitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Payment card (price / debit / remaining balance + optional shortage banner)
+// ---------------------------------------------------------------------------
+
+class _PaymentCard extends ConsumerWidget {
+  final PendingBooking pending;
+  final int balance;
+  const _PaymentCard({required this.pending, required this.balance});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final price = pending.priceCash;
+    final remaining = math.max(0, balance - price);
+    final insufficient = balance < price;
+    final shortage = insufficient ? price - balance : 0;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft, width: 1),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('결제', style: ZeomType.section),
+          const SizedBox(height: 12),
+          _paymentRow(
+            left: Text(
+              '상담료',
+              style: ZeomType.body.copyWith(color: AppColors.ink2),
+            ),
+            right: Text(
+              '+ ${formatCash(price)}',
+              style: ZeomType.tabularNums(
+                base: ZeomType.body.copyWith(
+                  color: AppColors.ink,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _paymentRow(
+            left: Text(
+              '캐시 차감',
+              style: ZeomType.body.copyWith(color: AppColors.ink2),
+            ),
+            right: Text(
+              '- ${formatCash(price)}',
+              style: ZeomType.tabularNums(
+                base: ZeomType.cardTitle.copyWith(color: AppColors.ink),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Divider(
+            height: 1,
+            thickness: 1,
+            color: AppColors.borderSoft,
+          ),
+          const SizedBox(height: 12),
+          _paymentRow(
+            left: Text('차감 후 잔액', style: ZeomType.cardTitle),
+            right: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  formatCash(remaining),
+                  style: ZeomType.tabularNums(
+                    base: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.gold,
+                      height: 1.2,
+                      fontFamily: ZeomType.cardTitle.fontFamily,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '캐시',
+                  style: ZeomType.meta.copyWith(
+                    color: AppColors.ink2,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (insufficient) ...[
+            const SizedBox(height: 12),
+            _InsufficientCashBanner(shortage: shortage),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _paymentRow({required Widget left, required Widget right}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [Flexible(child: left), const SizedBox(width: 8), right],
+    );
+  }
+}
+
+class _InsufficientCashBanner extends StatelessWidget {
+  final int shortage;
+  const _InsufficientCashBanner({required this.shortage});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color.fromRGBO(184, 115, 51, 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color.fromRGBO(184, 115, 51, 0.3),
+          width: 1,
+        ),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: AppColors.warning,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '캐시가 부족해요',
+                  style:
+                      ZeomType.cardTitle.copyWith(color: AppColors.warning),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '남은 ${formatCash(shortage)} 충전이 필요합니다',
+                  style: ZeomType.meta.copyWith(color: AppColors.warning),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ZeomButton(
+            label: '충전',
+            variant: ZeomButtonVariant.gold,
+            size: ZeomButtonSize.sm,
+            onPressed: () => context.push('/wallet/cash-buy'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Agreements card (2 required checkboxes)
+// ---------------------------------------------------------------------------
+
+class _AgreementsCard extends StatelessWidget {
+  final bool refundAgreed;
+  final bool privacyAgreed;
+  final ValueChanged<bool> onRefundChanged;
+  final ValueChanged<bool> onPrivacyChanged;
+
+  const _AgreementsCard({
+    required this.refundAgreed,
+    required this.privacyAgreed,
+    required this.onRefundChanged,
+    required this.onPrivacyChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? selectedColor.withOpacity(0.1)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? selectedColor : AppColors.border,
-            width: isSelected ? 2 : 1,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft, width: 1),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('약관 동의', style: ZeomType.section),
+          const SizedBox(height: 10),
+          _AgreementRow(
+            checked: refundAgreed,
+            onChanged: onRefundChanged,
+            label: '환불 정책 동의 (24h 100% · 1h 50% · 이후 불가)',
           ),
-        ),
-        child: Column(
+          const SizedBox(height: 8),
+          _AgreementRow(
+            checked: privacyAgreed,
+            onChanged: onPrivacyChanged,
+            label: '상담 진행 및 개인정보 처리방침 동의',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AgreementRow extends StatelessWidget {
+  final bool checked;
+  final ValueChanged<bool> onChanged;
+  final String label;
+
+  const _AgreementRow({
+    required this.checked,
+    required this.onChanged,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => onChanged(!checked),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              label,
-              style: GoogleFonts.notoSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? selectedColor : AppColors.inkBlack,
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: Checkbox(
+                value: checked,
+                onChanged: (v) => onChanged(v ?? false),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+                side: const BorderSide(color: AppColors.border, width: 1.5),
+                fillColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return AppColors.ink;
+                  }
+                  return Colors.white;
+                }),
+                checkColor: AppColors.hanji,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: GoogleFonts.notoSans(
-                fontSize: 11,
-                color: isSelected
-                    ? selectedColor.withOpacity(0.7)
-                    : AppColors.textSecondary,
+            const SizedBox(width: 10),
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: ZeomType.bodySm.copyWith(color: AppColors.ink),
+                  children: [
+                    TextSpan(
+                      text: '[필수] ',
+                      style: ZeomType.bodySm.copyWith(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    TextSpan(text: label),
+                  ],
+                ),
               ),
             ),
           ],
@@ -861,3 +561,86 @@ class _ConsultationTypeChip extends StatelessWidget {
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Sticky bottom CTA
+// ---------------------------------------------------------------------------
+
+class _ConfirmCtaBar extends StatelessWidget {
+  final PendingBooking pending;
+  final int balance;
+  final bool agreed;
+  final bool isLoading;
+  final Future<void> Function() onConfirm;
+
+  const _ConfirmCtaBar({
+    required this.pending,
+    required this.balance,
+    required this.agreed,
+    required this.isLoading,
+    required this.onConfirm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+    final price = pending.priceCash;
+    final insufficient = balance < price;
+
+    final String label;
+    final VoidCallback? action;
+    if (!agreed) {
+      label = '약관 동의가 필요합니다';
+      action = null;
+    } else if (insufficient) {
+      label = '캐시 부족';
+      action = null;
+    } else if (isLoading) {
+      label = '확정 중…';
+      action = null;
+    } else {
+      label = '${formatCash(price)} 예약 확정';
+      action = () => onConfirm();
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.hanji,
+        border: Border(
+          top: BorderSide(color: AppColors.borderSoft, width: 1),
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        14,
+        20,
+        math.max(20.0, safeBottom + 14.0),
+      ),
+      child: ZeomButton(
+        label: label,
+        variant: ZeomButtonVariant.primary,
+        size: ZeomButtonSize.md,
+        width: double.infinity,
+        loading: isLoading,
+        onPressed: action,
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Utilities
+// ---------------------------------------------------------------------------
+
+String formatCash(int cash) {
+  final s = cash.toString();
+  final buf = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+    buf.write(s[i]);
+  }
+  return buf.toString();
+}
+
+String _weekdayKo(int weekday) =>
+    const ['월', '화', '수', '목', '금', '토', '일'][weekday - 1];

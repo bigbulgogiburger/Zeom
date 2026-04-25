@@ -32,3 +32,8 @@ app_flutter/flutter_*.log
 
 # Dev screenshots (root level only)
 /*.png
+
+# Local MCP / tooling caches
+.mcp.json
+.openchrome/
+web/test-results/

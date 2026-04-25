@@ -1,475 +1,557 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/api_client.dart';
-import '../../shared/theme.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
+import '../../shared/animations/zeom_animations.dart';
+import '../../shared/providers/active_session_provider.dart';
+import '../../shared/providers/bookings_provider.dart';
+import '../../shared/providers/wallet_provider.dart';
+import '../../shared/theme.dart';
+import '../../shared/typography.dart';
+import '../../shared/widgets/zeom_avatar.dart';
+import '../../shared/widgets/zeom_button.dart';
+import '../../shared/widgets/zeom_hero_card.dart';
+import '../../shared/widgets/zeom_presence_dot.dart';
+import '../../shared/widgets/zeom_star_rating.dart';
+
+/// S02 홈 — 천지연꽃신당 mobile home tab root.
+///
+/// Per MOBILE_DESIGN_PLAN.md §3.2 layout:
+///   HomeHeader → WalletHeroCard → QuickActionsGrid → FortunePreviewCard
+///   → section header → LiveCounselorsCarousel → UpcomingBookingBanner
+///
+/// Design rules per MOBILE_DESIGN.md:
+///   - Canvas: `hanji` (#F5EBDD)
+///   - Card surface: white + 1px borderSoft, 14px radius, NO shadow
+///   - Numbers: Noto Serif 700 + tabularNums
+///   - Page side padding: 20, paddingBottom: 90 (tab bar clearance §5.6)
+///   - Quick Action emoji set is the only UI emoji exception (§7 Don't #5)
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final int balance = ref.watch(walletProvider);
+    final List<Booking> upcoming = ref.watch(bookingsUpcomingProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.hanji,
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 90),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Home header (brand + bell)
+              const _HomeHeader(hasUnread: true),
+              const SizedBox(height: 16),
+
+              // 2. Wallet hero
+              ZeomFadeSlideIn(
+                child: _WalletHero(balance: balance),
+              ),
+              const SizedBox(height: 16),
+
+              // 3. Quick actions grid
+              ZeomFadeSlideIn(
+                delay: const Duration(milliseconds: 60),
+                child: const _QuickActionsGrid(),
+              ),
+              const SizedBox(height: 16),
+
+              // 4. Fortune preview card
+              ZeomFadeSlideIn(
+                delay: const Duration(milliseconds: 120),
+                child: const _FortunePreviewCard(),
+              ),
+              const SizedBox(height: 24),
+
+              // 5. Section header
+              const _SectionHeader(
+                title: '지금 상담 가능',
+                actionLabel: '전체 보기 ›',
+                actionRoute: '/counselors',
+              ),
+              const SizedBox(height: 10),
+
+              // 6. Live counselors carousel
+              const _LiveCounselorsCarousel(),
+
+              // 7. Upcoming booking banner (conditional)
+              if (upcoming.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                _UpcomingBookingBanner(booking: upcoming.first),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  List<Map<String, dynamic>> _counselors = [];
-  bool _isLoading = false;
-  String? _error;
-  Map<String, dynamic>? _fortune;
-  bool _fortuneLoading = true;
-  bool _fortuneExpanded = false;
+// ===================================================================
+// 1. HomeHeader
+// ===================================================================
+
+class _HomeHeader extends StatelessWidget {
+  const _HomeHeader({required this.hasUnread});
+
+  final bool hasUnread;
 
   @override
-  void initState() {
-    super.initState();
-    _loadCounselors();
-    _loadFortune();
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // "천지연꽃신당" — 꽃 char in gold
+              RichText(
+                text: TextSpan(
+                  style: GoogleFonts.notoSerif(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink,
+                    height: 1.3,
+                    letterSpacing: -0.2,
+                  ),
+                  children: [
+                    const TextSpan(text: '천지연'),
+                    TextSpan(
+                      text: '꽃',
+                      style: GoogleFonts.notoSerif(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.gold,
+                        height: 1.3,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const TextSpan(text: '신당'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '안녕하세요, 윤서연님',
+                style: ZeomType.body.copyWith(color: AppColors.ink3),
+              ),
+            ],
+          ),
+        ),
+        // Notification bell
+        Semantics(
+          button: true,
+          label: hasUnread ? '알림 (새 알림 있음)' : '알림',
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              // TODO(router): add route /notifications
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: AppColors.borderSoft,
+                      width: 1,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.notifications_none_outlined,
+                    size: 20,
+                    color: AppColors.ink,
+                  ),
+                ),
+                if (hasUnread)
+                  Positioned(
+                    top: -4,
+                    right: -4,
+                    child: Container(
+                      width: 7,
+                      height: 7,
+                      decoration: const BoxDecoration(
+                        color: AppColors.darkRed,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
+}
 
-  Future<void> _loadFortune() async {
-    setState(() => _fortuneLoading = true);
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.getTodayFortune();
-      if (response.statusCode == 200) {
-        setState(() {
-          _fortune = response.data as Map<String, dynamic>;
-          _fortuneLoading = false;
-        });
-        return;
-      }
-    } catch (_) {}
-    // Fallback to mock data
-    setState(() {
-      _fortune = {
-        'overallScore': 78,
-        'summary': '새로운 만남과 기회가 찾아오는 날입니다. 긍정적인 에너지를 유지하세요.',
-        'categories': [
-          {'label': '총운', 'score': 78},
-          {'label': '재물', 'score': 65},
-          {'label': '애정', 'score': 82},
-          {'label': '건강', 'score': 71},
-        ],
-      };
-      _fortuneLoading = false;
-    });
-  }
+// ===================================================================
+// 2. Wallet Hero Card
+// ===================================================================
 
-  Future<void> _loadCounselors() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+class _WalletHero extends StatelessWidget {
+  const _WalletHero({required this.balance});
 
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.getCounselors();
+  final int balance;
 
-      if (response.statusCode == 200) {
-        setState(() {
-          _counselors = List<Map<String, dynamic>>.from(response.data as List);
-          _isLoading = false;
-        });
-      }
-    } on DioException catch (e) {
-      setState(() {
-        if (e.type == DioExceptionType.connectionTimeout ||
-            e.type == DioExceptionType.receiveTimeout ||
-            e.type == DioExceptionType.connectionError) {
-          _error = '네트워크 연결을 확인해주세요';
-        } else if (e.response?.statusCode != null && e.response!.statusCode! >= 500) {
-          _error = '서버에 일시적인 문제가 발생했습니다';
-        } else {
-          _error = '상담사 목록을 불러오는데 실패했습니다';
-        }
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = '상담사 목록을 불러오는데 실패했습니다';
-        _isLoading = false;
-      });
+  String _formatCash(int n) {
+    // Manual thousand-grouping (intl import avoided — not in deps).
+    final String s = n.toString();
+    final StringBuffer out = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      final int fromEnd = s.length - i;
+      out.write(s[i]);
+      if (fromEnd > 1 && fromEnd % 3 == 1) out.write(',');
     }
+    return out.toString();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('천지연꽃신당'),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadCounselors,
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.wifi_off,
-                          size: 48,
-                          color: AppColors.textSecondary.withOpacity(0.5),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _error!,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _loadCounselors,
-                          child: const Text('다시 시도'),
-                        ),
-                      ],
-                    ),
-                  )
-                : SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Hero banner with CTA buttons
-                        _buildHeroSection(context),
-                        // Today's fortune card
-                        _buildFortuneCard(context),
-                        // Value propositions
-                        _buildValuePropsSection(context),
-                        // How it works - 4 steps
-                        _buildHowItWorksSection(context),
-                        // Recommended counselors section
-                        _buildCounselorsSection(context),
-                        // Trust metrics
-                        _buildTrustMetricsSection(context),
-                        // Final CTA
-                        _buildFinalCtaSection(context),
-                      ],
-                    ),
-                  ),
-      ),
+    final bool isEmpty = balance <= 0;
+    final TextStyle balanceStyle = GoogleFonts.notoSerif(
+      fontSize: 30,
+      fontWeight: isEmpty ? FontWeight.w600 : FontWeight.w700,
+      color: isEmpty ? AppColors.ink4 : AppColors.gold,
+      height: 1.1,
+      fontFeatures: kTabularNums,
     );
-  }
 
-  Widget _buildHeroSection(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.inkBlack,
-            AppColors.inkBlack.withOpacity(0.85),
-          ],
-        ),
-      ),
+    return ZeomHeroCard(
+      mandalaSize: 180,
+      mandalaPosition: Alignment.topRight,
+      padding: const EdgeInsets.all(20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          ShaderMask(
-            shaderCallback: (bounds) => const LinearGradient(
-              colors: [AppColors.gold, Color(0xFFD4A843)],
-            ).createShader(bounds),
-            child: Text(
-              '천지연꽃신당',
-              style: GoogleFonts.notoSerif(
-                fontSize: 32,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                letterSpacing: 4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 8),
+          // "내 캐시" label
           Text(
-            '天 地 蓮 花 神 堂',
-            style: GoogleFonts.notoSerif(
-              fontSize: 13,
-              color: Colors.white54,
-              letterSpacing: 6,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '당신의 운명, 꽃처럼 피어나는 순간',
-            style: GoogleFonts.notoSerif(
-              fontSize: 16,
-              color: AppColors.hanji,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 28),
-          // CTA buttons
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => context.push('/counselors'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gold,
-                foregroundColor: AppColors.inkBlack,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                elevation: 4,
-              ),
-              child: Text(
-                '상담 예약하기',
-                style: GoogleFonts.notoSerif(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+            '내 캐시',
+            style: GoogleFonts.notoSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 1,
+              color: AppColors.hanji.withOpacity(0.7),
             ),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () => context.push('/counselors'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.gold,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                side: const BorderSide(color: AppColors.gold, width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+          const SizedBox(height: 6),
+          // Balance row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Text(
+                  isEmpty ? '0' : _formatCash(balance),
+                  style: balanceStyle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              child: Text(
-                '상담사 보기',
-                style: GoogleFonts.notoSerif(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+              const SizedBox(width: 4),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  '캐시',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.hanji,
+                  ),
                 ),
+              ),
+            ],
+          ),
+          if (isEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              '지금 충전해보세요',
+              style: GoogleFonts.notoSans(
+                fontSize: 12,
+                color: AppColors.hanji.withOpacity(0.7),
               ),
             ),
+          ],
+          const SizedBox(height: 14),
+          // Buttons row
+          Row(
+            children: [
+              Expanded(
+                child: ZeomButton(
+                  label: '충전',
+                  variant: ZeomButtonVariant.gold,
+                  size: ZeomButtonSize.sm,
+                  onPressed: () => context.push('/wallet/cash-buy'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _DarkGhostButton(
+                  label: '내역',
+                  onPressed: () => context.push('/wallet'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+}
 
-  Color _getScoreColor(int score) {
-    if (score >= 80) return AppColors.gold;
-    if (score >= 60) return const Color(0xFFB08D1F);
-    if (score >= 40) return const Color(0xFF8B6914);
-    return AppColors.darkRed;
+/// Ghost button tuned for dark (hero) backgrounds: semi-translucent white
+/// surface + hanji text. ZeomButton's ghost variant assumes a light bg.
+class _DarkGhostButton extends StatefulWidget {
+  const _DarkGhostButton({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  State<_DarkGhostButton> createState() => _DarkGhostButtonState();
+}
+
+class _DarkGhostButtonState extends State<_DarkGhostButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: widget.label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: widget.onPressed,
+        child: AnimatedScale(
+          scale: _pressed ? 0.98 : 1.0,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color.fromRGBO(255, 255, 255, 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              widget.label,
+              style: GoogleFonts.notoSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.hanji,
+                height: 1.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ),
+    );
   }
+}
 
-  Widget _buildFortuneCard(BuildContext context) {
-    if (_fortuneLoading) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: Card(
+// ===================================================================
+// 3. Quick Actions Grid
+// ===================================================================
+
+class _QuickActionsGrid extends StatelessWidget {
+  const _QuickActionsGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    // § 7 Don't #5 — the only UI emoji exception. 4 hardcoded actions.
+    final actions = <_QuickAction>[
+      _QuickAction(
+        emoji: '\u{1F52E}', // 🔮
+        label: '오늘의 운세',
+        onTap: () => context.push('/fortune'),
+      ),
+      _QuickAction(
+        emoji: '\u{1F4C5}', // 📅
+        label: '바로 예약',
+        onTap: () => context.push('/counselors'),
+      ),
+      _QuickAction(
+        emoji: '\u{1FAB7}', // 🪷
+        label: '사주 보기',
+        onTap: () => context.push('/my-saju'),
+      ),
+      _QuickAction(
+        emoji: '\u{1F4AC}', // 💬
+        label: '상담 내역',
+        onTap: () => context.push('/bookings'),
+      ),
+    ];
+
+    return GridView.count(
+      crossAxisCount: 4,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      childAspectRatio: 1,
+      children: actions.map((a) => _QuickActionTile(action: a)).toList(),
+    );
+  }
+}
+
+class _QuickAction {
+  final String emoji;
+  final String label;
+  final VoidCallback onTap;
+
+  _QuickAction({
+    required this.emoji,
+    required this.label,
+    required this.onTap,
+  });
+}
+
+class _QuickActionTile extends StatelessWidget {
+  const _QuickActionTile({required this.action});
+
+  final _QuickAction action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: action.onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.borderSoft, width: 1),
+          ),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(8),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: double.infinity,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: AppColors.border.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+                Text(
+                  action.emoji,
+                  style: const TextStyle(fontSize: 28, height: 1.0),
                 ),
                 const SizedBox(height: 8),
-                Container(
-                  width: 120,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: AppColors.border.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(4),
+                Text(
+                  action.label,
+                  style: ZeomType.body.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.ink,
                   ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
         ),
-      );
-    }
+      ),
+    );
+  }
+}
 
-    if (_fortune == null) return const SizedBox.shrink();
+// ===================================================================
+// 4. Fortune Preview Card
+// ===================================================================
 
-    final score = (_fortune!['overallScore'] as num?)?.toInt() ?? 0;
-    final summary = (_fortune!['summary'] as String?) ?? '';
-    final categories = (_fortune!['categories'] as List?)
-        ?.map((e) => Map<String, dynamic>.from(e as Map))
-        .toList() ?? [];
+class _FortunePreviewCard extends StatelessWidget {
+  const _FortunePreviewCard();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Card(
-        elevation: 3,
-        child: InkWell(
-          onTap: () => setState(() => _fortuneExpanded = !_fortuneExpanded),
-          borderRadius: BorderRadius.circular(12),
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final dateStr = '${now.month}월 ${now.day}일';
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: () => context.push('/fortune'),
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.borderSoft, width: 1),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Header row
+                // Badge + date
                 Row(
                   children: [
-                    const Text('\uD83D\uDD2E', style: TextStyle(fontSize: 28)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '오늘의 운세',
-                            style: GoogleFonts.notoSerif(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.gold,
-                            ),
-                          ),
-                          Text(
-                            '${DateTime.now().month}월 ${DateTime.now().day}일',
-                            style: GoogleFonts.notoSans(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
+                    // Gold pill badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
                       ),
-                    ),
-                    ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [AppColors.gold, Color(0xFFD4A843)],
-                      ).createShader(bounds),
+                      decoration: BoxDecoration(
+                        color: AppColors.goldBg,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
                       child: Text(
-                        '$score',
-                        style: GoogleFonts.notoSerif(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),
+                        '오늘의 운세',
+                        style: ZeomType.tag.copyWith(color: AppColors.ink),
                       ),
                     ),
+                    const Spacer(),
                     Text(
-                      ' / 100',
-                      style: GoogleFonts.notoSans(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      _fortuneExpanded
-                          ? Icons.keyboard_arrow_up
-                          : Icons.keyboard_arrow_down,
-                      color: AppColors.textSecondary,
-                      size: 20,
+                      dateStr,
+                      style: ZeomType.meta.copyWith(color: AppColors.ink3),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
+                // Quote
                 Text(
-                  summary,
-                  style: GoogleFonts.notoSans(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    height: 1.4,
+                  '"인연은 서두르지 않고, 때를 기다리면 스스로 다가옵니다."',
+                  style: GoogleFonts.notoSerif(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                    height: 1.5,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-
-                // Expanded: category scores + CTA
-                if (_fortuneExpanded) ...[
-                  const Divider(height: 24),
-                  ...categories.map((cat) {
-                    final catScore = (cat['score'] as num?)?.toInt() ?? 0;
-                    final label = (cat['label'] as String?) ?? '';
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 36,
-                            child: Text(
-                              label,
-                              style: GoogleFonts.notoSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: catScore / 100,
-                                minHeight: 8,
-                                backgroundColor: AppColors.gold.withOpacity(0.1),
-                                valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor(catScore)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          SizedBox(
-                            width: 28,
-                            child: Text(
-                              '$catScore',
-                              style: GoogleFonts.notoSerif(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.gold,
-                              ),
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextButton(
-                        onPressed: () => context.push('/fortune'),
-                        child: Text(
-                          '자세히 보기',
-                          style: GoogleFonts.notoSerif(
-                            color: AppColors.gold,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      ElevatedButton(
-                        onPressed: () => context.push('/counselors'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.gold,
-                          foregroundColor: AppColors.inkBlack,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          '상담 받기',
-                          style: GoogleFonts.notoSerif(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                const SizedBox(height: 14),
+                // 2x2 mini ratings
+                Row(
+                  children: const [
+                    Expanded(child: _MiniRating(label: '총운', value: 4.0)),
+                    SizedBox(width: 8),
+                    Expanded(child: _MiniRating(label: '애정', value: 4.0)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: const [
+                    Expanded(child: _MiniRating(label: '금전', value: 4.0)),
+                    SizedBox(width: 8),
+                    Expanded(child: _MiniRating(label: '건강', value: 4.0)),
+                  ],
+                ),
               ],
             ),
           ),
@@ -477,397 +559,355 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+}
 
-  Widget _buildValuePropsSection(BuildContext context) {
-    const valueProps = [
-      {
-        'icon': Icons.verified_user_outlined,
-        'title': '검증된 상담사',
-        'desc': '엄선된 전문가가 전통 점술의 지혜로 당신의 길을 밝혀드립니다',
-      },
-      {
-        'icon': Icons.lock_outline,
-        'title': '안전한 결제',
-        'desc': 'PortOne 통합결제로 안심하고 간편하게 결제하세요',
-      },
-      {
-        'icon': Icons.chat_bubble_outline,
-        'title': '실시간 상담방',
-        'desc': '예약 즉시 1:1 비밀 상담방이 자동 개설됩니다',
-      },
+class _MiniRating extends StatelessWidget {
+  const _MiniRating({required this.label, required this.value});
+
+  final String label;
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.notoSans(
+            fontSize: 11,
+            color: AppColors.ink3,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(width: 6),
+        ZeomStarRating(value: value, size: 10),
+      ],
+    );
+  }
+}
+
+// ===================================================================
+// 5. Section Header
+// ===================================================================
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.actionLabel,
+    required this.actionRoute,
+  });
+
+  final String title;
+  final String actionLabel;
+  final String actionRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(title, style: ZeomType.section),
+        ),
+        TextButton(
+          onPressed: () => context.push(actionRoute),
+          style: TextButton.styleFrom(
+            minimumSize: Size.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(
+            actionLabel,
+            style: ZeomType.meta.copyWith(color: AppColors.ink3),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ===================================================================
+// 6. Live Counselors Carousel
+// ===================================================================
+
+class _LiveCounselorsCarousel extends StatelessWidget {
+  const _LiveCounselorsCarousel();
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO(data): wire via counselorsProvider when available.
+    const seeds = <_CounselorSeed>[
+      _CounselorSeed(
+        id: 'c1',
+        name: '지혜 상담사',
+        initials: '지',
+        spec: '스타일',
+        years: 8,
+        rating: 4.9,
+        reviews: 421,
+        priceK: 60,
+      ),
+      _CounselorSeed(
+        id: 'c2',
+        name: '현우 상담사',
+        initials: '현',
+        spec: '신점',
+        years: 12,
+        rating: 4.8,
+        reviews: 312,
+        priceK: 60,
+      ),
+      _CounselorSeed(
+        id: 'c3',
+        name: '선화 상담사',
+        initials: '선',
+        spec: '사주',
+        years: 6,
+        rating: 4.9,
+        reviews: 198,
+        priceK: 55,
+      ),
+      _CounselorSeed(
+        id: 'c4',
+        name: '민결 상담사',
+        initials: '민',
+        spec: '타로',
+        years: 5,
+        rating: 4.7,
+        reviews: 156,
+        priceK: 50,
+      ),
     ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-      child: Column(
-        children: [
-          Text(
-            '전통의 지혜, 현대의 편리함',
-            style: GoogleFonts.notoSerif(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          ...valueProps.map((prop) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Icon(
-                      prop['icon'] as IconData,
-                      size: 40,
-                      color: AppColors.gold,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      prop['title'] as String,
-                      style: GoogleFonts.notoSerif(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      prop['desc'] as String,
-                      style: GoogleFonts.notoSans(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )),
-        ],
+    return SizedBox(
+      height: 180,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: seeds.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        itemBuilder: (context, i) => _LiveCounselorCard(seed: seeds[i]),
       ),
     );
   }
+}
 
-  Widget _buildHowItWorksSection(BuildContext context) {
-    const steps = [
-      {'num': '01', 'title': '상담사 선택', 'desc': '원하는 분야의 전문 상담사를 둘러보세요'},
-      {'num': '02', 'title': '시간 예약', 'desc': '가능한 시간대 중 편한 때를 선택하세요'},
-      {'num': '03', 'title': '안전한 결제', 'desc': 'PortOne 통합결제로 간편하게'},
-      {'num': '04', 'title': '1:1 상담 시작', 'desc': '예약 시간에 상담방이 자동 개설됩니다'},
-    ];
+class _CounselorSeed {
+  final String id;
+  final String name;
+  final String initials;
+  final String spec;
+  final int years;
+  final double rating;
+  final int reviews;
+  final int priceK;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-      color: const Color(0xFF1A1612),
-      child: Column(
-        children: [
-          Text(
-            '간단한 4단계로 시작하세요',
-            style: GoogleFonts.notoSerif(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: AppColors.hanji,
-            ),
-            textAlign: TextAlign.center,
+  const _CounselorSeed({
+    required this.id,
+    required this.name,
+    required this.initials,
+    required this.spec,
+    required this.years,
+    required this.rating,
+    required this.reviews,
+    required this.priceK,
+  });
+}
+
+class _LiveCounselorCard extends StatelessWidget {
+  const _LiveCounselorCard({required this.seed});
+
+  final _CounselorSeed seed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: () => context.push('/counselor/${seed.id}'),
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          width: 160,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.borderSoft, width: 1),
           ),
-          const SizedBox(height: 24),
-          ...steps.map((step) {
-            final index = steps.indexOf(step);
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.gold, width: 2),
-                      color: Colors.black26,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      step['num']!,
-                      style: GoogleFonts.notoSerif(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.gold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 2),
-                        Text(
-                          step['title']!,
-                          style: GoogleFonts.notoSerif(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.hanji,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          step['desc']!,
-                          style: GoogleFonts.notoSans(
-                            fontSize: 13,
-                            color: const Color(0xFFA49484),
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Connector line (except last)
-                  if (index < steps.length - 1)
-                    const SizedBox.shrink(),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCounselorsSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '추천 상담사',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 16),
-          if (_counselors.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  children: [
-                    Text(
-                      '등록된 상담사가 없습니다',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () => context.push('/counselors'),
-                      child: Text(
-                        '상담사 페이지로 이동 →',
-                        style: GoogleFonts.notoSerif(
-                          color: AppColors.gold,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _counselors.length > 5
-                  ? 5
-                  : _counselors.length,
-              itemBuilder: (context, index) {
-                final counselor = _counselors[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    leading: CircleAvatar(
-                      radius: 30,
-                      backgroundColor: AppColors.lotusPink,
-                      child: Text(
-                        counselor['name']
-                                ?.toString()
-                                .substring(0, 1) ??
-                            '?',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(
-                              color: Colors.white,
-                            ),
-                      ),
-                    ),
-                    title: Text(
-                      counselor['name']?.toString() ?? '-',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge,
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text(
-                          counselor['specialty']
-                                  ?.toString() ??
-                              '',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                color: AppColors.gold,
-                              ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          counselor['intro']?.toString() ??
-                              '',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                    ),
-                    onTap: () {
-                      final id = counselor['id'];
-                      if (id != null) {
-                        context.push('/counselor/$id');
-                      }
-                    },
-                  ),
-                );
-              },
-            ),
-          if (_counselors.isNotEmpty)
-            Center(
-              child: TextButton(
-                onPressed: () => context.push('/counselors'),
-                child: Text(
-                  '전체 상담사 보기 →',
-                  style: GoogleFonts.notoSerif(
-                    color: AppColors.gold,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTrustMetricsSection(BuildContext context) {
-    const trustStats = [
-      {'value': '3', 'suffix': '명', 'label': '전문 상담사'},
-      {'value': '39', 'suffix': '슬롯', 'label': '예약 가능'},
-      {'value': '24', 'suffix': '시간', 'label': '연중무휴'},
-      {'value': '100', 'suffix': '%', 'label': '비밀 보장'},
-    ];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-      color: AppColors.inkBlack.withOpacity(0.95),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: trustStats.map((stat) {
-          return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [AppColors.gold, Color(0xFFD4A843)],
-                  ).createShader(bounds),
-                  child: Text(
-                    '${stat['value']}${stat['suffix']}',
-                    style: GoogleFonts.notoSerif(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
+                // Top row: LIVE + "지금"
+                Row(
+                  children: [
+                    const ZeomPresenceDot(pulse: true, size: 7),
+                    const SizedBox(width: 4),
+                    Text(
+                      'LIVE',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.jadeSuccess,
+                        letterSpacing: 0.5,
+                      ),
                     ),
+                    const Spacer(),
+                    Text(
+                      '지금',
+                      style: GoogleFonts.notoSerif(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.ink3,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Avatar
+                Center(
+                  child: ZeomAvatar(
+                    initials: seed.initials,
+                    size: 48,
                   ),
+                ),
+                const SizedBox(height: 6),
+                // Name
+                Text(
+                  seed.name,
+                  style: ZeomType.cardTitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                // Subtitle
+                Text(
+                  '${seed.spec} · ${seed.years}년차',
+                  style: ZeomType.meta.copyWith(color: AppColors.ink3),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                // Rating
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ZeomStarRating(value: seed.rating, size: 10),
+                    const SizedBox(width: 4),
+                    Text(
+                      '(${seed.reviews})',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 10,
+                        color: AppColors.ink3,
+                        fontFeatures: kTabularNums,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  stat['label']!,
-                  style: GoogleFonts.notoSerif(
-                    fontSize: 12,
-                    color: const Color(0xFFA49484),
-                    fontWeight: FontWeight.w500,
-                  ),
+                // Price
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      '${seed.priceK}K',
+                      style: GoogleFonts.notoSerif(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.gold,
+                        fontFeatures: kTabularNums,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      '/60분',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 10,
+                        color: AppColors.ink4,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          );
-        }).toList(),
+          ),
+        ),
       ),
     );
   }
+}
 
-  Widget _buildFinalCtaSection(BuildContext context) {
+// ===================================================================
+// 7. Upcoming Booking Banner
+// ===================================================================
+
+class _UpcomingBookingBanner extends ConsumerWidget {
+  const _UpcomingBookingBanner({required this.booking});
+
+  final Booking booking;
+
+  String _formatTime(DateTime dt) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    final y = dt.year;
+    final m = dt.month;
+    final d = dt.day;
+    return '$y.${two(m)}.${two(d)} ${two(dt.hour)}:${two(dt.minute)}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      child: Column(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.ink,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
         children: [
-          Text(
-            '지금 바로 운명의\n꽃을 피워보세요',
-            style: GoogleFonts.notoSerif(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
-            ),
-            textAlign: TextAlign.center,
+          ZeomAvatar(
+            initials: booking.counselorInitials,
+            size: 40,
           ),
-          const SizedBox(height: 12),
-          Text(
-            '첫 상담 예약은 간단합니다.\n상담사를 선택하고 원하는 시간에 예약하세요.',
-            style: GoogleFonts.notoSans(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              height: 1.5,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  booking.counselorName,
+                  style: ZeomType.cardTitle.copyWith(color: AppColors.hanji),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _formatTime(booking.when),
+                  style: ZeomType.meta.copyWith(
+                    color: AppColors.hanji.withOpacity(0.7),
+                    fontFeatures: kTabularNums,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => context.push('/signup'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gold,
-                foregroundColor: AppColors.inkBlack,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                elevation: 4,
-              ),
-              child: Text(
-                '무료로 시작하기',
-                style: GoogleFonts.notoSerif(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
+          const SizedBox(width: 12),
+          ZeomButton(
+            label: '입장',
+            variant: ZeomButtonVariant.gold,
+            size: ZeomButtonSize.sm,
+            onPressed: () {
+              ref.read(activeSessionProvider.notifier).set(booking);
+              // TODO(router): confirm preflight path — currently
+              // `/consultation/:bookingId/preflight` is the actual route.
+              context.push('/consultation/${booking.id}/preflight');
+            },
           ),
         ],
       ),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../core/api_client.dart';
+
 import '../../shared/theme.dart';
+import '../../shared/typography.dart';
+import '../../shared/widgets/zeom_app_bar.dart';
 
 class DisputeDetailScreen extends ConsumerStatefulWidget {
   final int disputeId;
@@ -15,345 +16,245 @@ class DisputeDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _DisputeDetailScreenState extends ConsumerState<DisputeDetailScreen> {
-  Map<String, dynamic>? _dispute;
-  bool _isLoading = true;
-  String? _error;
+  // Static seed values (view-only rewrite per S17 spec).
+  static const String _status = '검토 중';
+  static const String _statusDescription = '담당자가 검토하고 있습니다';
+  static const String _category = '부적절한 발언';
+  static const String _target = '예약 #2024-0412 / 김상담';
+  static const String _detail =
+      '상담 도중 부적절한 표현과 무례한 태도로 인해 불쾌함을 느꼈습니다. 세션 녹취 검토를 요청드립니다.';
 
-  @override
-  void initState() {
-    super.initState();
-    _loadDispute();
-  }
-
-  Future<void> _loadDispute() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.getDisputeDetail(widget.disputeId);
-      setState(() {
-        _dispute = response.data as Map<String, dynamic>;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = '분쟁 상세 정보를 불러올 수 없습니다';
-        _isLoading = false;
-      });
-    }
-  }
-
-  String _getStatusLabel(String status) {
-    switch (status) {
-      case 'OPEN':
-        return '접수됨';
-      case 'IN_REVIEW':
-        return '검토중';
-      case 'RESOLVED':
-        return '해결됨';
-      case 'CLOSED':
-        return '종료';
-      default:
-        return status;
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'OPEN':
-        return AppColors.gold;
-      case 'IN_REVIEW':
-        return const Color(0xFF1565C0);
-      case 'RESOLVED':
-        return AppColors.success;
-      case 'CLOSED':
-        return AppColors.textSecondary;
-      default:
-        return AppColors.textSecondary;
-    }
-  }
-
-  String _getCategoryLabel(String category) {
-    switch (category) {
-      case 'SERVICE_QUALITY':
-        return '서비스 품질';
-      case 'BILLING':
-        return '결제 문제';
-      case 'TECHNICAL':
-        return '기술 문제';
-      case 'COUNSELOR_BEHAVIOR':
-        return '상담사 행동';
-      case 'OTHER':
-        return '기타';
-      default:
-        return category;
-    }
-  }
-
-  String _getResolutionTypeLabel(String type) {
-    switch (type) {
-      case 'REFUND':
-        return '환불 처리';
-      case 'CREDIT':
-        return '크레딧 보상';
-      case 'WARNING':
-        return '경고 조치';
-      case 'DISMISS':
-        return '기각';
-      default:
-        return type;
-    }
-  }
+  static const List<_TimelineEvent> _events = [
+    _TimelineEvent(title: '신고 접수', date: '2026-04-15 14:20', completed: true),
+    _TimelineEvent(title: '검토 시작', date: '2026-04-16 10:05', completed: true),
+    _TimelineEvent(title: '처리 완료', date: '예정', completed: false),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('분쟁 상세'),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(_error!),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: _loadDispute,
-                        child: const Text('다시 시도'),
-                      ),
-                    ],
-                  ),
-                )
-              : _buildContent(),
-    );
-  }
-
-  Widget _buildContent() {
-    if (_dispute == null) return const SizedBox.shrink();
-
-    final status = (_dispute!['status'] ?? '') as String;
-    final category = (_dispute!['category'] ?? '') as String;
-    final description = (_dispute!['description'] ?? '') as String;
-    final resolution = _dispute!['resolution']?.toString();
-    final resolutionType = _dispute!['resolutionType']?.toString();
-    final resolutionNote = _dispute!['resolutionNote']?.toString();
-    final resolvedAt = _dispute!['resolvedAt']?.toString();
-    final createdAt = _dispute!['createdAt']?.toString();
-
-    String createdStr = '';
-    if (createdAt != null) {
-      try {
-        final dt = DateTime.parse(createdAt);
-        createdStr =
-            '${dt.year}.${dt.month.toString().padLeft(2, '0')}.${dt.day.toString().padLeft(2, '0')} '
-            '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-      } catch (_) {
-        createdStr = createdAt;
-      }
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadDispute,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+      backgroundColor: AppColors.hanji,
+      appBar: const ZeomAppBar(title: '분쟁 상세'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Status and category header
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(status).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    _getStatusLabel(status),
-                    style: GoogleFonts.notoSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: _getStatusColor(status),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.border.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    _getCategoryLabel(category),
-                    style: GoogleFonts.notoSans(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Meta info
-            _buildInfoRow('예약 번호', '#${_dispute!['reservationId']}'),
-            _buildInfoRow('접수일', createdStr),
-            const SizedBox(height: 20),
-
-            // Description
-            Text(
-              '분쟁 내용',
-              style: GoogleFonts.notoSerif(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Text(
-                description,
-                style: GoogleFonts.notoSans(
-                  fontSize: 14,
-                  height: 1.6,
-                ),
-              ),
-            ),
-
-            // Resolution section (if resolved)
-            if (status == 'RESOLVED' || status == 'CLOSED') ...[
-              const SizedBox(height: 24),
-              Text(
-                '처리 결과',
-                style: GoogleFonts.notoSerif(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.success.withOpacity(0.3),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (resolutionType != null) ...[
-                      Row(
-                        children: [
-                          const Icon(Icons.check_circle,
-                              size: 18, color: AppColors.success),
-                          const SizedBox(width: 6),
-                          Text(
-                            _getResolutionTypeLabel(resolutionType),
-                            style: GoogleFonts.notoSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.success,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                    if (resolution != null)
-                      Text(
-                        resolution,
-                        style: GoogleFonts.notoSans(
-                          fontSize: 14,
-                          height: 1.6,
-                        ),
-                      ),
-                    if (resolutionNote != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        resolutionNote,
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                    if (resolvedAt != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        '처리일: ${_formatDate(resolvedAt)}',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+            _buildStatusCard(),
+            const SizedBox(height: 12),
+            _buildContentCard(),
+            const SizedBox(height: 12),
+            _buildTimelineCard(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
+  // -----------------------------------------------------------------
+  // Cards
+  // -----------------------------------------------------------------
+
+  Widget _buildCardShell({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSoft),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildStatusCard() {
+    final palette = _statusPalette(_status);
+    return _buildCardShell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 80,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: palette.bg,
+              borderRadius: BorderRadius.circular(999),
+            ),
             child: Text(
-              label,
-              style: GoogleFonts.notoSans(
-                fontSize: 13,
-                color: AppColors.textSecondary,
+              _status,
+              style: ZeomType.tag.copyWith(
+                color: palette.fg,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
+          const SizedBox(height: 10),
+          Text(_status, style: ZeomType.cardTitle),
+          const SizedBox(height: 4),
           Text(
-            value,
-            style: GoogleFonts.notoSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+            _statusDescription,
+            style: ZeomType.meta.copyWith(color: AppColors.ink3),
           ),
         ],
       ),
     );
   }
 
-  String _formatDate(String dateStr) {
-    try {
-      final dt = DateTime.parse(dateStr);
-      return '${dt.year}.${dt.month.toString().padLeft(2, '0')}.${dt.day.toString().padLeft(2, '0')} '
-          '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return dateStr;
+  Widget _buildContentCard() {
+    return _buildCardShell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('신고 내용', style: ZeomType.section),
+          const SizedBox(height: 12),
+          _buildLabelValue('신고 유형', _category),
+          const SizedBox(height: 10),
+          _buildLabelValue('대상', _target),
+          const SizedBox(height: 10),
+          _buildLabelValue('상세 내용', _detail),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLabelValue(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: ZeomType.meta.copyWith(color: AppColors.ink3),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: ZeomType.body.copyWith(color: AppColors.ink),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineCard() {
+    return _buildCardShell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('처리 타임라인', style: ZeomType.section),
+          const SizedBox(height: 12),
+          for (var i = 0; i < _events.length; i++)
+            _TimelineRow(
+              event: _events[i],
+              isFirst: i == 0,
+              isLast: i == _events.length - 1,
+            ),
+        ],
+      ),
+    );
+  }
+
+  _PillPalette _statusPalette(String s) {
+    switch (s) {
+      case '종결':
+        return _PillPalette(
+          bg: AppColors.jadeSuccess.withOpacity(0.1),
+          fg: AppColors.jadeSuccess,
+        );
+      case '반려':
+        return _PillPalette(
+          bg: AppColors.darkRed.withOpacity(0.1),
+          fg: AppColors.darkRed,
+        );
+      case '검토 중':
+      default:
+        return const _PillPalette(
+          bg: AppColors.hanjiDeep,
+          fg: AppColors.ink2,
+        );
     }
   }
+}
+
+class _TimelineEvent {
+  final String title;
+  final String date;
+  final bool completed;
+  const _TimelineEvent({
+    required this.title,
+    required this.date,
+    required this.completed,
+  });
+}
+
+class _TimelineRow extends StatelessWidget {
+  const _TimelineRow({
+    required this.event,
+    required this.isFirst,
+    required this.isLast,
+  });
+
+  final _TimelineEvent event;
+  final bool isFirst;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color dotColor =
+        event.completed ? AppColors.darkRed : AppColors.ink4;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 16,
+            child: Column(
+              children: [
+                if (!isFirst)
+                  Container(width: 1, height: 6, color: AppColors.borderSoft),
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: dotColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(width: 1, color: AppColors.borderSoft),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event.title,
+                    style: ZeomType.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: event.completed ? AppColors.ink : AppColors.ink3,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    event.date,
+                    style: ZeomType.meta.copyWith(color: AppColors.ink3),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PillPalette {
+  final Color bg;
+  final Color fg;
+  const _PillPalette({required this.bg, required this.fg});
 }

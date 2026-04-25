@@ -2,17 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/api_client.dart';
-import '../../shared/theme.dart';
-import '../dispute/dispute_list_screen.dart';
 
-const _disputeCategories = [
-  {'value': 'SERVICE_QUALITY', 'label': '서비스 품질'},
-  {'value': 'BILLING', 'label': '결제 문제'},
-  {'value': 'TECHNICAL', 'label': '기술 문제'},
-  {'value': 'COUNSELOR_BEHAVIOR', 'label': '상담사 행동'},
-  {'value': 'OTHER', 'label': '기타'},
+import '../../shared/animations/zeom_animations.dart';
+import '../../shared/theme.dart';
+import '../../shared/typography.dart';
+import '../../shared/widgets/zeom_app_bar.dart';
+import '../../shared/widgets/zeom_button.dart';
+
+enum _DisputeStep { form, success }
+
+const List<String> _kDisputeCategories = [
+  '상담 내용 문제',
+  '부적절한 발언',
+  '상담사 노쇼',
+  '환불 미이행',
+  '개인정보 침해',
+  '기타',
 ];
+
+const int _kDetailMaxLength = 1000;
 
 class DisputeCreateScreen extends ConsumerStatefulWidget {
   const DisputeCreateScreen({super.key});
@@ -23,228 +31,339 @@ class DisputeCreateScreen extends ConsumerStatefulWidget {
 }
 
 class _DisputeCreateScreenState extends ConsumerState<DisputeCreateScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _reservationIdController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  String? _selectedCategory;
-  bool _isSubmitting = false;
+  _DisputeStep _step = _DisputeStep.form;
+  String? _category;
+  String _targetText = '';
+  String _detail = '';
+  bool _submitting = false;
 
-  @override
-  void dispose() {
-    _reservationIdController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
+  bool get _canSubmit =>
+      _category != null && _targetText.isNotEmpty && _detail.isNotEmpty;
+
+  String get _ctaLabel {
+    if (_submitting) return '접수 중…';
+    if (_canSubmit) return '신고 접수';
+    return '유형·대상·내용을 입력해주세요';
   }
 
-  Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate() || _selectedCategory == null) return;
-
-    setState(() => _isSubmitting = true);
-
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      await apiClient.createDispute(
-        reservationId: int.parse(_reservationIdController.text.trim()),
-        category: _selectedCategory!,
-        description: _descriptionController.text.trim(),
-      );
-
-      if (mounted) {
-        ref.invalidate(disputeListProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('분쟁이 접수되었습니다'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        context.pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('분쟁 접수에 실패했습니다: ${e.toString().replaceFirst('Exception: ', '')}'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
+  Future<void> _submit() async {
+    setState(() => _submitting = true);
+    await Future<void>.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
+    setState(() {
+      _submitting = false;
+      _step = _DisputeStep.success;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('분쟁 신청'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
+      backgroundColor: AppColors.hanji,
+      appBar: _step == _DisputeStep.form
+          ? const ZeomAppBar(title: '분쟁 신고')
+          : null,
+      body: _step == _DisputeStep.form ? _buildForm() : _buildSuccess(),
+    );
+  }
+
+  // -----------------------------------------------------------------
+  // Form step
+  // -----------------------------------------------------------------
+
+  Widget _buildForm() {
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Info banner
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.gold.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.gold.withOpacity(0.3),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline,
-                        color: AppColors.gold, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '분쟁은 상담 완료 후 접수 가능합니다.\n관리자가 검토 후 처리 결과를 안내드립니다.',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          color: AppColors.textPrimary,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Reservation ID
-              TextFormField(
-                controller: _reservationIdController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '예약 번호',
-                  hintText: '분쟁을 제기할 예약 번호를 입력해주세요',
-                  prefixIcon: Icon(Icons.confirmation_number_outlined),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '예약 번호를 입력해주세요';
-                  }
-                  if (int.tryParse(value) == null) {
-                    return '올바른 예약 번호를 입력해주세요';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-
-              // Category selection
-              Text(
-                '분쟁 유형',
-                style: GoogleFonts.notoSans(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _disputeCategories.map((cat) {
-                  final isSelected =
-                      _selectedCategory == cat['value'];
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => _selectedCategory = cat['value']);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.gold
-                              : AppColors.border,
-                          width: isSelected ? 2 : 1,
-                        ),
-                        color: isSelected
-                            ? AppColors.gold.withOpacity(0.1)
-                            : Colors.white,
-                      ),
-                      child: Text(
-                        cat['label']!,
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                          color: isSelected
-                              ? AppColors.gold
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+              _buildWarningBox(),
+              const SizedBox(height: 20),
+              _buildCategoryGrid(),
+              const SizedBox(height: 20),
+              _buildTargetInput(),
+              const SizedBox(height: 16),
+              _buildDetailTextarea(),
+              const SizedBox(height: 16),
+              _buildAttachmentButton(),
+            ],
+          ),
+        ),
+        _buildStickyCta(),
+      ],
+    );
+  }
+
+  Widget _buildWarningBox() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDECEC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color.fromRGBO(139, 0, 0, 0.2),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.priority_high_rounded,
+            size: 20,
+            color: AppColors.darkRed,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '부당한 경험을 하셨다면 주저 없이 신고해주세요. 접수된 모든 사안은 내부 정책에 따라 엄정 검토됩니다.',
+              style: ZeomType.body.copyWith(
+                color: AppColors.darkRed,
+                height: 1.6,
               ),
-              if (_selectedCategory == null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  '',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 12,
-                    color: AppColors.error,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryGrid() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('신고 유형', style: ZeomType.section),
+        const SizedBox(height: 10),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 3,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          children: _kDisputeCategories.map(_buildCategoryTile).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryTile(String label) {
+    final bool selected = _category == label;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => setState(() => _category = label),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? AppColors.darkRed : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected ? AppColors.darkRed : AppColors.borderSoft,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: ZeomType.body.copyWith(
+            fontWeight: FontWeight.w600,
+            color: selected ? AppColors.hanji : AppColors.ink,
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: ZeomType.body.copyWith(color: AppColors.ink4),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.borderSoft),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.borderSoft),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.ink, width: 1.5),
+      ),
+      counterText: '',
+    );
+  }
+
+  Widget _buildTargetInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('대상 상담', style: ZeomType.section),
+        const SizedBox(height: 8),
+        TextField(
+          style: ZeomType.body,
+          decoration: _inputDecoration('예약 번호 또는 상담사 이름'),
+          onChanged: (v) => setState(() => _targetText = v),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailTextarea() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('상세 내용', style: ZeomType.section),
+        const SizedBox(height: 8),
+        TextField(
+          maxLines: 6,
+          minLines: 6,
+          maxLength: _kDetailMaxLength,
+          style: ZeomType.body,
+          decoration: _inputDecoration('겪으신 상황을 구체적으로 설명해주세요'),
+          onChanged: (v) => setState(() => _detail = v),
+        ),
+        const SizedBox(height: 4),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            '${_detail.length}/$_kDetailMaxLength',
+            style: ZeomType.micro.copyWith(color: AppColors.ink3),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAttachmentButton() {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('파일 첨부는 준비 중입니다')),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: const Color.fromRGBO(102, 102, 102, 0.4),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.attach_file,
+              size: 18,
+              color: AppColors.ink3,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '증빙 자료 첨부 (선택)',
+              style: ZeomType.body.copyWith(
+                color: AppColors.ink3,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStickyCta() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        decoration: BoxDecoration(
+          color: AppColors.hanji,
+          border: Border(
+            top: BorderSide(color: AppColors.borderSoft),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: ZeomButton(
+            label: _ctaLabel,
+            variant: ZeomButtonVariant.danger,
+            size: ZeomButtonSize.md,
+            width: double.infinity,
+            loading: _submitting,
+            onPressed: _canSubmit && !_submitting ? _submit : null,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // -----------------------------------------------------------------
+  // Success step
+  // -----------------------------------------------------------------
+
+  Widget _buildSuccess() {
+    return SafeArea(
+      child: ZeomFadeSlideIn(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFDECEC),
+                    shape: BoxShape.circle,
                   ),
+                  child: const Icon(
+                    Icons.priority_high_rounded,
+                    size: 40,
+                    color: AppColors.darkRed,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '신고가 접수되었습니다',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.notoSerif(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '담당 팀이 검토 후 72시간 이내\n답변 드립니다.',
+                  textAlign: TextAlign.center,
+                  style: ZeomType.body.copyWith(
+                    color: AppColors.ink3,
+                    height: 1.7,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                ZeomButton(
+                  label: '확인',
+                  variant: ZeomButtonVariant.primary,
+                  size: ZeomButtonSize.md,
+                  width: double.infinity,
+                  onPressed: () => context.go('/home'),
                 ),
               ],
-              const SizedBox(height: 20),
-
-              // Description
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 5,
-                maxLength: 500,
-                decoration: const InputDecoration(
-                  labelText: '상세 내용',
-                  hintText: '분쟁 사유를 상세히 적어주세요',
-                  alignLabelWithHint: true,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return '분쟁 내용을 입력해주세요';
-                  }
-                  if (value.trim().length < 10) {
-                    return '최소 10자 이상 입력해주세요';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 32),
-
-              // Submit button
-              ElevatedButton(
-                onPressed: _isSubmitting || _selectedCategory == null
-                    ? null
-                    : _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.darkRed,
-                  foregroundColor: Colors.white,
-                ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text('분쟁 접수하기'),
-              ),
-            ],
+            ),
           ),
         ),
       ),

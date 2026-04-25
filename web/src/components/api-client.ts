@@ -36,9 +36,10 @@ async function refreshToken(): Promise<boolean> {
   return refreshPromise;
 }
 
-export async function apiFetch(path: string, init: RequestInit = {}, retry = true): Promise<Response> {
-  const headers = new Headers(init.headers || {});
-  const method = (init.method ?? 'GET').toUpperCase();
+export async function apiFetch(path: string, init: RequestInit & { silent?: boolean } = {}, retry = true): Promise<Response> {
+  const { silent, ...fetchInit } = init;
+  const headers = new Headers(fetchInit.headers || {});
+  const method = (fetchInit.method ?? 'GET').toUpperCase();
   if (STATE_CHANGING_METHODS.has(method)) {
     const csrf = getCsrfToken();
     if (csrf) headers.set('X-CSRF-Token', csrf);
@@ -46,16 +47,16 @@ export async function apiFetch(path: string, init: RequestInit = {}, retry = tru
 
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}${path}`, { ...init, headers, credentials: 'include' });
+    res = await fetch(`${API_BASE}${path}`, { ...fetchInit, headers, credentials: 'include' });
   } catch (err) {
-    reportError(err, 'high', { path, method: init.method ?? 'GET', source: 'apiFetch' });
+    reportError(err, 'high', { path, method: fetchInit.method ?? 'GET', source: 'apiFetch' });
     throw err;
   }
 
   if (res.status === 401 && retry) {
     const ok = await refreshToken();
     if (!ok) {
-      window.dispatchEvent(new CustomEvent('auth:expired'));
+      if (!silent) window.dispatchEvent(new CustomEvent('auth:expired'));
       return res;
     }
     return apiFetch(path, init, false);
