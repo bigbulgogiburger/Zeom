@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { API_BASE } from '../../components/api';
 import { getDeviceId } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
-import { useToast } from '../../components/toast';
+import { toast } from 'sonner';
 import { ActionButton, FormField } from '../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -88,7 +88,6 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const { refreshMe } = useAuth();
-  const { toast } = useToast();
   const t = useTranslations('signup');
   const tc = useTranslations('common');
 
@@ -190,7 +189,7 @@ export default function SignupPage() {
       }
       await refreshMe();
       trackEvent('sign_up', { method: 'email' });
-      toast(t('signupSuccessVerify'), 'success');
+      toast.success(t('signupSuccessVerify'));
       router.push('/counselors');
     } catch {
       setLoading(false);

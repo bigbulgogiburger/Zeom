@@ -4,7 +4,7 @@ import { FormEvent, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { API_BASE } from '../../components/api';
-import { useToast } from '../../components/toast';
+import { toast } from 'sonner';
 import { ActionButton, FormField } from '../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
   const router = useRouter();
-  const { toast } = useToast();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -45,7 +44,7 @@ function ResetPasswordForm() {
         return;
       }
       setSuccess(true);
-      toast('비밀번호가 변경되었습니다', 'success');
+      toast.success('비밀번호가 변경되었습니다');
       setTimeout(() => router.push('/login'), 2000);
     } catch {
       setError('서버에 연결할 수 없습니다');

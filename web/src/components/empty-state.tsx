@@ -1,9 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/design';
 
-interface EmptyStateProps {
+interface EmptyStateCardProps {
   icon?: string;
   title: string;
   description?: string;
@@ -23,57 +22,17 @@ export function EmptyStateCard({
   onAction,
   variant = 'empty',
   className,
-}: EmptyStateProps) {
-  const isError = variant === 'error';
-
+}: EmptyStateCardProps) {
   return (
-    <div
-      className={cn(
-        'bg-black/30 backdrop-blur-xl border rounded-2xl p-10 sm:p-12',
-        isError
-          ? 'border-[hsl(var(--dancheong))]/20'
-          : 'border-[hsl(var(--gold)/0.1)]',
-        className
-      )}
-    >
-      <div className="flex flex-col items-center text-center gap-4">
-        {icon && <div className="text-5xl">{icon}</div>}
-        <h3 className={cn(
-          'm-0 font-heading font-bold text-xl',
-          isError
-            ? 'text-[hsl(var(--dancheong))]'
-            : 'text-[hsl(var(--text-primary))]'
-        )}>
-          {title}
-        </h3>
-        {description && (
-          <p className="text-[hsl(var(--text-secondary))] text-sm leading-relaxed max-w-[400px]">
-            {description}
-          </p>
-        )}
-        {actionLabel && (actionHref || onAction) && (
-          onAction ? (
-            <button
-              onClick={onAction}
-              className={cn(
-                'mt-4 inline-flex items-center justify-center rounded-full px-8 py-3 font-bold font-heading transition-all no-underline border-none cursor-pointer',
-                isError
-                  ? 'bg-[hsl(var(--dancheong))] text-white hover:bg-[hsl(var(--dancheong))]/90'
-                  : 'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)]'
-              )}
-            >
-              {actionLabel}
-            </button>
-          ) : actionHref ? (
-            <Link
-              href={actionHref}
-              className="mt-4 inline-flex items-center justify-center rounded-full px-8 py-3 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold font-heading transition-all hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)] no-underline"
-            >
-              {actionLabel}
-            </Link>
-          ) : null
-        )}
-      </div>
-    </div>
+    <EmptyState
+      icon={icon ? <span aria-hidden="true">{icon}</span> : undefined}
+      title={title}
+      body={description}
+      cta={actionLabel ? { label: actionLabel, href: actionHref, onClick: onAction } : undefined}
+      variant={variant}
+      className={className}
+    />
   );
 }
+
+export { EmptyState };

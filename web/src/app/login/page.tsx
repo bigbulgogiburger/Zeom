@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { API_BASE } from '../../components/api';
 import { getDeviceId } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
-import { useToast } from '../../components/toast';
+import { toast } from 'sonner';
 import { ActionButton, FormField } from '../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { refreshMe } = useAuth();
-  const { toast } = useToast();
   const t = useTranslations('login');
   const tc = useTranslations('common');
 
@@ -55,7 +54,7 @@ export default function LoginPage() {
       }
       await refreshMe();
       trackEvent('login', { method: 'email' });
-      toast(t('loginSuccess'), 'success');
+      toast.success(t('loginSuccess'));
       router.push('/counselors');
     } catch {
       setLoading(false);

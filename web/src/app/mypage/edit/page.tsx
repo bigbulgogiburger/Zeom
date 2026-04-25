@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../../components/api-client';
-import { useToast } from '../../../components/toast';
+import { toast } from 'sonner';
 import { ActionButton, Card, FormField } from '../../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -16,7 +16,6 @@ interface UserProfile {
 }
 
 export default function EditProfilePage() {
-  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -66,7 +65,7 @@ export default function EditProfilePage() {
       });
       const json = await res.json();
       if (res.ok) {
-        toast('프로필이 수정되었습니다', 'success');
+        toast.success('프로필이 수정되었습니다');
       } else {
         setError(json.message ?? '프로필 수정에 실패했습니다');
       }

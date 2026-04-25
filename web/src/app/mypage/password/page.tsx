@@ -2,14 +2,13 @@
 
 import { FormEvent, useState } from 'react';
 import { apiFetch } from '../../../components/api-client';
-import { useToast } from '../../../components/toast';
+import { toast } from 'sonner';
 import { ActionButton, Card, FormField } from '../../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function ChangePasswordPage() {
-  const { toast } = useToast();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,7 +34,7 @@ export default function ChangePasswordPage() {
       });
       const json = await res.json();
       if (res.ok) {
-        toast('비밀번호가 변경되었습니다', 'success');
+        toast.success('비밀번호가 변경되었습니다');
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');

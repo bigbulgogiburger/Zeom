@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { API_BASE } from './api';
 import { getDeviceId } from './auth-client';
 import { useAuth } from './auth-context';
-import { useToast } from './toast';
+import { toast } from 'sonner';
 
 interface SocialLoginButtonsProps {
   mode: 'login' | 'signup';
@@ -17,7 +17,6 @@ export function SocialLoginButtons({ mode }: SocialLoginButtonsProps) {
   const [error, setError] = useState('');
   const router = useRouter();
   const { refreshMe } = useAuth();
-  const { toast } = useToast();
   const t = useTranslations(mode === 'login' ? 'login' : 'signup');
   const tc = useTranslations('common');
 
@@ -42,9 +41,8 @@ export function SocialLoginButtons({ mode }: SocialLoginButtonsProps) {
         return;
       }
       await refreshMe();
-      toast(
+      toast.success(
         mode === 'login' ? t('loginSuccess') : t('signupSuccess'),
-        'success',
       );
       router.push('/counselors');
     } catch {

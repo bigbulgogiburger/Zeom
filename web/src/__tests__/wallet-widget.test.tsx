@@ -15,7 +15,7 @@ jest.mock('@/components/api-client', () => ({
 }));
 
 // Mock auth-context
-const mockMe = { id: 1, email: 'test@test.com', name: 'Test User', role: 'USER' };
+const mockMe = { id: 1, email: 'test@test.com', name: 'Test User', role: 'USER' as const };
 jest.mock('@/components/auth-context', () => ({
   useAuth: jest.fn(),
 }));
@@ -25,6 +25,13 @@ import { useAuth } from '@/components/auth-context';
 
 const mockGetWallet = getWallet as jest.MockedFunction<typeof getWallet>;
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+
+// Match split balance text: "50,000" + "원" rendered in separate spans
+const balanceMatcher = (formatted: string) => (_: string, node: Element | null) => {
+  if (!node) return false;
+  const text = node.textContent ?? '';
+  return text.includes(formatted) && text.includes('원');
+};
 
 describe('WalletWidget', () => {
   beforeEach(() => {
@@ -50,7 +57,9 @@ describe('WalletWidget', () => {
     render(<WalletWidget />);
 
     await waitFor(() => {
-      expect(screen.getByText('50,000원')).toBeInTheDocument();
+      const button = screen.getByRole('button', { name: '내 지갑' });
+      expect(button).toHaveTextContent('50,000');
+      expect(button).toHaveTextContent('원');
     });
 
     expect(mockGetWallet).toHaveBeenCalledTimes(1);
@@ -68,24 +77,24 @@ describe('WalletWidget', () => {
 
     render(<WalletWidget />);
 
-    expect(screen.getByText('...')).toBeInTheDocument();
+    // Loading 상태에서 ellipsis(…)가 보여야 한다
+    expect(screen.getByText('…')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText('30,000원')).toBeInTheDocument();
+      const button = screen.getByRole('button', { name: '내 지갑' });
+      expect(button).toHaveTextContent('30,000');
     });
   });
 
-  it('shows fallback text when balance is null', async () => {
+  it('hides button when balance is null after fetch error', async () => {
     mockUseAuth.mockReturnValue({ me: mockMe, loading: false, refreshMe: jest.fn() });
     mockGetWallet.mockRejectedValueOnce(new Error('Network error'));
 
-    render(<WalletWidget />);
-
-    // Initially loading
-    expect(screen.getByText('...')).toBeInTheDocument();
+    const { container } = render(<WalletWidget />);
 
     await waitFor(() => {
-      expect(screen.getByText('지갑')).toBeInTheDocument();
+      // hideWhenAnonymous=true 기본값 — null balance + loading=false 시 hidden
+      expect(container.querySelector('button')).toBeNull();
     });
   });
 
@@ -93,13 +102,12 @@ describe('WalletWidget', () => {
     mockUseAuth.mockReturnValue({ me: mockMe, loading: false, refreshMe: jest.fn() });
     mockGetWallet.mockRejectedValueOnce(new Error('Server error'));
 
-    render(<WalletWidget />);
+    const { container } = render(<WalletWidget />);
 
     await waitFor(() => {
-      expect(screen.getByText('지갑')).toBeInTheDocument();
+      expect(container.querySelector('button')).toBeNull();
     });
 
-    // Should not throw or display error to user
     expect(screen.queryByText('Server error')).not.toBeInTheDocument();
   });
 
@@ -114,11 +122,10 @@ describe('WalletWidget', () => {
     render(<WalletWidget />);
 
     await waitFor(() => {
-      expect(screen.getByText('20,000원')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '내 지갑' })).toHaveTextContent('20,000');
     });
 
-    const button = screen.getByRole('button', { name: '내 지갑' });
-    fireEvent.click(button);
+    fireEvent.click(screen.getByRole('button', { name: '내 지갑' }));
 
     expect(mockPush).toHaveBeenCalledWith('/wallet');
   });
@@ -134,23 +141,21 @@ describe('WalletWidget', () => {
     render(<WalletWidget />);
 
     await waitFor(() => {
-      expect(screen.getByText('10,000원')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '내 지갑' })).toHaveTextContent('10,000');
     });
 
     expect(mockGetWallet).toHaveBeenCalledTimes(1);
 
-    // Update mock to return new balance
     mockGetWallet.mockResolvedValueOnce({
       id: 1,
       userId: 1,
       balance: 15000,
     });
 
-    // Simulate window focus event
     fireEvent.focus(window);
 
     await waitFor(() => {
-      expect(screen.getByText('15,000원')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '내 지갑' })).toHaveTextContent('15,000');
     });
 
     expect(mockGetWallet).toHaveBeenCalledTimes(2);
@@ -165,14 +170,11 @@ describe('WalletWidget', () => {
   });
 
   it('reloads balance when user changes from null to logged in', async () => {
-    const { rerender } = render(<WalletWidget />);
-
     mockUseAuth.mockReturnValue({ me: null, loading: false, refreshMe: jest.fn() });
-    rerender(<WalletWidget />);
+    const { rerender } = render(<WalletWidget />);
 
     expect(mockGetWallet).not.toHaveBeenCalled();
 
-    // User logs in
     mockUseAuth.mockReturnValue({ me: mockMe, loading: false, refreshMe: jest.fn() });
     mockGetWallet.mockResolvedValueOnce({
       id: 1,
@@ -183,13 +185,13 @@ describe('WalletWidget', () => {
     rerender(<WalletWidget />);
 
     await waitFor(() => {
-      expect(screen.getByText('40,000원')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '내 지갑' })).toHaveTextContent('40,000');
     });
 
     expect(mockGetWallet).toHaveBeenCalledTimes(1);
   });
 
-  it('displays emoji icon', async () => {
+  it('renders wallet icon (lucide svg)', async () => {
     mockUseAuth.mockReturnValue({ me: mockMe, loading: false, refreshMe: jest.fn() });
     mockGetWallet.mockResolvedValueOnce({
       id: 1,
@@ -197,11 +199,14 @@ describe('WalletWidget', () => {
       balance: 5000,
     });
 
-    render(<WalletWidget />);
+    const { container } = render(<WalletWidget />);
 
     await waitFor(() => {
-      expect(screen.getByText('💰')).toBeInTheDocument();
+      const button = screen.getByRole('button', { name: '내 지갑' });
+      expect(button.querySelector('svg')).not.toBeNull();
     });
+
+    expect(container.querySelector('svg')).not.toBeNull();
   });
 
   it('cleans up focus event listener on unmount', async () => {
@@ -215,7 +220,7 @@ describe('WalletWidget', () => {
     const { unmount } = render(<WalletWidget />);
 
     await waitFor(() => {
-      expect(screen.getByText('10,000원')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '내 지갑' })).toHaveTextContent('10,000');
     });
 
     const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
@@ -227,3 +232,6 @@ describe('WalletWidget', () => {
     removeEventListenerSpy.mockRestore();
   });
 });
+
+// Suppress unused warning for helper kept for future use
+void balanceMatcher;
