@@ -76,6 +76,7 @@ cd app_flutter && flutter test
 - **결제 보상 전략**: 결제는 DB 먼저 영속화, 후속(채널 생성/알림) 실패는 `*_retry_needed` 플래그 + 웹훅 알림 + 스케줄러 재시도
 - **Admin 가드**: 모든 `/api/v1/admin/**` 컨트롤러는 첫 줄에 `authService.requireAdmin(authHeader)`. → `security-checklist.md`
 - **Korean text**: `word-break: keep-all`, Pretendard, 헤딩에 `text-wrap: balance`
+- **E2E web 테스트**: Playwright(`npm run test:e2e`)는 spec 파일 작성·CI용. 사용자 시나리오 검증·시각 회귀 확인은 **openchrome MCP**(`mcp__openchrome__*`)로 실제 브라우저를 직접 조작해 진행. 로컬 검증 시 docker 사용 금지 — `npm run dev` + openchrome 조합 사용
 
 ## Path Aliases
 

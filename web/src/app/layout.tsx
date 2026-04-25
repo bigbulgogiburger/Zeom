@@ -1,8 +1,16 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
+import { Gowun_Batang } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
+
+const gowunBatang = Gowun_Batang({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-gowun-batang',
+  display: 'swap',
+});
 import SessionExpiryGuard from '../components/session-expiry-guard';
 import { AuthProvider } from '../components/auth-context';
 import { ErrorBoundary } from '../components/error-boundary';
@@ -84,7 +92,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.min.css"
         />
       </head>
-      <body className="grain-overlay">
+      <body className={`grain-overlay ${gowunBatang.variable}`}>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:bg-[hsl(var(--gold))] focus:text-[hsl(var(--background))] focus:px-4 focus:py-2 focus:rounded-lg focus:font-bold focus:text-sm">
           본문으로 건너뛰기
         </a>
