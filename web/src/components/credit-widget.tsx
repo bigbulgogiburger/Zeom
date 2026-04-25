@@ -42,7 +42,7 @@ export default function CreditWidget() {
       onClick={() => router.push('/credits')}
       style={{
         background: 'hsl(var(--gold))',
-        color: '#fff',
+        color: 'hsl(var(--background))',
         border: 'none',
         borderRadius: 'var(--radius-md)',
         padding: 'var(--spacing-sm) var(--spacing-md)',
