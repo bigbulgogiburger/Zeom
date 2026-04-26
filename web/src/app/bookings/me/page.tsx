@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiFetch, startSession } from '@/components/api-client';
 import { RequireLogin } from '@/components/route-guard';
@@ -355,7 +356,8 @@ export default function MyBookingsPage() {
     if (b.reviewSubmitted) {
       return (
         <span className="inline-flex items-center gap-1 text-xs text-success">
-          후기 작성됨 ✓
+          <Check size={12} strokeWidth={3} aria-hidden="true" />
+          후기 작성됨
         </span>
       );
     }

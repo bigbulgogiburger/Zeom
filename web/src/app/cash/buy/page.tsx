@@ -118,7 +118,16 @@ function CashBuyInner() {
           subtitle={`${chargedAmount.toLocaleString()} 캐시가 지갑에 반영되었습니다`}
           autoNavigateMs={1400}
           onComplete={() => {
-            router.push(returnTo === 'confirm' ? '/booking/confirm' : '/');
+            if (returnTo === 'confirm') {
+              // 원래 confirm 컨텍스트(counselorId/date/time/channel/price)를 그대로 전달해 복귀
+              const sp = new URLSearchParams(searchParams.toString());
+              sp.delete('return');
+              sp.delete('need');
+              const qs = sp.toString();
+              router.push(qs ? `/booking/confirm?${qs}` : '/booking/confirm');
+            } else {
+              router.push('/');
+            }
           }}
         />
       </main>
@@ -316,7 +325,7 @@ function CashBuyInner() {
 
 function DotPulse() {
   return (
-    <span className="inline-flex items-center gap-0.5" aria-hidden="true">
+    <span className="inline-flex items-center gap-0.5 motion-reduce:hidden" aria-hidden="true">
       {[0, 1, 2].map((i) => (
         <span
           key={i}

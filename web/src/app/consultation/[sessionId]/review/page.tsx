@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Check } from 'lucide-react';
 import { apiFetch } from '@/components/api-client';
 import { RequireLogin } from '@/components/route-guard';
 import { StarRating, TagToggle, SuccessState } from '@/components/design';
@@ -37,6 +38,14 @@ const REVIEW_TAGS = [
 const MAX_COMMENT = 500;
 
 export default function ReviewPage() {
+  return (
+    <RequireLogin>
+      <ReviewInner />
+    </RequireLogin>
+  );
+}
+
+function ReviewInner() {
   const router = useRouter();
   const params = useParams();
   const sessionId = params?.sessionId as string;
@@ -121,34 +130,30 @@ export default function ReviewPage() {
   // Success state
   if (submitted) {
     return (
-      <RequireLogin>
-        <main className="mx-auto flex min-h-[60vh] max-w-[600px] items-center justify-center px-6 py-10">
-          <SuccessState
-            icon="lotus"
-            title="고맙습니다"
-            subtitle={`후기가 ${counselorName}님께 전달됩니다.`}
-            autoNavigateMs={1600}
-            onComplete={() => router.push('/bookings/me')}
-          />
-        </main>
-      </RequireLogin>
+      <main className="mx-auto flex min-h-[60vh] max-w-[600px] items-center justify-center px-6 py-10">
+        <SuccessState
+          icon="lotus"
+          title="고맙습니다"
+          subtitle={`후기가 ${counselorName}님께 전달됩니다.`}
+          autoNavigateMs={1600}
+          onComplete={() => router.push('/bookings/me')}
+        />
+      </main>
     );
   }
 
   // Loading / error skeleton
   if (!reservation) {
     return (
-      <RequireLogin>
-        <main className="mx-auto max-w-[600px] px-6 py-10">
-          {loadError ? (
-            <div className="glow-card px-6 py-12 text-center">
-              <p className="m-0 text-sm text-destructive">{loadError}</p>
-            </div>
-          ) : (
-            <div className="glow-card h-[200px] animate-pulse" aria-hidden="true" />
-          )}
-        </main>
-      </RequireLogin>
+      <main className="mx-auto max-w-[600px] px-6 py-10">
+        {loadError ? (
+          <div className="glow-card px-6 py-12 text-center">
+            <p className="m-0 text-sm text-destructive">{loadError}</p>
+          </div>
+        ) : (
+          <div className="glow-card h-[200px] animate-pulse" aria-hidden="true" />
+        )}
+      </main>
     );
   }
 
@@ -156,13 +161,13 @@ export default function ReviewPage() {
   const ratingHint = displayRating ? RATING_LABELS[displayRating] : '별을 눌러 평가해주세요';
 
   return (
-    <RequireLogin>
-      <main className="mx-auto max-w-[600px] px-6 py-8 sm:py-10">
-        {/* 헤더 */}
-        <header className="mb-8 text-center">
-          <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-3 py-1 text-xs font-medium text-success">
-            ✓ 상담 완료
-          </span>
+    <main className="mx-auto max-w-[600px] px-6 py-8 sm:py-10">
+      {/* 헤더 */}
+      <header className="mb-8 text-center">
+        <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-3 py-1 text-xs font-medium text-success">
+          <Check size={12} strokeWidth={3} aria-hidden="true" />
+          상담 완료
+        </span>
           <h1 className="mt-4 m-0 font-heading text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
             {counselorName}님과의 상담,
             <br />
@@ -260,7 +265,6 @@ export default function ReviewPage() {
             {submitting ? '등록 중...' : '후기 등록'}
           </Button>
         </div>
-      </main>
-    </RequireLogin>
+    </main>
   );
 }

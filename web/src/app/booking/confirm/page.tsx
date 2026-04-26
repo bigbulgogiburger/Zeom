@@ -242,7 +242,14 @@ function ConfirmInner() {
                 캐시가 <span className="tabular font-bold">{shortage.toLocaleString()}</span>원 부족해요
               </p>
               <Link
-                href={`/cash/buy?return=confirm&need=${shortage}`}
+                href={(() => {
+                  // 충전 후 confirm 복귀 시 원래 예약 컨텍스트(counselorId/date/time/channel/price)를 보존하여
+                  // 사용자가 동일 화면 상태로 돌아올 수 있게 한다.
+                  const sp = new URLSearchParams(params?.toString() ?? '');
+                  sp.set('return', 'confirm');
+                  sp.set('need', String(shortage));
+                  return `/cash/buy?${sp.toString()}`;
+                })()}
                 className="inline-flex w-fit items-center justify-center rounded-full bg-gradient-to-r from-gold to-gold-soft px-4 py-1.5 text-xs font-heading font-bold text-background hover:no-underline"
               >
                 캐시 충전하기
@@ -352,16 +359,14 @@ function AgreeCheckbox({
 
 function DotPulse() {
   return (
-    <span className="inline-flex items-center gap-0.5">
-      <span className="h-1 w-1 animate-pulse rounded-full bg-current" />
-      <span
-        className="h-1 w-1 animate-pulse rounded-full bg-current"
-        style={{ animationDelay: '160ms' }}
-      />
-      <span
-        className="h-1 w-1 animate-pulse rounded-full bg-current"
-        style={{ animationDelay: '320ms' }}
-      />
+    <span className="inline-flex items-center gap-0.5 motion-reduce:hidden" aria-hidden="true">
+      {[0, 160, 320].map((delay) => (
+        <span
+          key={delay}
+          className="h-1 w-1 animate-pulse rounded-full bg-current"
+          style={{ animationDelay: `${delay}ms` }}
+        />
+      ))}
     </span>
   );
 }
