@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { apiFetch } from '../../components/api-client';
 import { useAuth } from '../../components/auth-context';
-import { useToast } from '../../components/toast';
+import { toast } from 'sonner';
 import { Card, ActionButton } from '../../components/ui';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -47,7 +47,6 @@ const menuItems = [
 
 export default function MypagePage() {
   const { me } = useAuth();
-  const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [resending, setResending] = useState(false);
@@ -72,12 +71,12 @@ export default function MypagePage() {
       const res = await apiFetch('/api/v1/auth/resend-verification', { method: 'POST' });
       const json = await res.json();
       if (res.ok) {
-        toast('인증 이메일이 발송되었습니다', 'success');
+        toast.success('인증 이메일이 발송되었습니다');
       } else {
-        toast(json.message ?? '발송에 실패했습니다', 'error');
+        toast.error(json.message ?? '발송에 실패했습니다');
       }
     } catch {
-      toast('서버에 연결할 수 없습니다', 'error');
+      toast.error('서버에 연결할 수 없습니다');
     } finally {
       setResending(false);
     }

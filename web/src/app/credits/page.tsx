@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { getCreditBalance, purchaseCredit } from '../../components/api-client';
 import { RequireLogin } from '../../components/route-guard';
 import { Card, ConfirmDialog, PageTitle } from '../../components/ui';
-import { useToast } from '../../components/toast';
+import { toast } from 'sonner';
 
 type CreditProduct = {
   id: number;
@@ -23,7 +23,6 @@ const PRODUCTS: CreditProduct[] = [
 ];
 
 export default function CreditsPage() {
-  const { toast } = useToast();
   const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirmProduct, setConfirmProduct] = useState<CreditProduct | null>(null);
@@ -47,11 +46,11 @@ export default function CreditsPage() {
     setPurchasing(true);
     try {
       await purchaseCredit(confirmProduct.id);
-      toast(`상담권 ${confirmProduct.units}회가 충전되었습니다!`, 'success');
+      toast.success(`상담권 ${confirmProduct.units}회가 충전되었습니다!`);
       setConfirmProduct(null);
       await loadCredits();
     } catch (err) {
-      toast(err instanceof Error ? err.message : '구매에 실패했습니다.', 'error');
+      toast.error(err instanceof Error ? err.message : '구매에 실패했습니다.');
     } finally {
       setPurchasing(false);
     }

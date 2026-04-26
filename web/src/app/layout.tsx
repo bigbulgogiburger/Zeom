@@ -16,7 +16,7 @@ import { AuthProvider } from '../components/auth-context';
 import { ErrorBoundary } from '../components/error-boundary';
 import { GlobalErrorHandler } from '../components/global-error-handler';
 import AppHeader from '../components/app-header';
-import { ToastProvider } from '../components/toast';
+import { Toaster } from '@/components/ui/sonner';
 import { WebsiteJsonLd, ServiceJsonLd } from '../components/json-ld';
 import { AnalyticsProvider } from '../components/analytics-provider';
 import BottomTabBar from '../components/bottom-tab-bar';
@@ -113,13 +113,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ErrorBoundary>
             <GlobalErrorHandler />
             <AuthProvider>
-              <ToastProvider>
-                <SessionExpiryGuard />
-                <AppHeader />
-                <div id="main-content" className="pb-14 md:pb-0">{children}</div>
-                <BottomTabBar />
-                <AnalyticsProvider />
-              </ToastProvider>
+              <SessionExpiryGuard />
+              <AppHeader />
+              <div id="main-content" className="pb-14 md:pb-0">{children}</div>
+              <BottomTabBar />
+              <AnalyticsProvider />
+              <Toaster />
             </AuthProvider>
           </ErrorBoundary>
         </NextIntlClientProvider>

@@ -4,13 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '../../../components/api-client';
 // auth-client: tokens managed via httpOnly cookies
-import { useToast } from '../../../components/toast';
+import { toast } from 'sonner';
 import { Card, ActionButton, ConfirmDialog } from '../../../components/ui';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function DeleteAccountPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +23,7 @@ export default function DeleteAccountPage() {
       const res = await apiFetch('/api/v1/users/me', { method: 'DELETE' });
       const json = await res.json();
       if (res.ok) {
-        toast('계정 탈퇴가 요청되었습니다', 'info');
+        toast.info('계정 탈퇴가 요청되었습니다');
         router.push('/login');
       } else {
         setError(json.message ?? '계정 탈퇴에 실패했습니다');

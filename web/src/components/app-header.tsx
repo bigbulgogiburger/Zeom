@@ -47,7 +47,7 @@ export default function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-[100] h-16 flex items-center px-6 bg-[hsl(var(--background)/0.85)] backdrop-blur-xl border-b border-[hsl(var(--border-subtle))]">
+      <header className="sticky top-0 z-[100] h-[68px] flex items-center px-6 bg-[hsl(var(--background)/0.85)] backdrop-blur-[20px] border-b border-[hsl(var(--border-subtle))]">
         <Link
           href="/"
           className="text-lg font-bold tracking-tight text-[hsl(var(--gold))] no-underline shrink-0"
