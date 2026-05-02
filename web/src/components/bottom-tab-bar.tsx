@@ -18,6 +18,11 @@ export default function BottomTabBar() {
   const [bounceKey, setBounceKey] = useState<string | null>(null);
   const prevPathRef = useRef(pathname);
 
+  // ZEOM-20: immersive route detection — hide chrome on /consultation/[sessionId] and nested
+  // routes (e.g. /waiting), EXCEPT /review which keeps full chrome.
+  const segs = (pathname ?? '').split('/');
+  const isImmersive = segs[1] === 'consultation' && !!segs[2] && segs[3] !== 'review';
+
   // Trigger bounce animation when active tab changes
   useEffect(() => {
     if (prevPathRef.current !== pathname) {
@@ -32,6 +37,8 @@ export default function BottomTabBar() {
       prevPathRef.current = pathname;
     }
   }, [pathname]);
+
+  if (isImmersive) return null;
 
   return (
     <nav

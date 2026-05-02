@@ -29,3 +29,18 @@ export { BookingCard } from './booking-card';
 export type { BookingChannel, BookingStatus } from './booking-card';
 export { RadioCard } from './radio-card';
 export { SuccessState } from './success-state';
+
+// ZEOM-18 P1-1
+export { CounselorCard } from './counselor-card';
+export type { CounselorCardData, CounselorCardVariant } from './counselor-card';
+export { FilterChip } from './filter-chip';
+
+// ZEOM-20 P3-1
+export { EndCallModal } from './end-call-modal';
+
+// ZEOM-19 P1-2 Home
+export { Hero } from './hero';
+export { CategoryGrid } from './category-grid';
+export type { CategoryItem } from './category-grid';
+export { ReviewSlider } from './review-slider';
+export type { ReviewSliderItem } from './review-slider';

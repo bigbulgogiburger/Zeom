@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Menu } from 'lucide-react';
 import { apiFetch } from './api-client';
@@ -19,8 +19,15 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/s
 export default function AppHeader() {
   const { me, refreshMe } = useAuth();
   const router = useRouter();
+  const pathname = usePathname() ?? '';
   const [drawerOpen, setDrawerOpen] = useState(false);
   const t = useTranslations('common');
+
+  // ZEOM-20: immersive route detection — hide chrome on /consultation/[sessionId] and nested
+  // routes (e.g. /waiting), EXCEPT /review which keeps full chrome.
+  const seg = pathname.split('/');
+  const isImmersive = seg[1] === 'consultation' && !!seg[2] && seg[3] !== 'review';
+  if (isImmersive) return null;
 
   async function logout() {
     await apiFetch('/api/v1/auth/logout', {
