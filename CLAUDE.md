@@ -13,7 +13,7 @@ graph TB
         APP[Flutter 3.2+<br/>Riverpod + go_router]
     end
 
-    subgraph Backend["Spring Boot 3.5 (Java 21) — 34 도메인"]
+    subgraph Backend["Spring Boot 3.5 (Java 21)"]
         AUTH[auth + oauth] --> USER[(User)]
         BOOK[booking + counselor + favorite]
         PAY[payment + portone]
@@ -55,12 +55,14 @@ graph TB
 ```bash
 # Backend (port 8080) — H2 in-memory, fake providers
 cd backend && ./gradlew bootRun
-cd backend && ./gradlew test                      # 31 integration test classes
+cd backend && ./gradlew test                      # 31 통합 테스트 클래스
 
 # Frontend (port 3000)
 cd web && npm run dev
-cd web && npm test                                # Jest 30 (12 spec files)
-cd web && npm run test:e2e                        # Playwright (18 specs, backend 자동 시작)
+cd web && npm test                                # Jest (14 spec, ~129 tests)
+cd web && npm run test:e2e                        # Playwright (13 spec, backend 자동 시작)
+cd web && npx tsc --noEmit                        # 타입 체크 (lint 대용)
+cd web && npm run build                           # 프로덕션 빌드 (75 routes)
 
 # Flutter — 디바이스/시뮬레이터에 직접 실행 (build만 X)
 cd app_flutter && flutter run
@@ -76,7 +78,9 @@ cd app_flutter && flutter test
 - **결제 보상 전략**: 결제는 DB 먼저 영속화, 후속(채널 생성/알림) 실패는 `*_retry_needed` 플래그 + 웹훅 알림 + 스케줄러 재시도
 - **Admin 가드**: 모든 `/api/v1/admin/**` 컨트롤러는 첫 줄에 `authService.requireAdmin(authHeader)`. → `security-checklist.md`
 - **Korean text**: `word-break: keep-all`, Pretendard, 헤딩에 `text-wrap: balance`
-- **E2E web 테스트**: Playwright(`npm run test:e2e`)는 spec 파일 작성·CI용. 사용자 시나리오 검증·시각 회귀 확인은 **openchrome MCP**(`mcp__openchrome__*`)로 실제 브라우저를 직접 조작해 진행. 로컬 검증 시 docker 사용 금지 — `npm run dev` + openchrome 조합 사용
+- **Immersive layout 분리**: `consultation/[sessionId]` 진입 시 AppHeader/BottomTabBar는 `usePathname` 가드로 self-hide. `/review`는 chrome 유지(가드에서 segment 비교). root layout 흔들지 않는 게 핵심 — 이유: 다른 라우트 회귀 차단. → `frontend-pages.md`
+- **9 화면 토큰 baseline**: ZEOM-4 §6 9 화면(Home, Counselors 목록·상세, Booking confirm, Cash buy, Bookings, Waiting, Room, Review)과 consultation 흐름은 hex/HTML entity 0건. 신규 작업도 토큰만 사용 — `grep -rEn '#[0-9A-Fa-f]{3,6}\b|&#[0-9]+;'` 0 보장. → `docs/ZEOM-21-visual-report.md`
+- **E2E web 테스트**: Playwright(`npm run test:e2e`)는 spec 파일 작성·CI용. 시각 회귀는 별도 QA 회차에서 openchrome MCP로 4 viewport(360/768/1024/1440) × 9 화면. 로컬 검증 시 docker 사용 금지 — `npm run dev` 기반
 
 ## Path Aliases
 
@@ -108,6 +112,7 @@ docs/         Architecture, OpenAPI spec, PRD, design plans
 | Flutter Architecture | Flutter feature/라우팅 작업 시 | `.claude/docs/reference/flutter-architecture.md` |
 | Testing | 테스트 작성/수정 시 | `.claude/docs/reference/testing.md` |
 | Environment | 환경 변수/배포 설정 시 | `.claude/docs/reference/environment.md` |
+| ZEOM-4 sweep | 마이그레이션 결과/잔존 작업 확인 | `docs/ZEOM-4-remaining-dev-guide.md`, `docs/ZEOM-21-visual-report.md` |
 
 ## Skills
 
@@ -135,6 +140,40 @@ docs/         Architecture, OpenAPI spec, PRD, design plans
 - OpenAPI spec: `docs/openapi.yaml`
 - ESLint/Prettier/Checkstyle 미설정 (린터 의존 컨벤션 작성 금지)
 
+## Harness Engineering Integration
+
+### 운영 모드
+- `HARNESS_MODE`는 `.claude/settings.local.json`의 `env` 참조 (현재 `auto`)
+- `auto`: Hook이 harness 단계를 강제 주입 + `git commit` 게이트 차단 (verdict ITERATE/ESCALATE 시)
+- `suggest`: Hook이 제안만 (차단 없음)
+- `off`: Harness 비활성
+
+### 워크플로 규칙
+- `/jira-plan` 완료 후 `/harness-plan` 실행을 제안하라 (auto 모드에서는 강제 주입)
+- `/jira-execute` 각 Phase 완료 후 `/harness-review`를 제안하라 (auto 모드에서는 강제 주입)
+- `/jira-commit` 전 `aggregate-verdict.md` 확인을 권장하라
+
+### 에이전트 디스패치 (zeom-* 우선)
+- Entity / Repository 변경 → `zeom-jpa-reviewer`
+- Controller / DTO / openapi.yaml 변경 → `zeom-api-contract-reviewer` + `zeom-security-reviewer`
+- `/api/v1/admin/**` 컨트롤러 변경 → `zeom-admin-guard-reviewer` (필수)
+- Service 변경 → `zeom-cqrs-refactorer`
+- payment/chat/notification/oauth/sms provider 변경 → `zeom-provider-pattern-reviewer`
+- `web/src/**/*.tsx` 변경 → `zeom-component-reviewer`
+- 빌드 실패 → `zeom-build-resolver`
+- 테스트 작성 → `zeom-test-writer`
+- 구조 탐색 → `zeom-explorer`
+
+### 아티팩트 경로
+- dev-guide: `docs/{ISSUE-KEY}-dev-guide.md`
+- Sprint Contract: `.claude/runtime/sprint-contract/{ISSUE-KEY}.md`
+- Verdict: `.claude/runtime/aggregate-verdict.md`
+- State: `.claude/runtime/workflow-state.json`
+- Metrics: `.claude/runtime/harness-metrics/scorecard.md` (집계: `bash .claude/runtime/harness-metrics/aggregate.sh`)
+
 <!-- 갱신 이력
-2026-04-25: V1-V19→V60 동기화, 도메인 8→34 반영, provider 3→5 반영, 테스트 카운트 보정, reference 6개 추가(service-layer, provider-integration, sendbird-guide, database-migrations, security-checklist, flutter-architecture), .claude/rules/migration-safety.md 추가, design-system 중복 섹션 제거(reference로 일원화)
+2026-04-25: V1-V19→V60 동기화, provider 3→5 반영, reference 6개 추가, design-system 중복 섹션 제거
+2026-04-26~28: ZEOM-2/3/4/17 sweep — Phase 0 토큰·Gowun Batang, Phase 1 primitive 23개, ZEOM-17 P2-1 4페이지 + design 컴포넌트 3개(BookingCard/RadioCard/SuccessState), ZEOM-18/19/20 P1·P3 통합 + 컴포넌트 6개(CounselorCard/FilterChip/Hero/CategoryGrid/ReviewSlider/EndCallModal) + immersive layout 분리, ZEOM-21 hex/entity 0 baseline + legacy dead code 삭제. 도메인 수 표기 제거(변동성). 테스트 카운트 갱신
+2026-04-28: Harness Engineering Integration 섹션 추가(에이전트 디스패치·아티팩트 경로). hook 명령 절대경로화(`$CLAUDE_PROJECT_DIR`)
 -->
+
