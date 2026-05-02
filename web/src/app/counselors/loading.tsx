@@ -1,14 +1,16 @@
 export default function CounselorsLoading() {
   return (
-    <main style={{ padding: 24, display: 'grid', gap: 12 }}>
-      <div style={{ height: 32, width: 160, background: '#1e293b', borderRadius: 8 }} />
-      {[1, 2, 3].map((i) => (
-        <div key={i} style={{ border: '1px solid #334155', background: '#0b1220', borderRadius: 12, padding: 12 }}>
-          <div style={{ height: 20, width: 120, background: '#1e293b', borderRadius: 4, marginBottom: 8 }} />
-          <div style={{ height: 14, width: 80, background: '#1e293b', borderRadius: 4, marginBottom: 8 }} />
-          <div style={{ height: 14, width: '70%', background: '#1e293b', borderRadius: 4 }} />
-        </div>
-      ))}
+    <main className="mx-auto max-w-[1200px] px-6 py-10">
+      <div className="mb-6 h-8 w-40 rounded-lg bg-[hsl(var(--surface-2))] animate-pulse motion-reduce:animate-none" aria-hidden="true" />
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div
+            key={i}
+            className="glow-card h-[220px] animate-pulse motion-reduce:animate-none"
+            aria-hidden="true"
+          />
+        ))}
+      </div>
     </main>
   );
 }

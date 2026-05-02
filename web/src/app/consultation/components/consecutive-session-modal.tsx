@@ -111,7 +111,7 @@ export default function ConsecutiveSessionModal({
               borderRadius: '8px',
               border: 'none',
               background: 'hsl(var(--gold))',
-              color: '#FFF',
+              color: 'hsl(var(--background))',
               fontWeight: 700,
               fontSize: '15px',
               cursor: loading ? 'wait' : 'pointer',

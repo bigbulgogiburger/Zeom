@@ -9,8 +9,30 @@ import { Pagination } from '../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CounselorCard, FilterChip, EmptyState } from '@/components/design';
-import type { CounselorListItem } from './components/CounselorCard';
 import { cn } from '@/lib/utils';
+
+export type CounselorListItem = {
+  id: number;
+  name: string;
+  specialty: string;
+  intro: string;
+  supportedConsultationTypes?: string;
+  profileImageUrl?: string | null;
+  careerYears?: number;
+  certifications?: string | null;
+  averageRating?: number;
+  totalReviews?: number;
+  totalConsultations?: number;
+  responseRate?: number;
+  pricePerMinute?: number;
+  pricePerSession?: number;
+  sessionMinutes?: number;
+  isOnline?: boolean;
+  tags?: string | null;
+  shortVideoUrl?: string | null;
+  latestReviewSnippet?: string | null;
+  latestReviewerName?: string | null;
+};
 
 const PAGE_SIZE = 20;
 

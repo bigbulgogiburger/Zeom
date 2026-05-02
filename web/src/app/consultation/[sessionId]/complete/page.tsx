@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Check } from 'lucide-react';
 
 type SessionData = {
   id: number;
@@ -113,7 +114,9 @@ export default function ConsultationCompletePage() {
       <main className="max-w-2xl mx-auto px-4 py-8 grid gap-6">
         {/* Header */}
         <div className="text-center">
-          <div className="text-5xl mb-4">&#10004;&#65039;</div>
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]" aria-hidden="true">
+            <Check size={32} strokeWidth={2.5} />
+          </div>
           <h1 className="text-2xl font-bold font-heading">상담이 종료되었습니다</h1>
           {session?.endReason && (
             <Badge variant="secondary" className="mt-2">
