@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Check, User } from 'lucide-react';
 
 type SessionSummary = {
   sessionId: number;
@@ -110,8 +111,8 @@ export default function ConsultationSummaryPage() {
       <main className="max-w-2xl mx-auto px-4 py-8 grid gap-6">
         {/* Header */}
         <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[hsl(var(--success)/0.15)] flex items-center justify-center">
-            <span className="text-4xl text-[hsl(var(--success))]">&#10003;</span>
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[hsl(var(--success)/0.15)] flex items-center justify-center text-[hsl(var(--success))]" aria-hidden="true">
+            <Check size={36} strokeWidth={2.5} />
           </div>
           <h1 className="text-2xl font-bold font-heading text-[hsl(var(--text-primary))]">
             상담이 완료되었습니다
@@ -138,8 +139,8 @@ export default function ConsultationSummaryPage() {
             <CardContent className="grid gap-4">
               {/* Counselor */}
               <div className="flex items-center gap-4 p-3 bg-white/50 rounded-xl">
-                <div className="w-12 h-12 rounded-full bg-[hsl(var(--surface))] flex items-center justify-center text-xl text-[hsl(var(--gold))]">
-                  &#128100;
+                <div className="w-12 h-12 rounded-full bg-[hsl(var(--surface))] flex items-center justify-center text-[hsl(var(--gold))]" aria-hidden="true">
+                  <User size={20} strokeWidth={1.5} />
                 </div>
                 <div>
                   <p className="font-bold text-base">{summary.counselorName}</p>

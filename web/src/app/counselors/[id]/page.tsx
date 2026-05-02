@@ -3,11 +3,10 @@ import dynamic from 'next/dynamic';
 
 const CounselorDetailClient = dynamic(() => import('./CounselorDetailClient'), {
   loading: () => (
-    <main style={{ padding: 24, display: 'grid', gap: 12 }}>
-      <div style={{ height: 32, width: 140, background: '#1e293b', borderRadius: 8 }} />
-      <div style={{ border: '1px solid #334155', background: '#0b1220', borderRadius: 12, padding: 12 }}>
-        <div style={{ height: 14, width: 80, background: '#1e293b', borderRadius: 4, marginBottom: 8 }} />
-        <div style={{ height: 14, width: '60%', background: '#1e293b', borderRadius: 4 }} />
+    <main className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-10">
+      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+        <div className="glow-card animate-pulse motion-reduce:animate-none p-8 h-[420px]" aria-hidden="true" />
+        <div className="glow-card animate-pulse motion-reduce:animate-none p-8 h-[280px]" aria-hidden="true" />
       </div>
     </main>
   ),

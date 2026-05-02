@@ -3,12 +3,14 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import SendBirdCall from 'sendbird-calls';
+import { Mic, MicOff, Video, VideoOff, MessageSquare, PhoneOff, PictureInPicture2, RefreshCw, User } from 'lucide-react';
 import { apiFetch, getSessionToken, endSession as apiEndSession, getNextConsecutive, consumeSessionCredit } from '@/components/api-client';
 import { RequireLogin } from '@/components/route-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { FabBtn, MicLevelMeter, EndCallModal } from '@/components/design';
 import SessionTimer from '@/components/session-timer';
 import type { TimerThreshold } from '@/components/session-timer';
 import ConsultationChat from '@/components/consultation-chat';
@@ -97,6 +99,8 @@ export default function ConsultationRoomPage() {
   const [effectiveDurationOverride, setEffectiveDurationOverride] = useState<number | null>(null);
   const [effectiveStartOverride, setEffectiveStartOverride] = useState<string | null>(null);
   const [sessionEnding, setSessionEnding] = useState(false);
+  // ZEOM-20: end-call confirmation modal (UI only — does not affect Sendbird flow)
+  const [endModalOpen, setEndModalOpen] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -305,18 +309,16 @@ export default function ConsultationRoomPage() {
     }
   }, [session, tokenData]);
 
-  async function handleEndSession() {
-    if (!confirm('상담을 종료하시겠습니까?')) return;
-
+  // ZEOM-20: confirmation now handled by EndCallModal — same end logic, no native confirm.
+  async function confirmEndSession() {
+    setEndModalOpen(false);
     setLoading(true);
     try {
       clearDialTimeout();
       if (currentCallRef.current) {
         currentCallRef.current.end();
       }
-
       await apiEndSession(sessionId);
-
       router.push(`/consultation/${sessionId}/summary`);
     } catch (error: any) {
       setMessage(error.message || '세션 종료 중 오류가 발생했습니다.');
@@ -447,18 +449,16 @@ export default function ConsultationRoomPage() {
   if (!session) {
     return (
       <RequireLogin>
-        <main className="max-w-6xl mx-auto px-6 py-8 grid gap-8">
-          <h1 className="text-3xl font-bold font-heading tracking-tight text-[hsl(var(--text-primary))]">상담실</h1>
-          {message && (
-            <Alert variant="destructive" className="rounded-2xl border-[hsl(var(--gold)/0.15)]">
-              <AlertDescription>{message}</AlertDescription>
-            </Alert>
-          )}
-          <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
-            <CardContent className="text-center py-8 text-muted-foreground">
-              세션을 불러오는 중...
-            </CardContent>
-          </Card>
+        <main className="min-h-dvh bg-[hsl(var(--background))] text-[hsl(var(--text-primary))]">
+          <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-6 text-center">
+            <h1 className="font-heading text-2xl font-bold tracking-tight">상담실</h1>
+            {message && (
+              <Alert variant="destructive" className="mt-4 rounded-2xl border-[hsl(var(--gold)/0.15)]">
+                <AlertDescription>{message}</AlertDescription>
+              </Alert>
+            )}
+            <p className="mt-6 text-sm text-[hsl(var(--text-muted))]">세션을 불러오는 중...</p>
+          </div>
         </main>
       </RequireLogin>
     );
@@ -468,224 +468,199 @@ export default function ConsultationRoomPage() {
 
   return (
     <RequireLogin>
-      <main className="max-w-6xl mx-auto px-6 py-8 grid gap-6">
-        <h1 className="text-3xl font-bold font-heading tracking-tight text-[hsl(var(--text-primary))]">상담실</h1>
-
-        {message && (
-          <Alert
-            variant={connectionState === ConnectionState.NO_ANSWER ? 'default' : 'destructive'}
-            className="rounded-2xl border-[hsl(var(--gold)/0.15)]"
-          >
-            <AlertDescription className="flex items-center justify-between flex-wrap gap-2">
-              <span>{message}</span>
-              {connectionState === ConnectionState.NO_ANSWER && (
-                <Button variant="outline" size="sm" onClick={handleRetryDial} className="rounded-full border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10">
-                  다시 호출
-                </Button>
-              )}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Top bar: Timer + Info + Quality + Credits */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          <SessionTimer
-            startTime={effectiveStart}
-            durationMinutes={effectiveDuration}
-            onTimeUp={handleTimeUp}
-            onThreshold={handleThreshold}
-            gracePeriodMinutes={2}
-            onGracePeriodEnd={handleGracePeriodEnd}
+      <main className="grid min-h-dvh grid-rows-[1fr_auto] bg-[hsl(var(--background))] text-[hsl(var(--text-primary))]">
+        {/* ─────────────────────  Stage  ───────────────────── */}
+        <section className="relative overflow-hidden">
+          {/* Main (counselor) video — full bleed */}
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover bg-[hsl(var(--background))]"
           />
 
-          <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-heading">상담사 정보</CardTitle>
-                <Badge variant={getConnectionBadgeVariant(connectionState)} className="rounded-full font-heading font-bold text-xs">
-                  {getConnectionLabel(connectionState, reconnectAttempts)}
-                </Badge>
+          {/* Fallback when not connected */}
+          {!callConnected && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-[hsl(var(--text-muted))]">
+              <div className="mb-3 text-[hsl(var(--gold))] opacity-70" aria-hidden="true">
+                <User size={64} strokeWidth={1.5} />
               </div>
-            </CardHeader>
-            <CardContent className="grid gap-1 text-sm">
-              <div>
-                <span className="text-muted-foreground">이름: </span>
-                <span className="font-bold">{counselorDisplayName}</span>
+              <div className="font-heading text-lg font-bold text-[hsl(var(--text-primary))]">
+                {counselorDisplayName}
               </div>
-              <div>
-                <span className="text-muted-foreground">분야: </span>
-                <span>{session.counselorSpecialty}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {callConnected && (
-            <Card className="rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] shadow-lg">
-              <CardContent className="flex flex-col justify-center h-full py-3">
-                <NetworkQuality call={currentCallRef.current} />
-              </CardContent>
-            </Card>
-          )}
-
-          {callConnected && session.startedAt && (
-            <CreditIndicator
-              totalCredits={totalCredits}
-              durationMinutes={30}
-              startTime={session.startedAt}
-            />
-          )}
-        </div>
-
-        {/* Connection Status Banner (ringing / reconnecting) */}
-        {(connectionState === ConnectionState.RINGING || connectionState === ConnectionState.RECONNECTING) && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl px-6 py-4">
-            <div className="text-center text-[hsl(var(--text-primary))]">
               {connectionState === ConnectionState.RINGING && (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-[hsl(var(--gold))] animate-pulse" />
-                  선생님 호출 중... 잠시만 기다려주세요
-                </span>
+                <div className="mt-2 flex items-center gap-2 text-sm">
+                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[hsl(var(--gold))] motion-reduce:animate-none" />
+                  선생님 호출 중...
+                </div>
+              )}
+              {connectionState === ConnectionState.IDLE && tokenData && !tokenData.calleeId && (
+                <div className="mt-2 text-sm">선생님이 아직 준비 중입니다</div>
               )}
               {connectionState === ConnectionState.RECONNECTING && (
-                <span>재연결 중... ({reconnectAttempts}/3)</span>
+                <div className="mt-2 text-sm">재연결 중... ({reconnectAttempts}/3)</div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Video + Chat Area */}
-        <div className={`grid gap-4 ${chatOpen ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
-          {/* Video Area */}
-          <Card className={`rounded-2xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] shadow-lg ${chatOpen ? 'lg:col-span-2' : ''}`}>
-            <CardContent className="p-4">
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 min-h-[400px]">
-                {/* Remote Video */}
-                <div className="bg-[hsl(var(--background))] rounded-2xl relative overflow-hidden min-h-[300px] border border-[hsl(var(--gold)/0.15)]">
-                  <video
-                    ref={remoteVideoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full h-full object-cover bg-black"
-                  />
-                  {!callConnected && (
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-muted-foreground">
-                      <div className="text-5xl mb-2">&#128100;</div>
-                      <div className="font-medium">{counselorDisplayName}</div>
-                      {connectionState === ConnectionState.RINGING && (
-                        <div className="text-xs mt-1 animate-pulse">호출 중...</div>
-                      )}
-                      {connectionState === ConnectionState.IDLE && !callConnected && tokenData && !tokenData.calleeId && (
-                        <div className="text-xs mt-1">선생님이 아직 준비 중입니다</div>
-                      )}
-                    </div>
-                  )}
-                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-[hsl(var(--gold))] px-3 py-1 rounded-full text-xs font-heading font-bold">
-                    상담사
-                  </div>
-                  {callConnected && (
-                    <div className="absolute top-2 right-2">
-                      <QualityIndicator call={currentCallRef.current} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Local Video */}
-                <div className="bg-[hsl(var(--background))] rounded-2xl relative overflow-hidden min-h-[300px] border border-[hsl(var(--gold)/0.15)]">
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover bg-black"
-                  />
-                  {!callConnected && (
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-muted-foreground">
-                      <div className="text-5xl mb-2">&#128100;</div>
-                      <div>나</div>
-                    </div>
-                  )}
-                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-[hsl(var(--gold))] px-3 py-1 rounded-full text-xs font-heading font-bold">
-                    나
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Chat Panel */}
-          {chatOpen && tokenData && (
-            <div className="min-h-[400px] rounded-2xl overflow-hidden border border-[hsl(var(--gold)/0.15)]">
-              <ConsultationChat
-                channelUrl={channelUrl}
-                sendbirdAppId={tokenData.sendbirdAppId || ''}
-                sendbirdUserId={tokenData.sendbirdUserId}
-                sendbirdToken={tokenData.sendbirdToken}
-                open={chatOpen}
-                onClose={() => setChatOpen(false)}
+          {/* Top status row */}
+          <div className="absolute left-0 right-0 top-0 flex flex-wrap items-center gap-2 px-4 pt-4">
+            <Badge
+              variant={getConnectionBadgeVariant(connectionState)}
+              className="rounded-full bg-[hsl(var(--background)/0.6)] font-heading text-xs font-bold backdrop-blur"
+            >
+              {getConnectionLabel(connectionState, reconnectAttempts)}
+            </Badge>
+            <span className="rounded-full bg-[hsl(var(--background)/0.6)] px-3 py-1 font-heading text-xs font-bold text-[hsl(var(--gold))] backdrop-blur">
+              {counselorDisplayName} · {session.counselorSpecialty}
+            </span>
+            <div className="ml-auto rounded-full bg-[hsl(var(--background)/0.6)] px-3 py-1 backdrop-blur">
+              <SessionTimer
+                startTime={effectiveStart}
+                durationMinutes={effectiveDuration}
+                onTimeUp={handleTimeUp}
+                onThreshold={handleThreshold}
+                gracePeriodMinutes={2}
+                onGracePeriodEnd={handleGracePeriodEnd}
               />
             </div>
+          </div>
+
+          {/* Self PIP — top-right */}
+          <div className="absolute right-4 top-16 w-[160px] overflow-hidden rounded-2xl border border-[hsl(var(--gold)/0.3)] shadow-lg">
+            <div className="relative aspect-video bg-[hsl(var(--background))]">
+              <video
+                ref={localVideoRef}
+                autoPlay
+                muted
+                playsInline
+                className="h-full w-full object-cover"
+              />
+              {!callConnected && (
+                <div className="absolute inset-0 flex items-center justify-center text-xs text-[hsl(var(--text-muted))]">
+                  나
+                </div>
+              )}
+              <span className="absolute left-2 top-2 rounded-full bg-[hsl(var(--background)/0.7)] px-2 py-0.5 font-heading text-[10px] font-bold text-[hsl(var(--gold))] backdrop-blur">
+                나
+              </span>
+            </div>
+            <div className="flex items-center justify-between bg-[hsl(var(--background)/0.7)] px-2 py-1 backdrop-blur">
+              <MicLevelMeter level={audioEnabled ? 0.45 : 0} />
+              {callConnected && <QualityIndicator call={currentCallRef.current} />}
+            </div>
+          </div>
+
+          {/* Inline error / message banner */}
+          {message && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+              <Alert
+                variant={connectionState === ConnectionState.NO_ANSWER ? 'default' : 'destructive'}
+                className="rounded-2xl border-[hsl(var(--gold)/0.2)] bg-[hsl(var(--surface)/0.95)] backdrop-blur"
+              >
+                <AlertDescription className="flex flex-wrap items-center gap-3">
+                  <span>{message}</span>
+                  {connectionState === ConnectionState.NO_ANSWER && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRetryDial}
+                      className="rounded-full border-2 border-[hsl(var(--gold)/0.3)] text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold)/0.1)]"
+                    >
+                      다시 호출
+                    </Button>
+                  )}
+                </AlertDescription>
+              </Alert>
+            </div>
           )}
-        </div>
 
-        {/* Control Bar */}
-        <div className="flex gap-3 justify-center flex-wrap bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl px-6 py-4">
-          <Button
-            variant={audioEnabled ? 'secondary' : 'destructive'}
-            disabled={!callConnected}
-            onClick={toggleAudio}
-            className="rounded-full px-6 font-heading font-bold"
-          >
-            {audioEnabled ? '마이크 켜짐' : '마이크 꺼짐'}
-          </Button>
+          {/* Credit indicator (bottom-left, subtle) */}
+          {callConnected && session.startedAt && (
+            <div className="absolute bottom-4 left-4">
+              <div className="rounded-2xl bg-[hsl(var(--background)/0.6)] p-2 backdrop-blur">
+                <CreditIndicator
+                  totalCredits={totalCredits}
+                  durationMinutes={30}
+                  startTime={session.startedAt}
+                />
+              </div>
+            </div>
+          )}
 
-          <Button
-            variant={videoEnabled ? 'secondary' : 'destructive'}
-            disabled={!callConnected}
-            onClick={toggleVideo}
-            className="rounded-full px-6 font-heading font-bold"
-          >
-            {videoEnabled ? '카메라 켜짐' : '카메라 꺼짐'}
-          </Button>
+          {/* Network quality (subtle) */}
+          {callConnected && (
+            <div className="absolute right-4 bottom-4 rounded-2xl bg-[hsl(var(--background)/0.6)] p-2 backdrop-blur">
+              <NetworkQuality call={currentCallRef.current} />
+            </div>
+          )}
 
-          <Button
-            variant={chatOpen ? 'default' : 'outline'}
-            disabled={!tokenData}
-            onClick={() => setChatOpen(!chatOpen)}
-            className={`rounded-full px-6 font-heading font-bold ${chatOpen ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold)/0.85)]' : 'border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10'}`}
-          >
-            {chatOpen ? '채팅 닫기' : '채팅'}
-          </Button>
-
-          {pipSupported && (
-            <Button
-              variant={pipActive ? 'default' : 'outline'}
-              disabled={!callConnected}
-              onClick={togglePip}
-              className={`rounded-full px-6 font-heading font-bold ${pipActive ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold)/0.85)]' : 'border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10'}`}
+          {/* Chat slide-over (right) */}
+          {tokenData && (
+            <aside
+              data-open={chatOpen}
+              aria-hidden={!chatOpen}
+              className="absolute inset-y-0 right-0 z-20 flex w-full max-w-sm translate-x-full transition-transform duration-300 ease-out data-[open=true]:translate-x-0 motion-reduce:transition-none"
             >
-              {pipActive ? 'PIP 끄기' : 'PIP'}
-            </Button>
+              <div className="flex h-full w-full border-l border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface))] shadow-2xl">
+                <ConsultationChat
+                  channelUrl={channelUrl}
+                  sendbirdAppId={tokenData.sendbirdAppId || ''}
+                  sendbirdUserId={tokenData.sendbirdUserId}
+                  sendbirdToken={tokenData.sendbirdToken}
+                  open={chatOpen}
+                  onClose={() => setChatOpen(false)}
+                />
+              </div>
+            </aside>
           )}
+        </section>
 
-          {(connectionState === ConnectionState.FAILED || connectionState === ConnectionState.NO_ANSWER) && (
-            <Button
-              variant="outline"
-              onClick={handleRetryDial}
-              className="rounded-full px-6 font-heading font-bold border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10"
-            >
-              다시 연결
-            </Button>
-          )}
-
-          <Button
-            variant="destructive"
-            disabled={loading}
-            onClick={handleEndSession}
-            className="rounded-full px-6 font-heading font-bold"
-          >
-            {loading ? '종료 중...' : '상담 종료'}
-          </Button>
-        </div>
+        {/* ─────────────────────  Control bar  ───────────────────── */}
+        <footer className="border-t border-[hsl(var(--border-subtle))] bg-[hsl(var(--background)/0.85)] px-4 py-4 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-3">
+            <FabBtn
+              icon={audioEnabled ? <Mic size={20} /> : <MicOff size={20} />}
+              label={audioEnabled ? '마이크 끄기' : '마이크 켜기'}
+              on={audioEnabled}
+              onClick={toggleAudio}
+            />
+            <FabBtn
+              icon={videoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
+              label={videoEnabled ? '카메라 끄기' : '카메라 켜기'}
+              on={videoEnabled}
+              onClick={toggleVideo}
+            />
+            <FabBtn
+              icon={<MessageSquare size={20} />}
+              label={chatOpen ? '채팅 닫기' : '채팅 열기'}
+              on={chatOpen}
+              onClick={() => setChatOpen(!chatOpen)}
+            />
+            {pipSupported && (
+              <FabBtn
+                icon={<PictureInPicture2 size={20} />}
+                label={pipActive ? 'PIP 끄기' : 'PIP 켜기'}
+                on={pipActive}
+                onClick={togglePip}
+              />
+            )}
+            {(connectionState === ConnectionState.FAILED || connectionState === ConnectionState.NO_ANSWER) && (
+              <FabBtn
+                icon={<RefreshCw size={20} />}
+                label="다시 연결"
+                onClick={handleRetryDial}
+              />
+            )}
+            <FabBtn
+              icon={<PhoneOff size={20} />}
+              label="상담 종료"
+              variant="destructive"
+              on
+              onClick={() => setEndModalOpen(true)}
+            />
+          </div>
+        </footer>
 
         {/* Connection Monitor Overlay */}
         {callConnected && (
@@ -712,6 +687,14 @@ export default function ConsultationRoomPage() {
             onEnd={handleConsecutiveEnd}
           />
         )}
+
+        {/* End-call confirmation */}
+        <EndCallModal
+          open={endModalOpen}
+          loading={loading}
+          onCancel={() => setEndModalOpen(false)}
+          onConfirm={confirmEndSession}
+        />
       </main>
     </RequireLogin>
   );

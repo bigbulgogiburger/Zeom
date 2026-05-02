@@ -1,316 +1,348 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CreditCard, Circle, Building2, Coins, Sparkles } from 'lucide-react';
-import { getCashProducts, chargeCash, getWallet } from '../../../components/api-client';
-import { RequireLogin } from '../../../components/route-guard';
-import { Card, EmptyState, InlineError, InlineSuccess, PageTitle } from '../../../components/ui';
+import { CreditCard, Building2, Smartphone, Wallet as WalletIcon } from 'lucide-react';
+import { chargeCash, getWallet } from '@/components/api-client';
+import { RequireLogin } from '@/components/route-guard';
+import { RadioCard, SuccessState, WalletChip } from '@/components/design';
+import { cn } from '@/lib/utils';
 
-type CashProduct = {
-  id: number;
-  name: string;
-  description: string;
-  priceKrw: number;
-  cashAmount: number;
-  minutes: number;
-};
+type PackageId = 'p1' | 'p2' | 'p3' | 'p4';
 
-type PaymentStatus = 'idle' | 'processing' | 'success' | 'failed';
+interface CashPackage {
+  id: PackageId;
+  title: string;
+  hours: string; // 예: "60분 5회"
+  cashAmount: number; // 결제 금액 (원)
+  bonus: number; // 보너스 캐시
+  popular?: boolean;
+}
 
-type PayMethodOption = {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-};
-
-const PAY_METHODS: PayMethodOption[] = [
-  { id: 'CARD', label: '신용카드', icon: <CreditCard className="size-5" /> },
-  { id: 'EASY_PAY', label: '카카오페이', icon: <Circle className="size-5 text-yellow-400 fill-yellow-400" /> },
-  { id: 'EASY_PAY', label: '토스페이', icon: <Circle className="size-5 text-blue-500 fill-blue-500" /> },
-  { id: 'EASY_PAY', label: '네이버페이', icon: <Circle className="size-5 text-green-500 fill-green-500" /> },
-  { id: 'TRANSFER', label: '계좌이체', icon: <Building2 className="size-5" /> },
+const PACKAGES: ReadonlyArray<CashPackage> = [
+  { id: 'p1', title: '스타터', hours: '60분 1회', cashAmount: 55_000, bonus: 0 },
+  { id: 'p2', title: '베이직', hours: '60분 2회', cashAmount: 110_000, bonus: 10_000 },
+  { id: 'p3', title: '인기', hours: '60분 5회', cashAmount: 300_000, bonus: 40_000, popular: true },
+  { id: 'p4', title: '프리미엄', hours: '60분 10회', cashAmount: 600_000, bonus: 100_000 },
 ];
 
-const MAX_RETRY_COUNT = 3;
+interface PayMethod {
+  id: string; // chargeCash 에 전달할 method id
+  value: string; // RadioCard value
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+}
 
-export default function CashBuyPage() {
+const PAY_METHODS: ReadonlyArray<PayMethod> = [
+  {
+    id: 'CARD',
+    value: 'card',
+    label: '신용/체크 카드',
+    description: '국내외 모든 카드 사용 가능',
+    icon: <CreditCard size={18} aria-hidden="true" />,
+  },
+  {
+    id: 'TRANSFER',
+    value: 'transfer',
+    label: '계좌이체',
+    description: '실시간 계좌이체',
+    icon: <Building2 size={18} aria-hidden="true" />,
+  },
+  {
+    id: 'KAKAOPAY',
+    value: 'kakaopay',
+    label: '카카오페이',
+    description: '간편결제',
+    icon: <Smartphone size={18} aria-hidden="true" />,
+  },
+  {
+    id: 'TOSSPAY',
+    value: 'tosspay',
+    label: '토스페이',
+    description: '간편결제',
+    icon: <WalletIcon size={18} aria-hidden="true" />,
+  },
+];
+
+function CashBuyInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnTo = searchParams.get('returnTo');
-  const [products, setProducts] = useState<CashProduct[]>([]);
-  const [message, setMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
-  const [newBalance, setNewBalance] = useState<number | null>(null);
-  const [failureCount, setFailureCount] = useState(0);
-  const [failureReason, setFailureReason] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState<number>(0);
+  const returnTo = searchParams.get('return'); // 'confirm' | null
 
-  async function loadProducts() {
-    setLoading(true);
+  const [selectedPkg, setSelectedPkg] = useState<PackageId>('p2');
+  const [selectedMethod, setSelectedMethod] = useState<string>('card');
+  const [agreed, setAgreed] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [chargedAmount, setChargedAmount] = useState<number>(0);
+
+  const pkg = useMemo(
+    () => PACKAGES.find((p) => p.id === selectedPkg) ?? PACKAGES[0],
+    [selectedPkg],
+  );
+
+  const totalCash = pkg.cashAmount + pkg.bonus;
+  const canPay = agreed && status === 'idle';
+
+  async function handlePay() {
+    if (!canPay) return;
+    setStatus('processing');
+    setErrorMessage('');
+
     try {
-      const data = await getCashProducts();
-      setProducts(data);
-    } catch {
-      setMessage('상품 목록을 불러오지 못했습니다.');
-    } finally {
-      setLoading(false);
+      const method = PAY_METHODS.find((m) => m.value === selectedMethod);
+      // PortOne mock 호출 — 보존
+      await chargeCash(pkg.cashAmount, method?.id ?? 'CARD');
+      try {
+        await getWallet();
+      } catch {
+        // 잔액 조회 실패는 결제 성공에 영향 없음
+      }
+      setChargedAmount(totalCash);
+      // dots 1.4초 후 success 화면 전환
+      setTimeout(() => setStatus('success'), 1400);
+    } catch (err) {
+      setStatus('failed');
+      const reason = err instanceof Error ? err.message : '결제 처리 중 오류가 발생했습니다.';
+      setErrorMessage(reason);
     }
   }
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  async function handlePurchase(product: CashProduct) {
-    setMessage('');
-    setSuccessMessage('');
-    setFailureReason('');
-    setSelectedProductId(product.id);
-    setPaymentStatus('processing');
-
-    try {
-      const selectedPaymentMethod = PAY_METHODS[selectedMethod].id;
-      await chargeCash(product.cashAmount, selectedPaymentMethod);
-
-      // Refresh wallet balance
-      const walletData = await getWallet();
-      const balance = walletData.balanceCash ?? walletData.balance ?? 0;
-      setNewBalance(balance);
-
-      setFailureCount(0);
-      setPaymentStatus('success');
-      setSuccessMessage(`충전 완료! 새로운 잔액: ${balance.toLocaleString()}원`);
-
-      setTimeout(() => {
-        router.push(returnTo || '/wallet');
-      }, 3000);
-    } catch (error: unknown) {
-      const newCount = failureCount + 1;
-      setFailureCount(newCount);
-      setPaymentStatus('failed');
-      const reason = error instanceof Error ? error.message : '결제 처리 중 오류가 발생했습니다.';
-      setFailureReason(reason);
-      setMessage(reason);
-      setSelectedProductId(null);
-    }
-  }
-
-  function handleRetry() {
-    setMessage('');
-    setSuccessMessage('');
-    setFailureReason('');
-    setSelectedProductId(null);
-    setPaymentStatus('idle');
-    setNewBalance(null);
-  }
-
-  const isRetryExhausted = failureCount >= MAX_RETRY_COUNT;
-
-  // Success state
-  if (paymentStatus === 'success') {
+  if (status === 'success') {
     return (
-      <RequireLogin>
-        <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 grid gap-8">
-          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-12">
-            <div className="text-center flex flex-col gap-6 items-center">
-              <div className="text-6xl animate-bounce">
-                &#128176;&#10024;
-              </div>
-              <div className="text-2xl font-black font-heading bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent">
-                충전 완료!
-              </div>
-              {newBalance !== null && (
-                <div className="text-lg text-[hsl(var(--text-primary))]">
-                  새로운 잔액: <span className="font-bold text-[hsl(var(--gold))]">
-                    {newBalance.toLocaleString()}원
-                  </span>
-                </div>
-              )}
-              <div className="text-sm text-[hsl(var(--text-secondary))] mt-4">
-                {returnTo ? '잠시 후 이전 페이지로 이동합니다...' : '잠시 후 지갑 페이지로 이동합니다...'}
-              </div>
-            </div>
-          </div>
-        </main>
-      </RequireLogin>
+      <main className="mx-auto max-w-[880px] px-6 py-12">
+        <SuccessState
+          icon="check"
+          title="충전이 완료되었습니다"
+          subtitle={`${chargedAmount.toLocaleString()} 캐시가 지갑에 반영되었습니다`}
+          autoNavigateMs={1400}
+          onComplete={() => {
+            if (returnTo === 'confirm') {
+              // 원래 confirm 컨텍스트(counselorId/date/time/channel/price)를 그대로 전달해 복귀
+              const sp = new URLSearchParams(searchParams.toString());
+              sp.delete('return');
+              sp.delete('need');
+              const qs = sp.toString();
+              router.push(qs ? `/booking/confirm?${qs}` : '/booking/confirm');
+            } else {
+              router.push('/');
+            }
+          }}
+        />
+      </main>
     );
   }
 
   return (
-    <RequireLogin>
-      <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 grid gap-8">
-        <PageTitle>캐시 충전</PageTitle>
-        <InlineError message={message} />
-        <InlineSuccess message={successMessage} />
+    <main className="mx-auto max-w-[880px] px-6 py-8 sm:py-10">
+      <header className="mb-8">
+        <h1 className="m-0 font-heading text-2xl font-bold text-text-primary sm:text-3xl">
+          캐시 충전
+        </h1>
+        <p className="mt-2 text-sm text-text-secondary">
+          상담 예약에 사용할 캐시를 충전하세요. 보너스 캐시도 함께 지급됩니다.
+        </p>
+      </header>
 
-        {paymentStatus === 'failed' && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8">
-            <div className="text-center flex flex-col gap-4 items-center">
-              <div className="text-4xl">&#9888;&#65039;</div>
-              <div className="text-lg font-bold text-[hsl(var(--dancheong))] font-heading">
-                결제 실패
+      {/* 패키지 4열 */}
+      <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {PACKAGES.map((p) => {
+          const selected = p.id === selectedPkg;
+          return (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setSelectedPkg(p.id)}
+              aria-pressed={selected}
+              className={cn(
+                'glow-card relative flex flex-col gap-3 px-5 py-5 text-left transition-all',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold',
+                selected && 'border-gold bg-gold/[0.06]',
+              )}
+            >
+              {p.popular && (
+                <span className="absolute -top-2 right-4 rounded-full bg-gradient-to-r from-gold to-gold-soft px-2 py-0.5 text-xs font-heading font-bold text-background">
+                  인기
+                </span>
+              )}
+              <span className="font-heading text-sm text-text-secondary">
+                {p.title}
+              </span>
+              <span className="font-heading text-base font-bold text-text-primary">
+                {p.hours}
+              </span>
+              <div className="mt-auto">
+                <div className="tabular font-heading text-xl font-bold text-gold">
+                  {p.cashAmount.toLocaleString()}원
+                </div>
+                {p.bonus > 0 && (
+                  <div className="tabular mt-1 text-xs text-success">
+                    + {p.bonus.toLocaleString()} 보너스
+                  </div>
+                )}
               </div>
-              {failureReason && (
-                <div className="text-sm text-[hsl(var(--text-secondary))] max-w-[400px]">
-                  {failureReason}
-                </div>
-              )}
-              {failureCount > 1 && !isRetryExhausted && (
-                <div className="text-xs text-[hsl(var(--text-secondary))]">
-                  실패 횟수: {failureCount}/{MAX_RETRY_COUNT}
-                </div>
-              )}
-              {isRetryExhausted ? (
-                <div className="flex flex-col gap-3 items-center">
-                  <div className="text-sm text-[hsl(var(--dancheong))] font-heading font-bold">
-                    결제 시도 횟수를 초과했습니다.
-                  </div>
-                  <div className="text-sm text-[hsl(var(--text-secondary))]">
-                    고객센터에 문의해 주세요.
-                  </div>
-                  <div className="flex gap-3 mt-2">
-                    <button
-                      onClick={() => router.push('/wallet')}
-                      className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] px-6 py-2 text-sm rounded-full bg-transparent cursor-pointer font-heading hover:bg-[hsl(var(--gold))]/10"
-                    >
-                      지갑으로 돌아가기
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={handleRetry}
-                  className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] px-8 py-2 text-sm rounded-full border-none cursor-pointer font-bold font-heading"
-                >
-                  다시 시도하기
-                </button>
-              )}
+            </button>
+          );
+        })}
+      </section>
+
+      {/* 본문 그리드 */}
+      <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+        {/* 좌: 결제수단 + 약관 */}
+        <div className="flex flex-col gap-5">
+          <section className="glow-card px-6 py-5">
+            <h2 className="mb-4 m-0 font-heading text-base font-bold text-text-primary">
+              결제 수단
+            </h2>
+            <div role="radiogroup" aria-label="결제 수단" className="flex flex-col gap-2">
+              {PAY_METHODS.map((m) => (
+                <RadioCard
+                  key={m.value}
+                  name="payment-method"
+                  value={m.value}
+                  label={m.label}
+                  description={m.description}
+                  icon={m.icon}
+                  selected={selectedMethod === m.value}
+                  onSelect={setSelectedMethod}
+                />
+              ))}
             </div>
-          </div>
-        )}
+          </section>
 
-        <div className="bg-[hsl(var(--text-primary))] border-2 border-[hsl(var(--gold)/0.15)] rounded-2xl p-6 text-sm text-[hsl(var(--text-primary))] leading-relaxed">
-          상담 서비스 이용을 위해 필요한 캐시를 충전하세요. 충전한 캐시는 지갑에 보관되며, 상담 예약 시 자동으로 차감됩니다.
-        </div>
-
-        {/* Payment Method Selection */}
-        <div>
-          <h3 className="text-base font-heading font-bold text-[hsl(var(--text-primary))] mb-4">
-            결제 수단 선택
-          </h3>
-          <div className="flex gap-3 flex-wrap">
-            {PAY_METHODS.map((method, idx) => (
-              <button
-                key={`${method.id}-${method.label}`}
-                onClick={() => setSelectedMethod(idx)}
-                disabled={paymentStatus !== 'idle' && paymentStatus !== 'failed'}
-                className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border-2 text-sm font-heading transition-all cursor-pointer ${
-                  selectedMethod === idx
-                    ? 'bg-[hsl(var(--gold))]/15 border-[hsl(var(--gold))] text-[hsl(var(--gold))] font-bold shadow-[0_0_12px_hsl(var(--gold)/0.15)]'
-                    : 'bg-black/20 border-[hsl(var(--gold)/0.15)] text-[hsl(var(--text-secondary))] hover:border-[hsl(var(--gold))]/40 hover:bg-[hsl(var(--gold))]/5'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+          <section className="glow-card px-6 py-5">
+            <label className="flex cursor-pointer items-start gap-3 text-sm text-text-primary">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="sr-only"
+              />
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border',
+                  agreed
+                    ? 'border-gold bg-gold text-background'
+                    : 'border-border-subtle bg-surface-2',
+                )}
               >
-                <span>{method.icon}</span>
-                <span>{method.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+                {agreed && (
+                  <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="2,6 5,9 10,3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </span>
+              <span className="flex-1 leading-relaxed">
+                결제 진행 약관 및 환불 규정에 동의합니다
+                <span className="ml-1 text-xs text-gold">[필수]</span>
+              </span>
+            </label>
+          </section>
 
-        {loading ? (
-          <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="border-2 border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] rounded-2xl p-6 min-h-[180px] flex items-center justify-center">
-                <div className="text-center text-[hsl(var(--text-secondary))]">
-                  불러오는 중...
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : paymentStatus === 'processing' ? (
-          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-12">
-            <div className="text-center flex flex-col gap-4 items-center">
-              <div className="text-5xl animate-spin">
-                &#129463;
-              </div>
-              <div className="text-lg font-bold text-[hsl(var(--gold))] font-heading">
-                결제 처리 중...
-              </div>
-              <div className="text-sm text-[hsl(var(--text-secondary))]">
-                잠시만 기다려 주세요
-              </div>
+          {status === 'failed' && errorMessage && (
+            <div role="alert" className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {errorMessage}
             </div>
-          </div>
-        ) : products.length === 0 ? (
-          <EmptyState title="이용 가능한 상품이 없습니다" desc="잠시 후 다시 시도해주세요." />
-        ) : (
-          <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
-            {products.map((product) => (
-              <Card key={product.id}>
-                <div className="flex flex-col gap-4 min-h-[180px]">
-                  <div>
-                    <h3 className="m-0 mb-2 text-lg font-bold text-[hsl(var(--text-primary))] font-heading">
-                      {product.name}
-                    </h3>
-                    {product.description && (
-                      <p className="m-0 mb-2 text-sm text-[hsl(var(--text-secondary))] leading-relaxed">
-                        {product.description}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="grid gap-2 py-4 border-t border-b border-[hsl(var(--border-subtle))]">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-[hsl(var(--text-secondary))]">상담 시간</span>
-                      <span className="font-bold text-[hsl(var(--gold))] font-heading">
-                        {product.minutes}분
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-[hsl(var(--text-secondary))]">충전 캐시</span>
-                      <span className="font-bold text-[hsl(var(--gold))] font-heading">
-                        {product.cashAmount.toLocaleString()}원
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto">
-                    <div className="text-2xl font-black text-center mb-4 text-[hsl(var(--gold))] font-heading">
-                      {product.priceKrw.toLocaleString()}원
-                    </div>
-                    <button
-                      onClick={() => handlePurchase(product)}
-                      disabled={selectedProductId === product.id || paymentStatus !== 'idle' || isRetryExhausted}
-                      className={`w-full rounded-full py-3 px-6 text-base font-bold min-h-[44px] font-heading border-none cursor-pointer ${
-                        selectedProductId === product.id || paymentStatus !== 'idle' || isRetryExhausted
-                          ? 'bg-[hsl(var(--border-subtle))] text-[hsl(var(--text-secondary))] cursor-not-allowed'
-                          : 'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))]'
-                      }`}
-                    >
-                      {selectedProductId === product.id ? '처리 중...' : '구매하기'}
-                    </button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-4">
-          <button
-            onClick={() => router.push('/wallet')}
-            disabled={paymentStatus === 'processing'}
-            className="border-2 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))] rounded-full px-6 py-2 text-sm hover:bg-[hsl(var(--gold))]/10 disabled:opacity-50 disabled:cursor-not-allowed bg-transparent"
-          >
-            지갑으로 돌아가기
-          </button>
+          )}
         </div>
 
-      </main>
+        {/* 우: sticky 주문 요약 */}
+        <aside className="lg:sticky lg:top-[88px] lg:self-start">
+          <section className="glow-card flex flex-col gap-4 px-6 py-5">
+            <div className="flex items-center justify-between">
+              <h2 className="m-0 font-heading text-base font-bold text-text-primary">
+                주문 요약
+              </h2>
+              <WalletChip />
+            </div>
+
+            <dl className="m-0 flex flex-col gap-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">패키지</dt>
+                <dd className="font-heading font-bold text-text-primary">
+                  {pkg.title} · {pkg.hours}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">충전 캐시</dt>
+                <dd className="tabular font-heading text-text-primary">
+                  {pkg.cashAmount.toLocaleString()}원
+                </dd>
+              </div>
+              {pkg.bonus > 0 && (
+                <div className="flex justify-between">
+                  <dt className="text-text-secondary">보너스</dt>
+                  <dd className="tabular font-heading text-success">
+                    + {pkg.bonus.toLocaleString()}원
+                  </dd>
+                </div>
+              )}
+            </dl>
+
+            <div className="my-1 h-px bg-border-subtle" />
+
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm text-text-secondary">결제 금액</span>
+              <span className="tabular font-heading text-[28px] font-bold text-gold">
+                {pkg.cashAmount.toLocaleString()}
+                <span className="ml-1 text-base font-normal text-text-secondary">원</span>
+              </span>
+            </div>
+
+            <button
+              type="button"
+              disabled={!canPay}
+              onClick={handlePay}
+              className={cn(
+                'w-full rounded-full px-6 py-3 text-base font-heading font-bold transition-all',
+                canPay
+                  ? 'bg-gradient-to-r from-gold to-gold-soft text-background hover:shadow-[var(--shadow-gold)]'
+                  : 'cursor-not-allowed bg-surface-3 text-text-muted',
+              )}
+            >
+              {status === 'processing' ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  결제 처리 중<DotPulse />
+                </span>
+              ) : (
+                <>
+                  <span className="tabular">{pkg.cashAmount.toLocaleString()}</span>원 결제하기
+                </>
+              )}
+            </button>
+
+            <p className="m-0 text-center text-xs text-text-muted">
+              PortOne × KG이니시스 안전 결제
+            </p>
+          </section>
+        </aside>
+      </div>
+    </main>
+  );
+}
+
+function DotPulse() {
+  return (
+    <span className="inline-flex items-center gap-0.5 motion-reduce:hidden" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="h-1 w-1 animate-pulse rounded-full bg-current"
+          style={{ animationDelay: `${i * 160}ms` }}
+        />
+      ))}
+    </span>
+  );
+}
+
+export default function CashBuyPage() {
+  return (
+    <RequireLogin>
+      <Suspense fallback={<div className="mx-auto max-w-[880px] px-6 py-10" />}>
+        <CashBuyInner />
+      </Suspense>
     </RequireLogin>
   );
 }

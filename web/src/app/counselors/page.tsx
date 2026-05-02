@@ -3,26 +3,53 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { Search } from 'lucide-react';
 import { API_BASE } from '../../components/api';
-import { apiFetch } from '../../components/api-client';
-import { useAuth } from '../../components/auth-context';
 import { Pagination } from '../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import CounselorCard, { type CounselorListItem } from './components/CounselorCard';
-import FilterBar from './components/FilterBar';
-import SortDropdown from './components/SortDropdown';
-import { Search } from 'lucide-react';
+import { CounselorCard, FilterChip, EmptyState } from '@/components/design';
+import { cn } from '@/lib/utils';
+
+export type CounselorListItem = {
+  id: number;
+  name: string;
+  specialty: string;
+  intro: string;
+  supportedConsultationTypes?: string;
+  profileImageUrl?: string | null;
+  careerYears?: number;
+  certifications?: string | null;
+  averageRating?: number;
+  totalReviews?: number;
+  totalConsultations?: number;
+  responseRate?: number;
+  pricePerMinute?: number;
+  pricePerSession?: number;
+  sessionMinutes?: number;
+  isOnline?: boolean;
+  tags?: string | null;
+  shortVideoUrl?: string | null;
+  latestReviewSnippet?: string | null;
+  latestReviewerName?: string | null;
+};
 
 const PAGE_SIZE = 20;
 
+const SORT_OPTIONS = [
+  { key: 'recommended', label: '추천순' },
+  { key: 'rating', label: '평점순' },
+  { key: 'reviews', label: '리뷰순' },
+  { key: 'price_asc', label: '낮은가격' },
+  { key: 'price_desc', label: '높은가격' },
+] as const;
+
 export default function CounselorsPage() {
-  const { me } = useAuth();
   const t = useTranslations('counselors');
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Read initial state from URL params
+  // URL → state
   const initialSearch = searchParams.get('search') ?? '';
   const initialSpecialties = searchParams.get('specialty')?.split(',').filter(Boolean) ?? [];
   const initialSort = searchParams.get('sort') ?? 'recommended';
@@ -35,36 +62,15 @@ export default function CounselorsPage() {
   const [search, setSearch] = useState(initialSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [activeFilters, setActiveFilters] = useState<Set<string>>(
-    new Set(initialSpecialties.length > 0 ? initialSpecialties : ['all'])
+    new Set(initialSpecialties.length > 0 ? initialSpecialties : ['all']),
   );
   const [sortBy, setSortBy] = useState(initialSort);
   const [isOnlineOnly, setIsOnlineOnly] = useState(initialOnline);
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
-  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
-  const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const [gridVisible, setGridVisible] = useState(false);
-  const gridRef = useRef<HTMLDivElement | null>(null);
-
-  // IntersectionObserver for stagger animation
-  useEffect(() => {
-    const node = gridRef.current;
-    if (!node) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setGridVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [loading, error, counselors.length]);
 
   const SPECIALTY_FILTERS = [
     { key: 'all', label: t('filterAll') },
@@ -75,7 +81,7 @@ export default function CounselorsPage() {
     { key: '궁합', label: t('filterCompatibility') },
   ];
 
-  // Debounce search input
+  // Debounced search
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -85,7 +91,7 @@ export default function CounselorsPage() {
     }, 300);
   }, []);
 
-  // Update URL params when filters change
+  // URL sync
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set('search', debouncedSearch);
@@ -100,11 +106,10 @@ export default function CounselorsPage() {
     router.replace(newUrl, { scroll: false });
   }, [debouncedSearch, activeFilters, sortBy, isOnlineOnly, page, router]);
 
-  // Fetch counselors with filters
+  // Fetch
   useEffect(() => {
     setLoading(true);
     setError(false);
-    setGridVisible(false);
 
     const params = new URLSearchParams();
     const specialties = Array.from(activeFilters).filter((f) => f !== 'all');
@@ -132,54 +137,10 @@ export default function CounselorsPage() {
       });
   }, [debouncedSearch, activeFilters, sortBy, isOnlineOnly, page]);
 
-  // Load favorites when logged in
-  useEffect(() => {
-    if (!me) {
-      setFavoriteIds(new Set());
-      return;
-    }
-    apiFetch('/api/v1/favorites?page=0&size=100', { cache: 'no-store' })
-      .then(async (res) => {
-        if (res.ok) {
-          const data = await res.json();
-          setFavoriteIds(new Set(data.map((f: { counselorId: number }) => f.counselorId)));
-        }
-      })
-      .catch(() => {});
-  }, [me]);
-
-  const toggleFavorite = useCallback(async (counselorId: number) => {
-    if (!me || togglingId !== null) return;
-    setTogglingId(counselorId);
-    const isFavorited = favoriteIds.has(counselorId);
-    try {
-      const res = await apiFetch(`/api/v1/favorites/${counselorId}`, {
-        method: isFavorited ? 'DELETE' : 'POST',
-      });
-      if (res.ok) {
-        setFavoriteIds((prev) => {
-          const next = new Set(prev);
-          if (isFavorited) {
-            next.delete(counselorId);
-          } else {
-            next.add(counselorId);
-          }
-          return next;
-        });
-      }
-    } catch {
-      // silently ignore
-    } finally {
-      setTogglingId(null);
-    }
-  }, [me, togglingId, favoriteIds]);
-
-  const handleFilterChange = useCallback((key: string) => {
+  const handleFilterToggle = useCallback((key: string) => {
     setActiveFilters((prev) => {
       const next = new Set(prev);
-      if (key === 'all') {
-        return new Set(['all']);
-      }
+      if (key === 'all') return new Set(['all']);
       next.delete('all');
       if (next.has(key)) {
         next.delete(key);
@@ -192,13 +153,13 @@ export default function CounselorsPage() {
     setPage(1);
   }, []);
 
-  const handleSortChange = useCallback((sort: string) => {
-    setSortBy(sort);
+  const handleOnlineToggle = useCallback(() => {
+    setIsOnlineOnly((prev) => !prev);
     setPage(1);
   }, []);
 
-  const handleOnlineToggle = useCallback(() => {
-    setIsOnlineOnly((prev) => !prev);
+  const handleSortToggle = useCallback((key: string) => {
+    setSortBy(key);
     setPage(1);
   }, []);
 
@@ -207,125 +168,176 @@ export default function CounselorsPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  function resetAll() {
+    setSearch('');
+    setDebouncedSearch('');
+    setActiveFilters(new Set(['all']));
+    setIsOnlineOnly(false);
+    setSortBy('recommended');
+    setPage(1);
+  }
+
   return (
-    <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-16">
+    <main className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 pb-16">
       {/* Header */}
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-black tracking-tight text-[hsl(var(--text-primary))] font-heading">
+      <div className="pt-10 pb-6 text-center">
+        <h1
+          className="font-heading text-3xl sm:text-4xl font-black tracking-tight text-text-primary"
+          style={{ textWrap: 'balance', wordBreak: 'keep-all' }}
+        >
           {t('title')}
         </h1>
-        <p className="text-[hsl(var(--text-secondary))] text-lg leading-relaxed mt-3">
+        <p
+          className="mt-3 text-sm sm:text-base text-text-secondary"
+          style={{ wordBreak: 'keep-all' }}
+        >
           {t('subtitle')}
         </p>
       </div>
 
-      {/* Search bar */}
-      <div className="mb-6 max-w-[600px] mx-auto w-full">
-        <Input
-          type="text"
-          placeholder={t('searchPlaceholder')}
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="w-full min-h-[52px] bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)] rounded-xl px-5 py-3.5 text-[hsl(var(--text-primary))] placeholder:text-[hsl(var(--text-secondary))]/50 focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40 transition-all text-base"
-        />
+      {/* Sticky search + filter */}
+      <div
+        className={cn(
+          'sticky z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4',
+          'top-[var(--header-h,64px)]',
+          'bg-background/85 backdrop-blur-md border-b border-border-subtle/40',
+        )}
+      >
+        <div className="mx-auto max-w-[720px]">
+          <label className="relative block">
+            <span className="sr-only">{t('searchPlaceholder')}</span>
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted"
+            />
+            <Input
+              type="text"
+              placeholder={t('searchPlaceholder')}
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              data-testid="counselor-search"
+              className={cn(
+                'h-12 w-full rounded-full pl-11 pr-4',
+                'bg-surface-2 border border-border-subtle',
+                'text-sm text-text-primary placeholder:text-text-muted',
+                'focus:border-gold/50 focus:ring-2 focus:ring-gold/30',
+              )}
+            />
+          </label>
+        </div>
+
+        {/* Specialty chips */}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          {SPECIALTY_FILTERS.map((f) => (
+            <FilterChip
+              key={f.key}
+              label={f.label}
+              selected={activeFilters.has(f.key)}
+              onToggle={() => handleFilterToggle(f.key)}
+            />
+          ))}
+        </div>
+
+        {/* Availability + Sort */}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <FilterChip
+              label="지금 상담 가능"
+              selected={isOnlineOnly}
+              onToggle={handleOnlineToggle}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {SORT_OPTIONS.map((s) => (
+              <FilterChip
+                key={s.key}
+                label={s.label}
+                selected={sortBy === s.key}
+                onToggle={() => handleSortToggle(s.key)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Filter chips + Sort */}
-      <div className="mb-10 space-y-4">
-        <FilterBar
-          filters={SPECIALTY_FILTERS}
-          activeFilters={activeFilters}
-          onFilterChange={handleFilterChange}
-          isOnlineOnly={isOnlineOnly}
-          onOnlineToggle={handleOnlineToggle}
-        />
-
-        <div className="flex justify-between items-center max-w-[600px] mx-auto">
-          <span className="text-sm text-[hsl(var(--text-secondary))]">
-            {!loading && `${totalElements}명의 상담사`}
-          </span>
-          <SortDropdown value={sortBy} onChange={handleSortChange} />
-        </div>
+      {/* Result count */}
+      <div className="mt-6 flex items-center justify-between">
+        <span className="tabular-nums text-xs text-text-secondary">
+          {!loading && `${totalElements.toLocaleString()}명의 상담사`}
+        </span>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+          data-testid="counselor-skeleton"
+        >
           {Array.from({ length: 6 }, (_, i) => (
             <div
               key={i}
-              className="bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6 animate-pulse"
+              className="glow-card animate-pulse motion-reduce:animate-none p-5"
+              aria-hidden="true"
             >
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-16 h-16 rounded-full bg-[hsl(var(--border-subtle))]" />
+              <div className="flex items-start gap-4">
+                <div className="h-16 w-16 rounded-full bg-surface-3" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-5 w-3/5 bg-[hsl(var(--border-subtle))] rounded-lg" />
-                  <div className="h-3 w-2/3 bg-[hsl(var(--border-subtle))] rounded-lg" />
+                  <div className="h-4 w-3/5 rounded-md bg-surface-3" />
+                  <div className="h-3 w-2/3 rounded-md bg-surface-3" />
+                  <div className="h-3 w-2/5 rounded-md bg-surface-3" />
                 </div>
               </div>
-              <div className="h-3 w-4/5 bg-[hsl(var(--border-subtle))] rounded-lg mb-2" />
-              <div className="h-3 w-3/5 bg-[hsl(var(--border-subtle))] rounded-lg mb-4" />
-              <div className="flex gap-2">
-                <div className="h-10 flex-1 bg-[hsl(var(--border-subtle))] rounded-full" />
-                <div className="h-10 flex-1 bg-[hsl(var(--border-subtle))] rounded-full" />
+              <div className="mt-6 flex items-center justify-between">
+                <div className="h-3 w-16 rounded-md bg-surface-3" />
+                <div className="h-9 w-24 rounded-full bg-surface-3" />
               </div>
             </div>
           ))}
         </div>
       ) : error ? (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mt-6">
           <AlertDescription>
-            <p className="font-bold font-heading">{t('loadError')}</p>
-            <p className="text-sm mt-1">{t('loadErrorRetry')}</p>
+            <p className="font-heading font-bold">{t('loadError')}</p>
+            <p className="mt-1 text-sm">{t('loadErrorRetry')}</p>
           </AlertDescription>
         </Alert>
       ) : counselors.length === 0 ? (
-        <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8">
-          <div className="text-center py-6">
-            <div className="mb-4"><Search className="size-10 text-[hsl(var(--text-muted))] mx-auto" /></div>
-            <p className="font-bold font-heading text-xl text-[hsl(var(--text-primary))]">
-              {t('noResults')}
-            </p>
-            <p className="text-[hsl(var(--text-secondary))] text-sm mt-2 leading-relaxed">
-              {t('noResultsHint')}
-            </p>
-            <button
-              onClick={() => {
-                setSearch('');
-                setDebouncedSearch('');
-                setActiveFilters(new Set(['all']));
-                setIsOnlineOnly(false);
-                setSortBy('recommended');
-                setPage(1);
-              }}
-              className="mt-6 inline-flex items-center justify-center rounded-full px-8 py-3 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] font-bold font-heading transition-all hover:shadow-[0_4px_20px_hsl(var(--gold)/0.15)]"
-            >
-              {t('viewAll')}
-            </button>
-          </div>
+        <div className="mt-6">
+          <EmptyState
+            icon={<Search className="h-8 w-8" aria-hidden="true" />}
+            title={t('noResults')}
+            body={t('noResultsHint')}
+            cta={{ label: t('viewAll'), onClick: resetAll }}
+          />
         </div>
       ) : (
         <>
           <div
-            ref={gridRef}
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-container${gridVisible ? ' visible' : ''}`}
+            className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+            data-testid="counselor-grid"
           >
             {counselors.map((c) => (
               <CounselorCard
                 key={c.id}
-                counselor={c}
-                isLoggedIn={!!me}
-                isFavorited={favoriteIds.has(c.id)}
-                onToggleFavorite={toggleFavorite}
+                counselor={{
+                  id: c.id,
+                  name: c.name,
+                  specialty: c.specialty,
+                  imageUrl: c.profileImageUrl ?? null,
+                  rating: c.averageRating,
+                  reviewCount: c.totalReviews,
+                  pricePerSession: c.pricePerSession,
+                  pricePerMinute: c.pricePerMinute,
+                  sessionMinutes: c.sessionMinutes,
+                  isOnline: c.isOnline,
+                  level: c.careerYears ? `경력 ${c.careerYears}년` : null,
+                }}
+                variant="list"
               />
             ))}
           </div>
 
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
         </>
       )}
     </main>

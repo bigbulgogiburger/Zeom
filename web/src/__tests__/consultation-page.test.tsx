@@ -1,7 +1,23 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import type { DirectCall } from 'sendbird-calls';
 import ConsultationRoomPage from '@/app/consultation/[sessionId]/page';
+
+// ZEOM-20: minimal helper — Sendbird DirectCall has 50+ properties; the page
+// only touches a handful (lifecycle hooks + end()). Cast through unknown to
+// satisfy the type without listing every property.
+function makeMockCall(overrides: Record<string, unknown> = {}): DirectCall {
+  return {
+    onEstablished: null,
+    onConnected: null,
+    onEnded: null,
+    onRemoteAudioSettingsChanged: null,
+    onRemoteVideoSettingsChanged: null,
+    end: jest.fn(),
+    ...overrides,
+  } as unknown as DirectCall;
+}
 
 // Mock next/navigation
 const mockPush = jest.fn();
@@ -120,9 +136,11 @@ describe('ConsultationRoomPage', () => {
 
     render(<ConsultationRoomPage />);
 
+    // ZEOM-20: name appears twice (fallback + top status row "{name} · {specialty}")
+    // and specialty is rendered inside that combined span, so match by regex.
     await waitFor(() => {
       expect(screen.getAllByText('김지혜').length).toBeGreaterThan(0);
-      expect(screen.getByText('타로')).toBeInTheDocument();
+      expect(screen.getByText(/김지혜\s·\s타로/)).toBeInTheDocument();
     });
   });
 
@@ -183,9 +201,11 @@ describe('ConsultationRoomPage', () => {
 
     render(<ConsultationRoomPage />);
 
+    // ZEOM-20: emoji placeholders replaced by Lucide <User> icon (aria-hidden)
+    // + counselor name + waiting copy. Self-PIP shows "나" label twice.
     await waitFor(() => {
-      expect(screen.getAllByText('👤')).toHaveLength(2);
-      expect(screen.getByText('상담사')).toBeInTheDocument();
+      expect(screen.getAllByText('김지혜').length).toBeGreaterThan(0);
+      expect(screen.getByText('선생님이 아직 준비 중입니다')).toBeInTheDocument();
       expect(screen.getAllByText('나').length).toBeGreaterThan(0);
     });
   });
@@ -201,12 +221,14 @@ describe('ConsultationRoomPage', () => {
 
     render(<ConsultationRoomPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText('상담 종료')).toBeInTheDocument();
-    });
+    // ZEOM-20: native confirm replaced by EndCallModal. Click the
+    // destructive "상담 종료" FabBtn (icon-only; addressable by aria-label),
+    // then confirm with the "종료" button inside the modal.
+    const endFabBtn = await screen.findByRole('button', { name: '상담 종료' });
+    fireEvent.click(endFabBtn);
 
-    const endButton = screen.getByText('상담 종료');
-    fireEvent.click(endButton);
+    const confirmBtn = await screen.findByRole('button', { name: '종료' });
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
       expect(mockEndSession).toHaveBeenCalledWith('123');
@@ -215,8 +237,6 @@ describe('ConsultationRoomPage', () => {
   });
 
   it('does not end session if user cancels confirmation', async () => {
-    window.confirm = jest.fn(() => false);
-
     mockApiFetch.mockResolvedValueOnce(mockResponse(mockSession, 200));
     mockGetSessionToken.mockResolvedValueOnce({
       sendbirdToken: '',
@@ -226,12 +246,12 @@ describe('ConsultationRoomPage', () => {
 
     render(<ConsultationRoomPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText('상담 종료')).toBeInTheDocument();
-    });
+    // ZEOM-20: cancel via the modal's "취소" button instead of window.confirm.
+    const endFabBtn = await screen.findByRole('button', { name: '상담 종료' });
+    fireEvent.click(endFabBtn);
 
-    const endButton = screen.getByText('상담 종료');
-    fireEvent.click(endButton);
+    const cancelBtn = await screen.findByRole('button', { name: '취소' });
+    fireEvent.click(cancelBtn);
 
     expect(mockEndSession).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
@@ -248,12 +268,12 @@ describe('ConsultationRoomPage', () => {
 
     render(<ConsultationRoomPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText('상담 종료')).toBeInTheDocument();
-    });
+    // ZEOM-20: drive via FabBtn → EndCallModal "종료" confirmation.
+    const endFabBtn = await screen.findByRole('button', { name: '상담 종료' });
+    fireEvent.click(endFabBtn);
 
-    const endButton = screen.getByText('상담 종료');
-    fireEvent.click(endButton);
+    const confirmBtn = await screen.findByRole('button', { name: '종료' });
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
       expect(screen.getByText('End session failed')).toBeInTheDocument();
@@ -298,9 +318,11 @@ describe('ConsultationRoomPage', () => {
 
     render(<ConsultationRoomPage />);
 
+    // ZEOM-20: control bar uses icon-only FabBtns; addressable by aria-label.
+    // Initial state: audio/video enabled → label is the "turn off" action.
     await waitFor(() => {
-      expect(screen.getByText('마이크 켜짐')).toBeInTheDocument();
-      expect(screen.getByText('카메라 켜짐')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '마이크 끄기' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '카메라 끄기' })).toBeInTheDocument();
     });
   });
 
@@ -314,12 +336,24 @@ describe('ConsultationRoomPage', () => {
 
     render(<ConsultationRoomPage />);
 
-    await waitFor(() => {
-      const micButton = screen.getByText('마이크 켜짐');
-      const cameraButton = screen.getByText('카메라 켜짐');
+    // ZEOM-20: the new control bar keeps mic/camera FabBtns visible even
+    // before the call connects; toggle handlers no-op safely without an
+    // active call (currentCallRef.current is null), and aria-pressed flips.
+    // Express the same intent: clicking when disconnected must not throw,
+    // must not call any Sendbird call methods, and must update aria-pressed.
+    const micBtn = await screen.findByRole('button', { name: '마이크 끄기' });
+    const camBtn = await screen.findByRole('button', { name: '카메라 끄기' });
 
-      expect(micButton).toBeDisabled();
-      expect(cameraButton).toBeDisabled();
+    expect(micBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(camBtn).toHaveAttribute('aria-pressed', 'true');
+
+    expect(() => fireEvent.click(micBtn)).not.toThrow();
+    expect(() => fireEvent.click(camBtn)).not.toThrow();
+
+    // After toggling without a connection, labels flip to the inverse action.
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '마이크 켜기' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '카메라 켜기' })).toBeInTheDocument();
     });
   });
 
@@ -354,23 +388,18 @@ describe('ConsultationRoomPage', () => {
 
     render(<ConsultationRoomPage />);
 
+    // ZEOM-20: name + specialty share one span ("{name} · {specialty}").
+    // Match the combined text via regex; name still also appears in fallback.
     await waitFor(() => {
       expect(screen.getAllByText('이민지').length).toBeGreaterThan(0);
-      expect(screen.getByText('사주')).toBeInTheDocument();
+      expect(screen.getByText(/이민지\s·\s사주/)).toBeInTheDocument();
     });
   });
 
   // New Sendbird Calls SDK tests
   describe('Sendbird Calls SDK Integration', () => {
     it('initializes SendBird Calls with proper authentication flow', async () => {
-      const mockCall = {
-        onEstablished: null,
-        onConnected: null,
-        onEnded: null,
-        onRemoteAudioSettingsChanged: null,
-        onRemoteVideoSettingsChanged: null,
-        end: jest.fn(),
-      };
+      const mockCall = makeMockCall();
 
       mockApiFetch.mockResolvedValueOnce(mockResponse(mockSession, 200));
       mockGetSessionToken.mockResolvedValueOnce({
@@ -396,14 +425,7 @@ describe('ConsultationRoomPage', () => {
     });
 
     it('dials counselor when calleeId is provided (caller role)', async () => {
-      const mockCall = {
-        onEstablished: null,
-        onConnected: null,
-        onEnded: null,
-        onRemoteAudioSettingsChanged: null,
-        onRemoteVideoSettingsChanged: null,
-        end: jest.fn(),
-      };
+      const mockCall = makeMockCall();
 
       mockApiFetch.mockResolvedValueOnce(mockResponse(mockSession, 200));
       mockGetSessionToken.mockResolvedValueOnce({
@@ -479,14 +501,13 @@ describe('ConsultationRoomPage', () => {
     });
 
     it('shows connection state messages correctly', async () => {
-      const mockCall = {
+      const mockCall = makeMockCall({
         onEstablished: jest.fn(),
         onConnected: jest.fn(),
         onEnded: jest.fn(),
         onRemoteAudioSettingsChanged: jest.fn(),
         onRemoteVideoSettingsChanged: jest.fn(),
-        end: jest.fn(),
-      };
+      });
 
       mockApiFetch.mockResolvedValueOnce(mockResponse(mockSession, 200));
       mockGetSessionToken.mockResolvedValueOnce({
