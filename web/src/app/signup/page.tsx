@@ -8,7 +8,7 @@ import { API_BASE } from '../../components/api';
 import { getDeviceId } from '../../components/auth-client';
 import { useAuth } from '../../components/auth-context';
 import { toast } from 'sonner';
-import { ActionButton, FormField } from '../../components/ui';
+import { FormField } from '../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { SocialLoginButtons } from '../../components/social-login-buttons';
 import { trackEvent } from '../../components/analytics';
 import { Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { AuthCard, ProgressSteps } from '@/components/design';
 
 const YEARS = Array.from({ length: 71 }, (_, i) => 2010 - i);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -51,33 +52,33 @@ function formatPhone(value: string): string {
   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
 }
 
-function ProgressBar({ current, steps }: { current: number; steps: string[] }) {
-  const progress = ((current + 1) / steps.length) * 100;
+const SELECT_CLASS = cn(
+  'w-full min-h-[48px] rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--background))] px-3 py-2 pr-8 text-sm text-[hsl(var(--text-primary))] appearance-none',
+  'focus:outline-none focus:ring-2 focus:ring-[hsl(var(--gold))/0.3] focus:border-[hsl(var(--border-accent))]',
+);
+
+function NativeSelect({
+  value,
+  onChange,
+  children,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="mb-8">
-      <div className="h-1 bg-[hsl(var(--border-subtle))] rounded-full overflow-hidden">
-        <div
-          className="h-full bg-[hsl(var(--gold))] rounded-full transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <div className="flex justify-between mt-3">
-        {steps.map((label, i) => (
-          <span
-            key={label}
-            className={cn(
-              'text-xs transition-colors',
-              i === current
-                ? 'text-[hsl(var(--gold))] font-bold'
-                : i < current
-                  ? 'text-[hsl(var(--text-secondary))]'
-                  : 'text-[hsl(var(--text-muted))]',
-            )}
-          >
-            {label}
-          </span>
-        ))}
-      </div>
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={SELECT_CLASS}
+      >
+        {children}
+      </select>
+      <ChevronDown
+        aria-hidden="true"
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-3 text-[hsl(var(--gold))]"
+      />
     </div>
   );
 }
@@ -91,7 +92,11 @@ export default function SignupPage() {
   const t = useTranslations('signup');
   const tc = useTranslations('common');
 
-  const STEPS = [t('steps.basicInfo'), t('steps.additionalInfo'), t('steps.terms')];
+  const STEP_DEFS = [
+    { key: 'basic', label: t('steps.basicInfo') },
+    { key: 'additional', label: t('steps.additionalInfo') },
+    { key: 'terms', label: t('steps.terms') },
+  ] as const;
 
   // Step 1
   const [email, setEmail] = useState('');
@@ -197,28 +202,15 @@ export default function SignupPage() {
     }
   }
 
-  const selectClass = cn(
-    "w-full min-h-[48px] rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--background))] px-3 py-2 text-sm text-[hsl(var(--text-primary))] appearance-none",
-    "bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2712%27%20height=%2712%27%20viewBox=%270%200%2012%2012%27%3E%3Cpath%20fill=%27%23C9A227%27%20d=%27M6%208L1%203h10z%27/%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] pr-8",
-    "focus:outline-none focus:ring-2 focus:ring-[hsl(var(--gold))/0.3] focus:border-[hsl(var(--border-accent))]",
-  );
-
-  const inputClass = "min-h-[48px] bg-[hsl(var(--background))] border border-[hsl(var(--border-subtle))] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))/0.3] focus:border-[hsl(var(--border-accent))]";
+  const inputClass = 'min-h-[48px] bg-[hsl(var(--background))] border border-[hsl(var(--border-subtle))] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))/0.3] focus:border-[hsl(var(--border-accent))]';
 
   return (
-    <main
-      className="min-h-[100dvh] flex flex-col items-center justify-center py-24 px-6 bg-[hsl(var(--background))]"
-      style={{ backgroundImage: 'radial-gradient(ellipse at center, hsl(var(--gold) / 0.04) 0%, transparent 70%)' }}
-    >
-      <div className="w-full max-w-[480px]">
-        <div className="bg-[hsl(var(--surface))] border border-[hsl(var(--border-subtle))] rounded-2xl p-8 sm:p-10">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-black tracking-tight text-[hsl(var(--gold))] font-heading m-0">
-              {t('title')}
-            </h1>
-          </div>
+    <AuthCard wrapperClassName="max-w-[480px]">
+      <h1 className="text-center text-xl font-bold tracking-tight text-[hsl(var(--text-primary))] font-heading m-0 mb-6">
+        {t('title')}
+      </h1>
 
-          <ProgressBar current={step} steps={STEPS} />
+      <ProgressSteps steps={STEP_DEFS} current={step} className="mb-8" />
 
           {/* Step 1: Basic Info */}
           {step === 0 && (
@@ -293,13 +285,16 @@ export default function SignupPage() {
                 />
               </FormField>
 
-              <ActionButton
+              <Button
+                type="button"
+                variant="gold-grad"
+                size="lg"
                 onClick={() => setStep(1)}
                 disabled={!step1Valid}
                 className="w-full mt-6"
               >
                 {tc('next')}
-              </ActionButton>
+              </Button>
             </div>
           )}
 
@@ -312,36 +307,24 @@ export default function SignupPage() {
 
               <FormField label={t('birthDate')} required hint={t('birthDateHint')}>
                 <div className="grid grid-cols-3 gap-2">
-                  <select
-                    value={birthYear}
-                    onChange={(e) => setBirthYear(e.target.value)}
-                    className={selectClass}
-                  >
+                  <NativeSelect value={birthYear} onChange={setBirthYear}>
                     <option value="">{t('year')}</option>
                     {YEARS.map((y) => (
                       <option key={y} value={y}>{y}</option>
                     ))}
-                  </select>
-                  <select
-                    value={birthMonth}
-                    onChange={(e) => setBirthMonth(e.target.value)}
-                    className={selectClass}
-                  >
+                  </NativeSelect>
+                  <NativeSelect value={birthMonth} onChange={setBirthMonth}>
                     <option value="">{t('month')}</option>
                     {MONTHS.map((m) => (
                       <option key={m} value={m}>{m}</option>
                     ))}
-                  </select>
-                  <select
-                    value={birthDay}
-                    onChange={(e) => setBirthDay(e.target.value)}
-                    className={selectClass}
-                  >
+                  </NativeSelect>
+                  <NativeSelect value={birthDay} onChange={setBirthDay}>
                     <option value="">{t('day')}</option>
                     {DAYS.map((d) => (
                       <option key={d} value={d}>{d}</option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 </div>
               </FormField>
 
@@ -387,16 +370,12 @@ export default function SignupPage() {
               </FormField>
 
               <FormField label={t('birthHour')} required hint={t('birthHourHint')}>
-                <select
-                  value={birthHour}
-                  onChange={(e) => setBirthHour(e.target.value)}
-                  className={selectClass}
-                >
+                <NativeSelect value={birthHour} onChange={setBirthHour}>
                   <option value="">-- {t('birthHour')} --</option>
                   {BIRTH_HOURS.map((h) => (
                     <option key={h.value} value={h.value}>{h.label}</option>
                   ))}
-                </select>
+                </NativeSelect>
               </FormField>
 
               <FormField label={t('gender')} required hint={t('genderHint')}>
@@ -434,18 +413,22 @@ export default function SignupPage() {
                 <Button
                   type="button"
                   variant="outline"
+                  size="lg"
                   onClick={() => setStep(0)}
-                  className="flex-1 min-h-[48px] font-bold font-heading rounded-full border-2 border-[hsl(var(--border-accent))/0.3] text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))/0.08] bg-transparent"
+                  className="flex-1 rounded-full border-2 border-[hsl(var(--border-accent))/0.3] text-[hsl(var(--gold))] hover:bg-[hsl(var(--surface-2))] bg-transparent"
                 >
                   {tc('previous')}
                 </Button>
-                <ActionButton
+                <Button
+                  type="button"
+                  variant="gold-grad"
+                  size="lg"
                   onClick={() => setStep(2)}
                   disabled={!step2Valid}
                   className="flex-1"
                 >
                   {tc('next')}
-                </ActionButton>
+                </Button>
               </div>
             </div>
           )}
@@ -567,34 +550,34 @@ export default function SignupPage() {
                 <Button
                   type="button"
                   variant="outline"
+                  size="lg"
                   onClick={() => setStep(1)}
-                  className="flex-1 min-h-[48px] font-bold font-heading rounded-full border-2 border-[hsl(var(--border-accent))/0.3] text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))/0.08] bg-transparent"
+                  className="flex-1 rounded-full border-2 border-[hsl(var(--border-accent))/0.3] text-[hsl(var(--gold))] hover:bg-[hsl(var(--surface-2))] bg-transparent"
                 >
                   {tc('previous')}
                 </Button>
-                <ActionButton
+                <Button
+                  type="button"
+                  variant="gold-grad"
+                  size="lg"
                   onClick={handleSubmit}
-                  disabled={!requiredTermsAgreed}
-                  loading={loading}
+                  disabled={!requiredTermsAgreed || loading}
                   className="flex-1"
                 >
-                  {t('submit')}
-                </ActionButton>
+                  {loading ? '가입 중...' : t('submit')}
+                </Button>
               </div>
             </div>
           )}
 
-          {/* Social Login */}
-          <SocialLoginButtons mode="signup" />
-        </div>
+      <SocialLoginButtons mode="signup" />
 
-        <div className="text-center mt-8 text-sm text-[hsl(var(--text-secondary))]">
-          {t('hasAccount')}{' '}
-          <Link href="/login" className="text-[hsl(var(--gold))] font-bold hover:underline transition-colors">
-            {t('loginLink')}
-          </Link>
-        </div>
+      <div className="text-center mt-6 text-sm text-[hsl(var(--text-secondary))]">
+        {t('hasAccount')}{' '}
+        <Link href="/login" className="text-[hsl(var(--gold))] font-bold hover:underline transition-colors">
+          {t('loginLink')}
+        </Link>
       </div>
-    </main>
+    </AuthCard>
   );
 }

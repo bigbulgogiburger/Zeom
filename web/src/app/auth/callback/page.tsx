@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { API_BASE } from '../../../components/api';
 import { getDeviceId } from '../../../components/auth-client';
 import { useAuth } from '../../../components/auth-context';
+import { AuthCard } from '@/components/design';
 
-export default function OAuthCallbackPage() {
+function OAuthCallbackContent() {
   const [error, setError] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -52,26 +53,39 @@ export default function OAuthCallbackPage() {
 
   if (error) {
     return (
-      <main className="min-h-[100dvh] flex items-center justify-center bg-[hsl(var(--background))]">
-        <div className="text-center">
-          <p className="text-[hsl(var(--text-secondary))] mb-4">{error}</p>
-          <button
-            onClick={() => router.push('/login')}
-            className="text-[hsl(var(--gold))] underline hover:text-[hsl(var(--gold-soft))]"
-          >
-            로그인 페이지로 돌아가기
-          </button>
-        </div>
-      </main>
+      <div className="text-center">
+        <p className="text-[hsl(var(--text-secondary))] mb-4">{error}</p>
+        <button
+          onClick={() => router.push('/login')}
+          className="text-[hsl(var(--gold))] underline hover:text-[hsl(var(--gold-soft))]"
+        >
+          로그인 페이지로 돌아가기
+        </button>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-[100dvh] flex items-center justify-center bg-[hsl(var(--background))]">
-      <div className="text-center">
-        <div className="w-8 h-8 border-2 border-[hsl(var(--gold))] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-[hsl(var(--text-secondary))]">로그인 처리 중...</p>
-      </div>
-    </main>
+    <div className="text-center py-6">
+      <div className="w-8 h-8 border-2 border-[hsl(var(--gold))] border-t-transparent rounded-full animate-spin motion-reduce:animate-none mx-auto mb-4" />
+      <p className="text-[hsl(var(--text-secondary))]">로그인 처리 중...</p>
+    </div>
+  );
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <AuthCard>
+      <Suspense
+        fallback={
+          <div className="text-center py-6">
+            <div className="w-8 h-8 border-2 border-[hsl(var(--gold))] border-t-transparent rounded-full animate-spin motion-reduce:animate-none mx-auto mb-4" />
+            <p className="text-[hsl(var(--text-secondary))]">로딩 중...</p>
+          </div>
+        }
+      >
+        <OAuthCallbackContent />
+      </Suspense>
+    </AuthCard>
   );
 }

@@ -47,3 +47,7 @@ export type { ReviewSliderItem } from './review-slider';
 
 // ZEOM-22 P3-1 Chrome
 export { Logo } from './logo';
+
+// ZEOM-23 P3-2 Auth pages
+export { AuthCard } from './auth-card';
+export { PasswordStrengthMeter } from './password-strength-meter';

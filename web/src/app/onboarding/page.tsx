@@ -3,27 +3,37 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Users, Calendar, Star, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Logo, ProgressSteps } from '@/components/design';
 
 const STEPS = [
   {
+    key: 'welcome',
+    label: '환영',
     icon: Sparkles,
     title: '천지연꽃신당에 오신 것을 환영합니다',
     description:
       '사주, 타로, 신점 등 다양한 상담을 통해 삶의 방향을 찾아보세요. 전문 상담사가 정성껏 안내해 드립니다.',
   },
   {
+    key: 'counselors',
+    label: '상담사',
     icon: Users,
     title: '검증된 전문 상담사',
     description:
       '엄선된 상담사들이 풍부한 경험과 깊은 통찰력으로 여러분의 고민에 진심을 담아 답해 드립니다.',
   },
   {
+    key: 'booking',
+    label: '예약',
     icon: Calendar,
     title: '간편한 예약 시스템',
     description:
       '원하는 상담사와 시간을 선택하고 간편하게 예약하세요. 화상 상담부터 채팅 상담까지 다양한 방식을 지원합니다.',
   },
   {
+    key: 'fortune',
+    label: '운세',
     icon: Star,
     title: '오늘의 무료 운세 확인',
     description:
@@ -126,9 +136,10 @@ export default function OnboardingPage() {
       aria-label="온보딩 가이드"
       aria-roledescription="carousel"
     >
-      {/* Skip button */}
-      {!isLastStep && (
-        <div className="absolute top-0 right-0 z-10 p-4">
+      {/* Top bar — Logo + Skip */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4">
+        <Logo size="sm" />
+        {!isLastStep && (
           <button
             onClick={handleSkip}
             className="text-[hsl(var(--text-muted))] text-sm hover:text-[hsl(var(--text-secondary))] transition-colors bg-transparent border-none px-3 py-2"
@@ -136,8 +147,8 @@ export default function OnboardingPage() {
           >
             건너뛰기
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Slide track */}
       <div
@@ -193,14 +204,15 @@ export default function OnboardingPage() {
       </div>
 
       {/* Bottom controls */}
-      <div className="absolute bottom-0 left-0 right-0 pb-12 px-8 flex flex-col items-center gap-8">
-        {/* Dot indicators */}
+      <div className="absolute bottom-0 left-0 right-0 pb-12 px-8 flex flex-col items-center gap-6">
+        {/* Progress steps + clickable dots underneath for tap nav */}
+        <ProgressSteps steps={STEPS} current={currentStep} />
         <div className="flex items-center gap-3" role="tablist" aria-label="온보딩 단계">
-          {STEPS.map((_, index) => (
+          {STEPS.map((step, index) => (
             <button
-              key={index}
+              key={step.key}
               onClick={() => goToStep(index)}
-              className={`rounded-full transition-all duration-300 border-none p-0 ${
+              className={`rounded-full transition-all duration-300 motion-reduce:transition-none border-none p-0 ${
                 index === currentStep
                   ? 'w-8 h-2 bg-[hsl(var(--gold))]'
                   : 'w-2 h-2 bg-[hsl(var(--text-muted))]'
@@ -213,14 +225,17 @@ export default function OnboardingPage() {
         </div>
 
         {/* CTA button */}
-        <button
+        <Button
+          type="button"
+          variant="gold-grad"
+          size="lg"
           onClick={handleNext}
-          className="w-full max-w-sm py-4 rounded-2xl font-heading font-bold text-base flex items-center justify-center gap-2 bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:brightness-110 active:scale-[0.98] transition-all duration-200 border-none"
+          className="w-full max-w-sm gap-2"
           aria-label={isLastStep ? '회원가입 시작하기' : '다음 단계로 이동'}
         >
           {isLastStep ? '시작하기' : '다음'}
           {!isLastStep && <ChevronRight className="size-5" aria-hidden="true" />}
-        </button>
+        </Button>
       </div>
 
     </div>
