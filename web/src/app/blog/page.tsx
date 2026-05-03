@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { blogPosts, BLOG_CATEGORIES, CATEGORY_COLORS, getCategorySlug } from './blog-data';
-import type { BlogCategory } from './blog-data';
 
 export const metadata: Metadata = {
   title: '블로그',
@@ -14,17 +13,6 @@ export const metadata: Metadata = {
   },
 };
 
-function categoryEmoji(category: BlogCategory): string {
-  const map: Record<BlogCategory, string> = {
-    사주: '🔮',
-    타로: '🃏',
-    꿈해몽: '🌙',
-    운세: '⭐',
-    상담가이드: '📋',
-  };
-  return map[category];
-}
-
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -32,26 +20,25 @@ function formatDate(dateStr: string): string {
 
 export default function BlogPage() {
   const sorted = [...blogPosts].sort(
-    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
 
   return (
-    <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-16">
-      {/* Header */}
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-black tracking-tight text-text-primary font-heading">
+    <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-16">
+      <header className="mb-12 text-center">
+        <h1 className="font-heading text-4xl font-bold tracking-tight text-[hsl(var(--gold))]">
           블로그
         </h1>
-        <p className="text-text-secondary text-lg leading-relaxed mt-3">
+        <p className="mt-3 text-base text-[hsl(var(--text-secondary))]">
           점술과 상담에 대한 유용한 정보를 만나보세요
         </p>
-      </div>
+      </header>
 
-      {/* Category tabs */}
-      <div className="flex flex-wrap justify-center gap-3 mb-12">
+      <nav aria-label="카테고리" className="flex flex-wrap justify-center gap-3 mb-12">
         <Link
           href="/blog"
-          className="rounded-full px-6 py-2.5 text-sm font-medium font-heading transition-all duration-300 bg-gradient-to-r from-gold to-gold-soft text-background font-bold shadow-[0_4px_20px_hsl(var(--gold)/0.15)] no-underline"
+          aria-current="page"
+          className="rounded-full px-5 py-2 text-sm font-heading font-bold no-underline bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold-soft))]"
         >
           전체
         </Link>
@@ -59,55 +46,54 @@ export default function BlogPage() {
           <Link
             key={cat}
             href={`/blog/${getCategorySlug(cat)}`}
-            className="rounded-full px-6 py-2.5 text-sm font-medium font-heading transition-all duration-300 border border-[hsl(var(--gold)/0.2)] text-text-secondary bg-transparent hover:bg-gold/10 hover:text-gold hover:border-gold/30 no-underline"
+            className="rounded-full px-5 py-2 text-sm font-heading font-medium no-underline border border-[hsl(var(--border-subtle))] text-[hsl(var(--text-secondary))] hover:border-[hsl(var(--gold)/0.4)] hover:text-[hsl(var(--gold))] transition-colors"
           >
-            {categoryEmoji(cat)} {cat}
+            {cat}
           </Link>
         ))}
-      </div>
+      </nav>
 
-      {/* Blog grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="stagger-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sorted.map((post) => (
           <Link
             key={post.slug}
             href={`/blog/${getCategorySlug(post.category)}/${post.slug}`}
             className="group no-underline"
           >
-            <article className="flex flex-col h-full bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300 hover:border-[hsl(var(--gold)/0.25)] hover:shadow-[0_8px_32px_hsl(var(--gold)/0.08)]">
-              {/* Thumbnail placeholder */}
-              <div className="w-full h-[160px] bg-gradient-to-br from-surface to-[hsl(var(--surface-hover))] rounded-xl mb-6 flex items-center justify-center text-5xl">
-                {categoryEmoji(post.category)}
+            <article className="flex flex-col h-full bg-[hsl(var(--surface))] border border-[hsl(var(--border-subtle))] rounded-2xl p-6 hover:bg-[hsl(var(--surface-2))] hover:border-[hsl(var(--gold)/0.3)] transition-colors">
+              <div className="w-full aspect-[16/9] bg-[hsl(var(--surface-2))] border border-[hsl(var(--border-subtle))] rounded-xl mb-5 flex items-center justify-center">
+                <span className="font-heading text-3xl text-[hsl(var(--gold-soft))]">
+                  {post.category.charAt(0)}
+                </span>
               </div>
 
-              {/* Category badge */}
               <div className="mb-3">
-                <span className={`inline-block text-xs font-heading font-bold rounded-full px-3 py-1 border ${CATEGORY_COLORS[post.category]}`}>
+                <span
+                  className={`inline-block text-xs font-heading font-bold rounded-full px-3 py-1 border ${CATEGORY_COLORS[post.category]}`}
+                >
                   {post.category}
                 </span>
               </div>
 
-              {/* Title */}
-              <h2 className="m-0 font-heading font-bold text-lg text-text-primary group-hover:text-gold transition-colors duration-300 line-clamp-2">
+              <h2 className="m-0 font-heading font-bold text-lg text-[hsl(var(--text-primary))] group-hover:text-[hsl(var(--gold))] transition-colors line-clamp-2">
                 {post.title}
               </h2>
 
-              {/* Excerpt */}
-              <p className="text-text-secondary text-sm leading-relaxed mt-3 flex-1 line-clamp-3">
+              <p className="mt-3 text-sm leading-relaxed text-[hsl(var(--text-secondary))] flex-1 line-clamp-3">
                 {post.excerpt}
               </p>
 
-              {/* Date & Author */}
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-[hsl(var(--gold)/0.08)]">
-                <span className="text-xs text-text-secondary/70">{formatDate(post.publishedAt)}</span>
-                <span className="text-xs text-text-secondary/70">{post.author}</span>
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-[hsl(var(--border-subtle))]">
+                <span className="text-xs text-[hsl(var(--text-muted))]">
+                  {formatDate(post.publishedAt)}
+                </span>
+                <span className="text-xs text-[hsl(var(--text-muted))]">{post.author}</span>
               </div>
             </article>
           </Link>
         ))}
       </div>
 
-      {/* Organization JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
