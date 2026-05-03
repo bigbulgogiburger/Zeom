@@ -44,3 +44,6 @@ export { CategoryGrid } from './category-grid';
 export type { CategoryItem } from './category-grid';
 export { ReviewSlider } from './review-slider';
 export type { ReviewSliderItem } from './review-slider';
+
+// ZEOM-22 P3-1 Chrome
+export { Logo } from './logo';

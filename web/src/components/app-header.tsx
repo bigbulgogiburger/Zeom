@@ -12,6 +12,7 @@ import CreditWidget from './credit-widget';
 import WalletWidget from './wallet-widget';
 import NotificationBell from './notification-bell';
 import LanguageSwitcher from './language-switcher';
+import { Logo } from '@/components/design';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -47,19 +48,20 @@ export default function AppHeader() {
   const isCounselor = me?.role === 'COUNSELOR';
 
   const desktopNavLinkClass =
-    'text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold)/0.08)] rounded-lg px-3 py-2 transition-colors duration-200 no-underline';
+    'text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] hover:bg-[hsl(var(--surface-2))] rounded-lg px-3 py-2 transition-colors duration-200 no-underline';
 
   const mobileNavLinkClass =
-    'text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold)/0.08)] rounded-lg px-3 py-2.5 transition-colors duration-200 no-underline block font-medium';
+    'text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] hover:bg-[hsl(var(--surface-2))] rounded-lg px-3 py-2.5 transition-colors duration-200 no-underline block font-medium';
 
   return (
     <>
-      <header className="sticky top-0 z-[100] h-[68px] flex items-center px-6 bg-[hsl(var(--background)/0.85)] backdrop-blur-[20px] border-b border-[hsl(var(--border-subtle))]">
+      <header className="sticky top-0 z-[100] h-[68px] flex items-center px-6 bg-[hsl(var(--background)/0.95)] supports-[backdrop-filter]:bg-[hsl(var(--background)/0.85)] supports-[backdrop-filter]:backdrop-blur-[20px] border-b border-[hsl(var(--border-subtle))]">
         <Link
           href="/"
-          className="text-lg font-bold tracking-tight text-[hsl(var(--gold))] no-underline shrink-0"
+          className="no-underline shrink-0"
+          aria-label="천지연꽃신당 홈"
         >
-          천지연꽃신당
+          <Logo size="sm" />
         </Link>
 
         {/* Desktop nav */}

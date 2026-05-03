@@ -115,7 +115,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <AuthProvider>
               <SessionExpiryGuard />
               <AppHeader />
-              <div id="main-content" className="pb-14 md:pb-0">{children}</div>
+              <div id="main-content" className="pb-16 md:pb-0">{children}</div>
               <BottomTabBar />
               <AnalyticsProvider />
               <Toaster />

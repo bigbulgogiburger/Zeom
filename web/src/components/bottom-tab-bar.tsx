@@ -47,7 +47,7 @@ export default function BottomTabBar() {
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      <div className="flex items-center justify-around h-14">
+      <div className="flex items-center justify-around h-16">
         {tabs.map(({ href, label, icon: Icon }) => {
           const isActive =
             href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -57,7 +57,7 @@ export default function BottomTabBar() {
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 no-underline min-w-[44px] min-h-[44px] transition-colors duration-200 ${isBouncing ? 'tab-bounce' : ''}`}
+              className={`flex flex-col items-center justify-center gap-1 flex-1 py-2 no-underline min-w-[44px] min-h-[44px] transition-colors duration-200 ${isBouncing ? 'tab-bounce' : ''}`}
               style={{
                 color: isActive
                   ? 'hsl(var(--gold))'
