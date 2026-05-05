@@ -37,15 +37,24 @@ export default function DeleteAccountPage() {
 
   return (
     <>
-      <Card>
-        <h2 className="text-xl font-bold font-heading mb-4 text-[hsl(var(--dancheong))]">계정 탈퇴</h2>
+      <Card className="max-w-[600px] border-[hsl(var(--dancheong)/0.4)]">
+        <h1 className="font-heading text-2xl font-bold mb-2 text-[hsl(var(--dancheong))]">계정 탈퇴</h1>
+        <p className="text-sm text-[hsl(var(--text-secondary))] mb-6">계정과 모든 데이터를 영구 삭제합니다.</p>
+
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>
+            계정 탈퇴는 신중하게 결정하세요. 30일의 유예 기간 후 모든 데이터가 영구 삭제됩니다.
+          </AlertDescription>
+        </Alert>
 
         <div className="space-y-4 text-sm text-[hsl(var(--text-secondary))] leading-relaxed">
           <p>
-            계정 탈퇴를 요청하시면 <span className="text-foreground font-bold">30일의 유예 기간</span> 후에 계정이 완전히 삭제됩니다.
+            계정 탈퇴를 요청하시면{' '}
+            <span className="text-[hsl(var(--text-primary))] font-bold">30일의 유예 기간</span> 후에
+            계정이 완전히 삭제됩니다.
           </p>
-          <div className="p-4 rounded-xl bg-[hsl(var(--surface))] border border-[hsl(var(--gold)/0.15)]">
-            <p className="font-bold text-foreground mb-2">탈퇴 시 삭제되는 정보:</p>
+          <div className="p-4 rounded-xl bg-[hsl(var(--surface))] border border-[hsl(var(--border-subtle))]">
+            <p className="font-bold text-[hsl(var(--text-primary))] mb-2">탈퇴 시 삭제되는 정보:</p>
             <ul className="list-disc list-inside space-y-1 text-xs">
               <li>계정 정보 (이메일, 이름, 전화번호)</li>
               <li>예약 및 상담 이력</li>
@@ -53,9 +62,7 @@ export default function DeleteAccountPage() {
               <li>리뷰 및 작성 내용</li>
             </ul>
           </div>
-          <p className="text-xs">
-            유예 기간 내에 다시 로그인하시면 탈퇴 요청이 취소됩니다.
-          </p>
+          <p className="text-xs">유예 기간 내에 다시 로그인하시면 탈퇴 요청이 취소됩니다.</p>
         </div>
 
         {error && (

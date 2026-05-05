@@ -55,3 +55,7 @@ export { PasswordStrengthMeter } from './password-strength-meter';
 // ZEOM-24 P4-C Policy/Content pages
 export { AnchorNav } from './anchor-nav';
 export type { AnchorNavItem } from './anchor-nav';
+
+// ZEOM-25 P4-D User support pages
+export { SidebarNav } from './sidebar-nav';
+export type { SidebarNavItem } from './sidebar-nav';

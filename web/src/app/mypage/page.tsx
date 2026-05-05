@@ -1,25 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { apiFetch } from '../../components/api-client';
 import { useAuth } from '../../components/auth-context';
 import { toast } from 'sonner';
 import { Card, ActionButton } from '../../components/ui';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  User,
-  Lock,
-  Bell,
-  Heart,
-  CreditCard,
-  Wallet,
-  HelpCircle,
-  Trash2,
-  ChevronRight,
-  CheckCircle,
-  AlertTriangle,
-} from 'lucide-react';
+import { CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface UserProfile {
   id: number;
@@ -34,20 +21,16 @@ interface UserProfile {
   createdAt?: string | null;
 }
 
-const menuItems = [
-  { icon: User, label: '프로필 수정', href: '/mypage/edit', danger: false },
-  { icon: Lock, label: '비밀번호 변경', href: '/mypage/password', danger: false },
-  { icon: Bell, label: '알림 설정', href: '/notification-preferences', danger: false },
-  { icon: Heart, label: '즐겨찾기', href: '/favorites', danger: false },
-  { icon: CreditCard, label: '상담권 관리', href: '/credits', danger: false },
-  { icon: Wallet, label: '지갑', href: '/wallet', danger: false },
-  { icon: HelpCircle, label: '자주 묻는 질문', href: '/faq', danger: false },
-  { icon: Trash2, label: '회원 탈퇴', href: '/mypage/delete', danger: true },
-];
+interface UserStats {
+  consultations: number;
+  cashBalance: number;
+  reviews: number;
+}
 
 export default function MypagePage() {
-  const { me } = useAuth();
+  useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [stats] = useState<UserStats>({ consultations: 0, cashBalance: 0, reviews: 0 });
   const [loading, setLoading] = useState(true);
   const [resending, setResending] = useState(false);
 
@@ -111,7 +94,6 @@ export default function MypagePage() {
 
   return (
     <div className="space-y-6">
-      {/* Deletion Warning */}
       {profile.deletionRequestedAt && (
         <Alert variant="destructive">
           <AlertDescription>
@@ -120,12 +102,11 @@ export default function MypagePage() {
         </Alert>
       )}
 
-      {/* Email Verification Banner */}
       {!profile.emailVerified && (
         <div className="p-4 rounded-xl bg-[hsl(var(--gold)/0.08)] border border-[hsl(var(--gold)/0.2)]">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="size-5 text-[hsl(var(--gold))] mt-0.5 shrink-0" />
+              <AlertTriangle aria-hidden="true" className="size-5 text-[hsl(var(--gold))] mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-bold text-[hsl(var(--gold))]">이메일 인증이 필요합니다</p>
                 <p className="text-xs text-[hsl(var(--text-secondary))] mt-1">인증 이메일을 확인해주세요.</p>
@@ -142,39 +123,44 @@ export default function MypagePage() {
         </div>
       )}
 
-      {/* Profile Header Card */}
-      <div className="rounded-2xl bg-gradient-to-br from-[hsl(var(--gold)/0.25)] to-[hsl(var(--dancheong)/0.15)] p-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-[hsl(var(--gold)/0.2)] border-2 border-[hsl(var(--gold)/0.3)] flex items-center justify-center shrink-0">
-            <span className="text-2xl font-bold font-heading text-[hsl(var(--gold))]">{nameInitial}</span>
+      {/* Hero — 80px avatar + name + 가입일 */}
+      <header className="flex items-center gap-6 p-6 rounded-2xl bg-gradient-to-br from-[hsl(var(--gold)/0.18)] to-[hsl(var(--dancheong)/0.1)] border border-[hsl(var(--gold)/0.2)]">
+        <div className="size-20 rounded-full bg-[hsl(var(--gold)/0.2)] border-2 border-[hsl(var(--gold)/0.3)] flex items-center justify-center shrink-0">
+          <span className="font-heading text-3xl font-bold text-[hsl(var(--gold))]">{nameInitial}</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="font-heading text-2xl font-bold text-[hsl(var(--text-primary))]">{profile.name}</h1>
+            <span className="bg-[hsl(var(--gold)/0.15)] text-[hsl(var(--gold))] text-xs rounded-full px-3 py-1 font-bold">
+              {roleLabel}
+            </span>
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl font-bold font-heading text-[hsl(var(--text-primary))]">{profile.name}</h2>
-              <span className="bg-[hsl(var(--gold)/0.15)] text-[hsl(var(--gold))] text-xs rounded-full px-3 py-1 font-bold">
-                {roleLabel}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-sm text-[hsl(var(--text-secondary))] truncate">{profile.email}</span>
-              {profile.emailVerified && (
-                <CheckCircle className="size-4 text-[hsl(var(--success))] shrink-0" />
-              )}
-            </div>
-            {joinDate && (
-              <p className="text-xs text-[hsl(var(--text-muted))] mt-1">가입일: {joinDate}</p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="text-sm text-[hsl(var(--text-secondary))] truncate">{profile.email}</span>
+            {profile.emailVerified && (
+              <CheckCircle aria-hidden="true" className="size-4 text-[hsl(var(--success))] shrink-0" />
             )}
           </div>
+          {joinDate && (
+            <p className="text-xs text-[hsl(var(--text-muted))] mt-1">가입일: {joinDate}</p>
+          )}
         </div>
+      </header>
+
+      {/* Stats — 3 cards */}
+      <div className="grid grid-cols-3 gap-3">
+        <StatCard label="이용 상담" value={stats.consultations} unit="회" />
+        <StatCard label="캐시 잔액" value={stats.cashBalance} unit="원" />
+        <StatCard label="작성 리뷰" value={stats.reviews} unit="건" />
       </div>
 
-      {/* Account Info Section */}
+      {/* Account info */}
       <Card>
-        <h3 className="text-sm font-bold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-4">계정 정보</h3>
+        <h2 className="text-sm font-bold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-4">계정 정보</h2>
         <div className="space-y-5">
           <InfoRow label="이메일" value={profile.email}>
             {profile.emailVerified && (
-              <CheckCircle className="size-4 text-[hsl(var(--success))] ml-2" />
+              <CheckCircle aria-hidden="true" className="size-4 text-[hsl(var(--success))] ml-2" />
             )}
           </InfoRow>
           <InfoRow label="이름" value={profile.name} />
@@ -183,57 +169,35 @@ export default function MypagePage() {
         </div>
       </Card>
 
-      {/* Fortune Info Section */}
+      {/* Saju info */}
       <Card>
-        <h3 className="text-sm font-bold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-4">사주 정보</h3>
+        <h2 className="text-sm font-bold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-4">사주 정보</h2>
         <div className="space-y-5">
           <InfoRow label="생년월일" value={profile.birthDate ?? '미등록'} />
           {genderLabel && <InfoRow label="성별" value={genderLabel} />}
-        </div>
-      </Card>
-
-      {/* Quick Action Menu */}
-      <Card>
-        <div className="space-y-1">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[hsl(var(--surface-hover))] transition-colors group"
-              >
-                <Icon
-                  className={`size-5 shrink-0 ${
-                    item.danger
-                      ? 'text-[hsl(var(--dancheong))]'
-                      : 'text-[hsl(var(--text-secondary))]'
-                  }`}
-                />
-                <span
-                  className={`text-sm flex-1 ${
-                    item.danger
-                      ? 'text-[hsl(var(--dancheong))]'
-                      : 'text-[hsl(var(--text-primary))]'
-                  }`}
-                >
-                  {item.label}
-                </span>
-                <ChevronRight className="size-4 text-[hsl(var(--text-muted))] group-hover:text-[hsl(var(--text-secondary))] transition-colors shrink-0" />
-              </Link>
-            );
-          })}
         </div>
       </Card>
     </div>
   );
 }
 
+function StatCard({ label, value, unit }: { label: string; value: number; unit: string }) {
+  return (
+    <div className="rounded-xl bg-[hsl(var(--surface))] border border-[hsl(var(--border-subtle))] p-4">
+      <p className="text-xs text-[hsl(var(--text-secondary))] mb-2">{label}</p>
+      <p className="font-heading text-2xl font-bold text-[hsl(var(--gold))] tabular">
+        {value.toLocaleString('ko-KR')}
+        <span className="text-sm text-[hsl(var(--text-secondary))] ml-1 font-normal">{unit}</span>
+      </p>
+    </div>
+  );
+}
+
 function InfoRow({ label, value, children }: { label: string; value: string; children?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between border-b border-[hsl(var(--gold)/0.08)] pb-3 last:border-0 last:pb-0">
+    <div className="flex items-center justify-between border-b border-[hsl(var(--border-subtle))] pb-3 last:border-0 last:pb-0">
       <span className="text-sm text-[hsl(var(--text-secondary))] font-medium">{label}</span>
-      <span className="text-sm font-bold text-foreground flex items-center">
+      <span className="text-sm font-bold text-[hsl(var(--text-primary))] flex items-center">
         {value}
         {children}
       </span>

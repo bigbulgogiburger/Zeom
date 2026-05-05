@@ -89,8 +89,9 @@ export default function EditProfilePage() {
   }
 
   return (
-    <Card>
-      <h2 className="text-xl font-bold font-heading mb-6">프로필 수정</h2>
+    <Card className="max-w-[600px]">
+      <h1 className="font-heading text-2xl font-bold mb-2 text-[hsl(var(--gold))]">프로필 수정</h1>
+      <p className="text-sm text-[hsl(var(--text-secondary))] mb-8">기본 정보를 변경할 수 있습니다.</p>
 
       <FormField label="이름" required error={name && !nameValid ? '이름은 2자 이상이어야 합니다' : ''}>
         <Input
@@ -98,7 +99,7 @@ export default function EditProfilePage() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="이름"
-          className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
+          className="min-h-[44px] rounded-xl"
         />
       </FormField>
 
@@ -108,7 +109,7 @@ export default function EditProfilePage() {
           value={phone}
           onChange={(e) => setPhone(formatPhone(e.target.value))}
           placeholder="010-0000-0000"
-          className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
+          className="min-h-[44px] rounded-xl"
         />
       </FormField>
 
@@ -117,7 +118,7 @@ export default function EditProfilePage() {
           type="date"
           value={birthDate}
           onChange={(e) => setBirthDate(e.target.value)}
-          className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
+          className="min-h-[44px] rounded-xl"
         />
       </FormField>
 

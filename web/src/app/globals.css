@@ -67,6 +67,14 @@
   --surface-3: 32 10% 10%;
   --gold-deep: 43 70% 36%;
   --jade: 160 30% 45%;
+
+  /* 오행 (Ohaeng) — Korean traditional 5-elements palette */
+  --ohaeng-wood: 145 40% 35%;
+  --ohaeng-fire: 350 55% 45%;
+  --ohaeng-earth: 43 70% 46%;
+  --ohaeng-metal: 30 5% 65%;
+  --ohaeng-water: 220 45% 30%;
+
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-gold: 0 12px 40px hsl(var(--gold) / 0.12), 0 4px 12px hsl(var(--gold) / 0.06);
 
@@ -156,6 +164,13 @@
   --color-surface-3: hsl(var(--surface-3));
   --color-gold-deep: hsl(var(--gold-deep));
   --color-jade: hsl(var(--jade));
+
+  /* 오행 (Ohaeng) 색상 */
+  --color-ohaeng-wood: hsl(var(--ohaeng-wood));
+  --color-ohaeng-fire: hsl(var(--ohaeng-fire));
+  --color-ohaeng-earth: hsl(var(--ohaeng-earth));
+  --color-ohaeng-metal: hsl(var(--ohaeng-metal));
+  --color-ohaeng-water: hsl(var(--ohaeng-water));
 
   /* shadow는 inline 값 (Tailwind v4 @theme inline 의 var() 참조 quirk 회피) */
   --shadow-gold: 0 12px 40px hsl(var(--gold) / 0.12), 0 4px 12px hsl(var(--gold) / 0.06);

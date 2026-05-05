@@ -7,6 +7,7 @@ import { ActionButton, Card, FormField } from '../../../components/ui';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { PasswordStrengthMeter } from '@/components/design';
 
 export default function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -49,8 +50,9 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <Card>
-      <h2 className="text-xl font-bold font-heading mb-6">비밀번호 변경</h2>
+    <Card className="max-w-[600px]">
+      <h1 className="font-heading text-2xl font-bold mb-2 text-[hsl(var(--gold))]">비밀번호 변경</h1>
+      <p className="text-sm text-[hsl(var(--text-secondary))] mb-8">계정 보안을 위해 주기적으로 변경하세요.</p>
 
       <form onSubmit={onSubmit}>
         <FormField label="현재 비밀번호" required>
@@ -62,7 +64,7 @@ export default function ChangePasswordPage() {
               placeholder="현재 비밀번호"
               required
               autoComplete="current-password"
-              className="min-h-[44px] pr-16 bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
+              className="min-h-[44px] pr-16 rounded-xl"
             />
             <Button
               type="button"
@@ -88,7 +90,7 @@ export default function ChangePasswordPage() {
               placeholder="새 비밀번호"
               required
               autoComplete="new-password"
-              className="min-h-[44px] pr-16 bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
+              className="min-h-[44px] pr-16 rounded-xl"
             />
             <Button
               type="button"
@@ -101,6 +103,11 @@ export default function ChangePasswordPage() {
               {showNew ? '숨기기' : '보기'}
             </Button>
           </div>
+          {newPassword.length > 0 && (
+            <div className="mt-2">
+              <PasswordStrengthMeter password={newPassword} />
+            </div>
+          )}
         </FormField>
 
         <FormField
@@ -115,7 +122,7 @@ export default function ChangePasswordPage() {
             placeholder="새 비밀번호 확인"
             required
             autoComplete="new-password"
-            className="min-h-[44px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40"
+            className="min-h-[44px] rounded-xl"
           />
         </FormField>
 
