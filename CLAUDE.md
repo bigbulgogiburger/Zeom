@@ -79,8 +79,9 @@ cd app_flutter && flutter test
 - **Admin 가드**: 모든 `/api/v1/admin/**` 컨트롤러는 첫 줄에 `authService.requireAdmin(authHeader)`. → `security-checklist.md`
 - **Korean text**: `word-break: keep-all`, Pretendard, 헤딩에 `text-wrap: balance`
 - **Immersive layout 분리**: `consultation/[sessionId]` 진입 시 AppHeader/BottomTabBar는 `usePathname` 가드로 self-hide. `/review`는 chrome 유지(가드에서 segment 비교). root layout 흔들지 않는 게 핵심 — 이유: 다른 라우트 회귀 차단. → `frontend-pages.md`
-- **9 화면 토큰 baseline**: ZEOM-4 §6 9 화면(Home, Counselors 목록·상세, Booking confirm, Cash buy, Bookings, Waiting, Room, Review)과 consultation 흐름은 hex/HTML entity 0건. 신규 작업도 토큰만 사용 — `grep -rEn '#[0-9A-Fa-f]{3,6}\b|&#[0-9]+;'` 0 보장. → `docs/ZEOM-21-visual-report.md`
-- **E2E web 테스트**: Playwright(`npm run test:e2e`)는 spec 파일 작성·CI용. 시각 회귀는 별도 QA 회차에서 openchrome MCP로 4 viewport(360/768/1024/1440) × 9 화면. 로컬 검증 시 docker 사용 금지 — `npm run dev` 기반
+- **38 화면 + chrome 토큰 baseline**: Core 9(ZEOM-4) + Auth 7(ZEOM-23 login/signup/forgot/reset/verify/onboarding/auth-callback) + Group C 6(ZEOM-24 faq/terms/privacy/blog×3) + Group D 16(ZEOM-25 mypage×4/wallet+credits×4/fortune+saju/favorites+recommend+referral+share/notifications×2) + chrome(ZEOM-22 AppHeader/BottomTabBar/Logo) — hex/entity/emoji 0건. 신규도 토큰만 — `grep -rEn '#[0-9A-Fa-f]{3,6}\b|&#[0-9]+;' web/src/app web/src/components` 0 보장. **명시 예외**: `--brand-kakao`/`--brand-kakao-fg`/`--brand-naver` 토큰은 공식 브랜드 컴플라이언스로 hex 정의 유지 (ZEOM-25). 동적 inline-style은 score/bar width 등 런타임 값에만 허용. → `docs/ZEOM-21-visual-report.md`, `docs/ZEOM-22-dev-guide.md`, `docs/ZEOM-23-dev-guide.md`, `docs/ZEOM-24-dev-guide.md`, `docs/ZEOM-25-dev-guide.md`
+- **공통 레이아웃 컴포넌트**: 인증·중앙 카드는 `<AuthCard>` (ZEOM-23, max-w 420 + Logo 자동), 정책/블로그 본문은 `.prose` + `<AnchorNav>` 좌측 240px sticky(ZEOM-24, IntersectionObserver+mobile select), 마이페이지·계정 좌측 nav는 `<SidebarNav>` (ZEOM-25, usePathname 기반 + danger 토큰). 도메인 토큰: 오행 5(`--ohaeng-wood/fire/earth/metal/water`, ZEOM-25). → `design-system.md`
+- **E2E web 테스트**: Playwright(`npm run test:e2e`)는 spec 파일 작성·CI용. 시각 회귀는 별도 QA 회차에서 openchrome MCP로 4 viewport(360/768/1024/1440) × 38 화면 + chrome. 로컬 검증 시 docker 사용 금지 — `npm run dev` 기반
 
 ## Path Aliases
 
@@ -112,7 +113,10 @@ docs/         Architecture, OpenAPI spec, PRD, design plans
 | Flutter Architecture | Flutter feature/라우팅 작업 시 | `.claude/docs/reference/flutter-architecture.md` |
 | Testing | 테스트 작성/수정 시 | `.claude/docs/reference/testing.md` |
 | Environment | 환경 변수/배포 설정 시 | `.claude/docs/reference/environment.md` |
-| ZEOM-4 sweep | 마이그레이션 결과/잔존 작업 확인 | `docs/ZEOM-4-remaining-dev-guide.md`, `docs/ZEOM-21-visual-report.md` |
+| ZEOM-4 / 21 sweep | Core 9 마이그레이션 결과 / hex·entity 0 게이트 | `docs/ZEOM-4-remaining-dev-guide.md`, `docs/ZEOM-21-visual-report.md` |
+| ZEOM-22 / 23 chrome+auth | Logo, AuthCard, PasswordStrengthMeter 패턴 | `docs/ZEOM-22-dev-guide.md`, `docs/ZEOM-23-dev-guide.md` |
+| ZEOM-24 정책/콘텐츠 | shadcn Accordion, AnchorNav, .prose, .stagger-grid | `docs/ZEOM-24-dev-guide.md` |
+| ZEOM-25 사용자 보조 | SidebarNav, 60px serif tabular gold, 오행/브랜드 토큰 | `docs/ZEOM-25-dev-guide.md` |
 
 ## Skills
 
@@ -175,5 +179,7 @@ docs/         Architecture, OpenAPI spec, PRD, design plans
 2026-04-25: V1-V19→V60 동기화, provider 3→5 반영, reference 6개 추가, design-system 중복 섹션 제거
 2026-04-26~28: ZEOM-2/3/4/17 sweep — Phase 0 토큰·Gowun Batang, Phase 1 primitive 23개, ZEOM-17 P2-1 4페이지 + design 컴포넌트 3개(BookingCard/RadioCard/SuccessState), ZEOM-18/19/20 P1·P3 통합 + 컴포넌트 6개(CounselorCard/FilterChip/Hero/CategoryGrid/ReviewSlider/EndCallModal) + immersive layout 분리, ZEOM-21 hex/entity 0 baseline + legacy dead code 삭제. 도메인 수 표기 제거(변동성). 테스트 카운트 갱신
 2026-04-28: Harness Engineering Integration 섹션 추가(에이전트 디스패치·아티팩트 경로). hook 명령 절대경로화(`$CLAUDE_PROJECT_DIR`)
+2026-05-03: ZEOM-22(chrome 정렬+Logo)/ZEOM-23(인증 7페이지+AuthCard+PasswordStrengthMeter) 누락 분 통합 반영. baseline 9→16 화면+chrome
+2026-05-05: ZEOM-24(정책/콘텐츠 6페이지: shadcn Accordion/AnchorNav/.prose/.stagger-grid) + ZEOM-25(사용자 보조 16페이지: SidebarNav/60px serif tabular gold 잔액/오행 5 토큰/브랜드 3 토큰) main 머지(68fcf41). baseline 16→38 화면+chrome. 공통 레이아웃 컴포넌트 Key Rule 추가. Reference table에 ZEOM-22~25 dev-guide 통합 행. 카카오/네이버 브랜드 hex는 토큰화(`--brand-kakao/-fg/--brand-naver`)로 audit 0건 + 컴플라이언스 양립
 -->
 
