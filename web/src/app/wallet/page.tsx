@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getWallet, getWalletTransactions, exportTransactionsCsv, getTransactionReceiptPdf, getCreditBalance } from '../../components/api-client';
 import { RequireLogin } from '../../components/route-guard';
 import { Card, EmptyState, InlineError, PageTitle, StatusBadge } from '../../components/ui';
+import { Wallet as WalletIcon, AlertCircle, Download } from 'lucide-react';
 
 type CreditBalance = {
   totalCredits: number;
@@ -79,23 +80,23 @@ export default function WalletPage() {
   const [csvExporting, setCsvExporting] = useState(false);
   const [creditBalance, setCreditBalance] = useState<CreditBalance | null>(null);
 
-  async function loadCreditBalance() {
+  const loadCreditBalance = useCallback(async () => {
     try {
       const data = await getCreditBalance();
       setCreditBalance(data);
     } catch {
       // Credit balance is optional — fail silently
     }
-  }
+  }, []);
 
-  async function loadWallet() {
+  const loadWallet = useCallback(async () => {
     try {
       const data = await getWallet();
       setWallet(data);
     } catch {
       setMessage('지갑 정보를 불러오지 못했습니다.');
     }
-  }
+  }, []);
 
   const getFilters = useCallback(() => {
     const filters: { type?: string; from?: string; to?: string } = {};
@@ -140,12 +141,7 @@ export default function WalletPage() {
     loadWallet();
     loadCreditBalance();
     loadTransactions(0);
-  }, []);
-
-  // Re-fetch when filters change
-  useEffect(() => {
-    loadTransactions(0);
-  }, [filterType, periodPreset, customFrom, customTo, loadTransactions]);
+  }, [loadWallet, loadCreditBalance, loadTransactions]);
 
   const getTransactionTypeLabel = (type: string) => {
     switch (type) {
@@ -213,19 +209,21 @@ export default function WalletPage() {
         <PageTitle>내 지갑</PageTitle>
         <InlineError message={message} />
 
-        {/* Balance Card */}
+        {/* Balance Card — 60px serif tabular gold */}
         {wallet && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-10 text-center max-w-[520px] mx-auto">
+          <div className="rounded-2xl border border-[hsl(var(--gold)/0.2)] bg-[hsl(var(--surface))] p-10 text-center max-w-[520px] mx-auto">
             <div className="text-center py-4">
-              <div className="text-[hsl(var(--gold))] text-sm mb-3 font-bold font-heading tracking-wide">
+              <div className="flex items-center justify-center gap-2 text-[hsl(var(--gold))] text-sm mb-4 font-bold font-heading tracking-wide">
+                <WalletIcon aria-hidden="true" className="size-4" />
                 현재 잔액
               </div>
-              <div className="text-5xl font-black text-[hsl(var(--gold))] mb-8 font-heading">
-                {(wallet.balanceCash ?? wallet.balance ?? 0).toLocaleString()}원
+              <div className="font-heading text-[60px] leading-none font-bold text-[hsl(var(--gold))] tabular mb-8">
+                {(wallet.balanceCash ?? wallet.balance ?? 0).toLocaleString('ko-KR')}
+                <span className="ml-2 text-2xl text-[hsl(var(--text-secondary))] font-normal">원</span>
               </div>
               <button
                 onClick={() => router.push('/cash/buy')}
-                className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] rounded-full px-10 py-3.5 font-bold text-base cursor-pointer min-h-[48px] font-heading border-none hover:shadow-[0_4px_20px_hsl(var(--gold)/0.2)] transition-all"
+                className="bg-[hsl(var(--gold))] text-[hsl(var(--background))] rounded-full px-10 py-3.5 font-bold text-base font-heading hover:bg-[hsl(var(--gold-soft))] transition-colors min-h-[48px]"
               >
                 충전하기
               </button>
@@ -363,7 +361,7 @@ export default function WalletPage() {
             </Card>
           ) : loadError ? (
             <EmptyState
-              icon="!"
+              icon={<AlertCircle aria-hidden="true" />}
               title="잠시 문제가 발생했습니다"
               desc="거래 내역을 불러오지 못했습니다. 다시 시도해주세요."
               variant="error"
@@ -372,7 +370,7 @@ export default function WalletPage() {
             />
           ) : transactions.length === 0 ? (
             <EmptyState
-              icon="💰"
+              icon={<WalletIcon aria-hidden="true" />}
               title="거래 내역이 없습니다"
               desc="지갑을 충전하여 상담 서비스를 이용해보세요."
               actionLabel="캐시 충전하기"
@@ -417,13 +415,10 @@ export default function WalletPage() {
                         <button
                           onClick={() => handleReceiptDownload(t.id)}
                           title="영수증 다운로드"
-                          className="bg-transparent border border-[hsl(var(--gold)/0.2)] rounded-lg p-2 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10 transition-all cursor-pointer flex-shrink-0"
+                          aria-label="영수증 다운로드"
+                          className="bg-transparent border border-[hsl(var(--gold)/0.2)] rounded-lg p-2 text-[hsl(var(--gold))] hover:bg-[hsl(var(--gold))]/10 transition-colors flex-shrink-0"
                         >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                            <polyline points="7 10 12 15 17 10" />
-                            <line x1="12" y1="15" x2="12" y2="3" />
-                          </svg>
+                          <Download aria-hidden="true" className="size-4" />
                         </button>
                       </div>
                     </div>

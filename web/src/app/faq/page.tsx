@@ -1,16 +1,19 @@
 import type { Metadata } from 'next';
+import { FaqList } from './faq-list';
 
 export const metadata: Metadata = {
   title: 'FAQ',
   description: '천지연꽃신당 자주 묻는 질문',
 };
 
-interface FaqItem {
+export interface FaqItem {
   q: string;
   a: string;
 }
 
-const faqData: Record<string, FaqItem[]> = {
+export type FaqData = Record<string, FaqItem[]>;
+
+const faqData: FaqData = {
   '서비스 이용': [
     {
       q: '천지연꽃신당은 어떤 서비스인가요?',
@@ -79,88 +82,30 @@ const faqData: Record<string, FaqItem[]> = {
 
 export default function FaqPage() {
   return (
-    <main
-      className="mx-auto px-6 py-10"
-      style={{
-        maxWidth: 800,
-        color: 'hsl(var(--text-primary))',
-        lineHeight: 1.8,
-      }}
-    >
-      <h1
-        className="text-2xl font-bold mb-8"
-        style={{ fontFamily: 'var(--font-heading)', color: 'hsl(var(--gold))' }}
-      >
-        자주 묻는 질문 (FAQ)
-      </h1>
+    <main className="mx-auto px-6 py-16 max-w-[840px]">
+      <header className="mb-10">
+        <h1 className="font-heading text-3xl font-bold text-[hsl(var(--gold))]">
+          자주 묻는 질문
+        </h1>
+        <p className="mt-3 text-sm text-[hsl(var(--text-secondary))]">
+          천지연꽃신당 이용 중 궁금하신 점을 찾아보세요.
+        </p>
+      </header>
 
-      {Object.entries(faqData).map(([category, items]) => (
-        <section key={category} className="mb-10">
-          <h2
-            className="text-lg font-bold mb-4"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
-            {category}
-          </h2>
-          <div className="space-y-2">
-            {items.map((item, idx) => (
-              <details
-                key={idx}
-                className="group"
-                style={{
-                  border: '1px solid hsl(var(--border-subtle))',
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                }}
-              >
-                <summary
-                  className="cursor-pointer px-5 py-4 font-medium flex items-center justify-between"
-                  style={{
-                    fontSize: 15,
-                    listStyle: 'none',
-                    background: 'hsl(var(--surface))',
-                  }}
-                >
-                  <span>{item.q}</span>
-                  <span
-                    className="ml-3 shrink-0 transition-transform duration-200 group-open:rotate-180"
-                    style={{ color: 'hsl(var(--gold))', fontSize: 12 }}
-                  >
-                    &#9660;
-                  </span>
-                </summary>
-                <div
-                  className="px-5 py-4"
-                  style={{
-                    fontSize: 14,
-                    color: 'hsl(var(--text-secondary))',
-                    background: 'rgba(26, 22, 18, 0.5)',
-                    borderTop: '1px solid hsl(var(--border-subtle))',
-                  }}
-                >
-                  {item.a}
-                </div>
-              </details>
-            ))}
-          </div>
-        </section>
-      ))}
+      <FaqList data={faqData} />
 
-      <div
-        className="mt-6 pt-6"
-        style={{ borderTop: '1px solid hsl(var(--border-subtle))' }}
-      >
-        <p style={{ color: 'hsl(var(--text-secondary))', fontSize: 14 }}>
+      <footer className="mt-16 pt-8 border-t border-[hsl(var(--border-subtle))]">
+        <p className="text-sm text-[hsl(var(--text-secondary))]">
           원하시는 답변을 찾지 못하셨나요?{' '}
           <a
             href="mailto:support@cheonjiyeon.com"
-            style={{ color: 'hsl(var(--gold))' }}
+            className="text-[hsl(var(--gold))] hover:text-[hsl(var(--gold-soft))]"
           >
             support@cheonjiyeon.com
           </a>
           으로 문의해 주세요.
         </p>
-      </div>
+      </footer>
     </main>
   );
 }

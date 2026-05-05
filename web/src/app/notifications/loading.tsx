@@ -1,15 +1,18 @@
 export default function NotificationsLoading() {
   return (
-    <main style={{ maxWidth: 800, margin: '0 auto', padding: '48px 24px', display: 'grid', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ height: 32, width: 60, background: '#1e293b', borderRadius: 8 }} />
-        <div style={{ height: 28, width: 80, background: '#1e293b', borderRadius: 999 }} />
+    <main className="mx-auto max-w-[800px] px-6 py-12 grid gap-3">
+      <div className="flex justify-between items-center mb-4">
+        <div className="skeleton h-8 w-16" />
+        <div className="skeleton h-7 w-20 rounded-full" />
       </div>
       {[1, 2, 3].map((i) => (
-        <div key={i} style={{ border: '1px solid #334155', background: '#0b1220', borderRadius: 12, padding: 16 }}>
-          <div style={{ height: 12, width: 80, background: '#1e293b', borderRadius: 4, marginBottom: 8 }} />
-          <div style={{ height: 16, width: '70%', background: '#1e293b', borderRadius: 4, marginBottom: 6 }} />
-          <div style={{ height: 12, width: '50%', background: '#1e293b', borderRadius: 4 }} />
+        <div
+          key={i}
+          className="rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface))] p-4"
+        >
+          <div className="skeleton h-3 w-20 mb-2" />
+          <div className="skeleton h-4 w-[70%] mb-1.5" />
+          <div className="skeleton h-3 w-[50%]" />
         </div>
       ))}
     </main>

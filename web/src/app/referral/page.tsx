@@ -171,8 +171,7 @@ export default function ReferralPage() {
                 <div className="flex gap-3">
                   <Button
                     onClick={handleKakaoShare}
-                    className="flex-1 min-h-[44px] font-bold rounded-xl"
-                    style={{ backgroundColor: '#FEE500', color: '#191919' }}
+                    className="flex-1 min-h-[44px] font-bold rounded-xl bg-[hsl(var(--brand-kakao))] text-[hsl(var(--brand-kakao-fg))] hover:bg-[hsl(var(--brand-kakao))]/90"
                   >
                     카카오톡 공유
                   </Button>
@@ -249,7 +248,7 @@ export default function ReferralPage() {
                             </TableCell>
                             <TableCell>
                               {reward.referrerRewarded ? (
-                                <Badge className="bg-green-900/50 text-green-300 border-green-700">지급 완료</Badge>
+                                <Badge className="bg-[hsl(var(--success)/0.2)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.4)]">지급 완료</Badge>
                               ) : (
                                 <Badge variant="secondary">대기 중</Badge>
                               )}

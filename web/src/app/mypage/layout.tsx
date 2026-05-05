@@ -1,53 +1,35 @@
-'use client';
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import type { ReactNode } from 'react';
+import {
+  User,
+  Lock,
+  Bell,
+  Heart,
+  CreditCard,
+  Wallet,
+  HelpCircle,
+  Trash2,
+} from 'lucide-react';
 import { RequireLogin } from '../../components/route-guard';
-import { cn } from '@/lib/utils';
+import { SidebarNav, type SidebarNavItem } from '@/components/design';
 
-const NAV_ITEMS = [
-  { href: '/mypage', label: '내 정보' },
-  { href: '/mypage/edit', label: '프로필 수정' },
-  { href: '/mypage/password', label: '비밀번호 변경' },
-  { href: '/mypage/delete', label: '계정 탈퇴' },
+const sidebarItems: SidebarNavItem[] = [
+  { href: '/mypage', label: '내 프로필', icon: User },
+  { href: '/mypage/edit', label: '프로필 수정', icon: User },
+  { href: '/mypage/password', label: '비밀번호 변경', icon: Lock },
+  { href: '/notification-preferences', label: '알림 설정', icon: Bell },
+  { href: '/favorites', label: '즐겨찾기', icon: Heart },
+  { href: '/credits', label: '상담권 관리', icon: CreditCard },
+  { href: '/wallet', label: '지갑', icon: Wallet },
+  { href: '/faq', label: '자주 묻는 질문', icon: HelpCircle },
+  { href: '/mypage/delete', label: '회원 탈퇴', icon: Trash2, danger: true },
 ];
 
-export default function MypageLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
+export default function MypageLayout({ children }: { children: ReactNode }) {
   return (
     <RequireLogin>
-      <main
-        className="min-h-[100dvh] bg-background py-12 px-4 sm:px-6"
-        style={{ backgroundImage: 'radial-gradient(ellipse at center, hsl(var(--gold) / 0.05) 0%, transparent 70%)' }}
-      >
-        <div className="max-w-[720px] mx-auto">
-          <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-gold to-gold-soft bg-clip-text text-transparent font-heading m-0 mb-8">
-            마이페이지
-          </h1>
-
-          <nav className="flex gap-1 mb-8 overflow-x-auto pb-2">
-            {NAV_ITEMS.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'px-4 py-2 rounded-full text-sm font-bold font-heading whitespace-nowrap transition-all',
-                    isActive
-                      ? 'bg-gradient-to-r from-gold to-gold-soft text-background'
-                      : 'text-text-secondary hover:text-gold hover:bg-gold/10'
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {children}
-        </div>
+      <main className="mx-auto max-w-[1200px] px-6 py-12 grid md:grid-cols-[240px_1fr] gap-12">
+        <SidebarNav items={sidebarItems} ariaLabel="마이페이지 메뉴" />
+        <section className="min-w-0">{children}</section>
       </main>
     </RequireLogin>
   );

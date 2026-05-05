@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/components/api-client';
 import { useAuth } from '@/components/auth-context';
 import { Button } from '@/components/ui/button';
+import { ChevronLeft } from 'lucide-react';
 
 type Preferences = {
   bookingConfirmedEmail: boolean;
@@ -103,11 +104,9 @@ export default function NotificationPreferencesPage() {
       <div className="mb-8">
         <button
           onClick={() => router.push('/notifications')}
-          className="text-sm text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] transition-colors mb-4 flex items-center gap-1"
+          className="text-sm text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--gold))] transition-colors mb-4 inline-flex items-center gap-1"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+          <ChevronLeft aria-hidden="true" className="size-4" />
           알림으로 돌아가기
         </button>
         <h1 className="text-3xl font-black tracking-tight text-[hsl(var(--text-primary))] font-heading">
@@ -130,7 +129,7 @@ export default function NotificationPreferencesPage() {
                 <p className="text-sm font-medium text-[hsl(var(--text-primary))]">
                   {label}
                 </p>
-                <p className="text-xs text-[#6b5c4d] mt-0.5">
+                <p className="text-xs text-[hsl(var(--text-muted))] mt-0.5">
                   {description}
                 </p>
               </div>
@@ -138,17 +137,17 @@ export default function NotificationPreferencesPage() {
               {/* Toggle switch */}
               <button
                 onClick={() => handleToggle(key)}
-                className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--gold))]/30 ${
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--gold))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--background))] ${
                   preferences[key]
                     ? 'bg-[hsl(var(--gold))]'
-                    : 'bg-[#3a3530]'
+                    : 'bg-[hsl(var(--surface-2))]'
                 }`}
                 role="switch"
                 aria-checked={preferences[key]}
                 aria-label={label}
               >
                 <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-[hsl(var(--background))] shadow motion-safe:transition-transform duration-200 ${
                     preferences[key] ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />

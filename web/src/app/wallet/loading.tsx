@@ -1,22 +1,23 @@
 export default function WalletLoading() {
   return (
-    <main style={{ maxWidth: 1000, margin: '0 auto', padding: '40px 24px', display: 'grid', gap: 24 }}>
-      <div style={{ height: 32, width: 100, background: '#1e293b', borderRadius: 8 }} />
-      {/* Balance card skeleton */}
-      <div style={{ maxWidth: 520, margin: '0 auto', width: '100%', border: '1px solid #334155', background: '#0b1220', borderRadius: 16, padding: 40, textAlign: 'center' }}>
-        <div style={{ height: 14, width: 80, background: '#1e293b', borderRadius: 4, margin: '0 auto 16px' }} />
-        <div style={{ height: 40, width: 200, background: '#1e293b', borderRadius: 8, margin: '0 auto 24px' }} />
-        <div style={{ height: 44, width: 120, background: '#1e293b', borderRadius: 999, margin: '0 auto' }} />
+    <main className="mx-auto max-w-[1000px] px-6 py-10 grid gap-6">
+      <div className="skeleton h-8 w-24" />
+      <div className="mx-auto w-full max-w-[520px] rounded-2xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface))] p-10 text-center">
+        <div className="skeleton h-3.5 w-20 mx-auto mb-4" />
+        <div className="skeleton h-10 w-48 mx-auto mb-6" />
+        <div className="skeleton h-11 w-32 mx-auto rounded-full" />
       </div>
-      {/* Transaction list skeleton */}
-      <div style={{ height: 24, width: 100, background: '#1e293b', borderRadius: 4 }} />
+      <div className="skeleton h-6 w-24" />
       {[1, 2, 3].map((i) => (
-        <div key={i} style={{ border: '1px solid #334155', background: '#0b1220', borderRadius: 16, padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div style={{ height: 16, width: 100, background: '#1e293b', borderRadius: 4 }} />
-            <div style={{ height: 18, width: 80, background: '#1e293b', borderRadius: 4 }} />
+        <div
+          key={i}
+          className="rounded-2xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface))] p-6"
+        >
+          <div className="flex justify-between">
+            <div className="skeleton h-4 w-24" />
+            <div className="skeleton h-4 w-20" />
           </div>
-          <div style={{ height: 12, width: '40%', background: '#1e293b', borderRadius: 4, marginTop: 8 }} />
+          <div className="skeleton h-3 w-2/5 mt-2" />
         </div>
       ))}
     </main>

@@ -18,15 +18,6 @@ type FavoriteCounselor = {
   favoritedAt: string;
 };
 
-function specialtyEmoji(specialty: string): string {
-  if (specialty.includes('사주')) return '🔮';
-  if (specialty.includes('타로')) return '🃏';
-  if (specialty.includes('신점')) return '🪷';
-  if (specialty.includes('꿈')) return '🌙';
-  if (specialty.includes('궁합')) return '💕';
-  return '✨';
-}
-
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<FavoriteCounselor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +101,6 @@ export default function FavoritesPage() {
         ) : loadFailed ? (
           <EmptyStateCard
             variant="error"
-            icon="!"
             title="즐겨찾기 목록을 불러오지 못했습니다"
             description="네트워크 상태를 확인하고 다시 시도해주세요."
             actionLabel="다시 시도"
@@ -118,25 +108,26 @@ export default function FavoritesPage() {
           />
         ) : favorites.length === 0 ? (
           <EmptyStateCard
-            icon="💛"
             title="아직 즐겨찾기한 상담사가 없습니다"
             description="상담사 목록에서 마음에 드는 상담사를 즐겨찾기에 추가해보세요."
             actionLabel="상담사 둘러보기"
             actionHref="/counselors"
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="stagger-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {favorites.map((f) => (
-              <Card key={f.counselorId} className="flex flex-col text-center py-6 landing-card hover:-translate-y-1 transition-all duration-300 relative">
-                {/* Emoji icon */}
-                <div className="text-center text-[3rem] mb-4">
-                  {specialtyEmoji(f.specialty)}
+              <Card key={f.counselorId} className="flex flex-col text-center py-6 hover:-translate-y-1 transition-transform">
+                {/* Avatar — name initial */}
+                <div className="mx-auto mb-4 size-16 rounded-full bg-[hsl(var(--gold)/0.18)] border border-[hsl(var(--gold)/0.3)] flex items-center justify-center">
+                  <span className="font-heading text-2xl font-bold text-[hsl(var(--gold))]">
+                    {f.name.charAt(0)}
+                  </span>
                 </div>
 
                 {/* Name */}
-                <h3 className="m-0 text-center font-heading font-bold text-xl text-card-foreground">
+                <h2 className="m-0 text-center font-heading font-bold text-xl text-[hsl(var(--text-primary))]">
                   {f.name}
-                </h3>
+                </h2>
 
                 {/* Specialty badge */}
                 <div className="text-center mt-3">

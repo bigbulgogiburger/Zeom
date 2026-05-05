@@ -63,7 +63,7 @@ describe('WalletPage', () => {
     render(<WalletPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('50,000원')).toBeInTheDocument();
+      expect(screen.getByText('50,000')).toBeInTheDocument();
     });
 
     // Transaction type label for CHARGE is '충전'
@@ -147,7 +147,7 @@ describe('WalletPage', () => {
     render(<WalletPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('10,000원')).toBeInTheDocument();
+      expect(screen.getByText('10,000')).toBeInTheDocument();
     });
 
     const chargeButton = screen.getByText('충전하기');
