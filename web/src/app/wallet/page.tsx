@@ -80,23 +80,23 @@ export default function WalletPage() {
   const [csvExporting, setCsvExporting] = useState(false);
   const [creditBalance, setCreditBalance] = useState<CreditBalance | null>(null);
 
-  async function loadCreditBalance() {
+  const loadCreditBalance = useCallback(async () => {
     try {
       const data = await getCreditBalance();
       setCreditBalance(data);
     } catch {
       // Credit balance is optional — fail silently
     }
-  }
+  }, []);
 
-  async function loadWallet() {
+  const loadWallet = useCallback(async () => {
     try {
       const data = await getWallet();
       setWallet(data);
     } catch {
       setMessage('지갑 정보를 불러오지 못했습니다.');
     }
-  }
+  }, []);
 
   const getFilters = useCallback(() => {
     const filters: { type?: string; from?: string; to?: string } = {};
@@ -141,12 +141,7 @@ export default function WalletPage() {
     loadWallet();
     loadCreditBalance();
     loadTransactions(0);
-  }, []);
-
-  // Re-fetch when filters change
-  useEffect(() => {
-    loadTransactions(0);
-  }, [filterType, periodPreset, customFrom, customTo, loadTransactions]);
+  }, [loadWallet, loadCreditBalance, loadTransactions]);
 
   const getTransactionTypeLabel = (type: string) => {
     switch (type) {

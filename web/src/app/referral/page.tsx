@@ -248,7 +248,7 @@ export default function ReferralPage() {
                             </TableCell>
                             <TableCell>
                               {reward.referrerRewarded ? (
-                                <Badge className="bg-green-900/50 text-green-300 border-green-700">지급 완료</Badge>
+                                <Badge className="bg-[hsl(var(--success)/0.2)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.4)]">지급 완료</Badge>
                               ) : (
                                 <Badge variant="secondary">대기 중</Badge>
                               )}

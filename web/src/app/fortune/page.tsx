@@ -90,28 +90,28 @@ const MOCK_FORTUNE: FortuneDetail = {
     {
       label: '총운',
       score: 78,
-      icon: '\u2728',
+      icon: '',
       description:
         '전반적으로 안정적인 하루가 예상됩니다. 오전에는 집중력이 높아 중요한 업무를 처리하기 좋고, 오후에는 주변 사람들과의 소통에서 좋은 에너지를 받을 수 있습니다.',
     },
     {
       label: '재물',
       score: 65,
-      icon: '\uD83D\uDCB0',
+      icon: '',
       description:
         '큰 지출은 자제하는 것이 좋습니다. 예상치 못한 소비가 발생할 수 있으니 충동구매에 주의하세요. 저축이나 투자에 대한 새로운 정보를 얻을 수 있는 날입니다.',
     },
     {
       label: '애정',
       score: 82,
-      icon: '\u2764\uFE0F',
+      icon: '',
       description:
         '연인과의 관계에서 따뜻한 대화가 이어질 수 있습니다. 솔로라면 새로운 인연을 만날 가능성이 높습니다. 첫인상이 좋은 만남이 기대됩니다.',
     },
     {
       label: '건강',
       score: 71,
-      icon: '\uD83C\uDF3F',
+      icon: '',
       description:
         '가벼운 산책이나 스트레칭으로 몸을 풀어주세요. 과도한 운동보다는 휴식과 균형 잡힌 식사가 중요한 날입니다. 충분한 수면을 취하세요.',
     },
@@ -198,9 +198,9 @@ function ScoreBar({ score, hidden = false }: { score: number; hidden?: boolean }
   const getBarColor = (s: number) => {
     if (hidden) return 'from-[hsl(var(--gold)/0.2)] to-[hsl(var(--gold)/0.3)]';
     if (s >= 80) return 'from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))]';
-    if (s >= 60) return 'from-[hsl(var(--gold))] to-[hsl(var(--gold))/0.85]';
-    if (s >= 40) return 'from-[hsl(var(--gold))/0.85] to-[hsl(var(--gold-muted))]';
-    return 'from-[hsl(var(--dancheong))] to-[hsl(var(--gold))/0.85]';
+    if (s >= 60) return 'from-[hsl(var(--gold))] to-[hsl(var(--gold)/0.85)]';
+    if (s >= 40) return 'from-[hsl(var(--gold)/0.85)] to-[hsl(var(--gold-muted))]';
+    return 'from-[hsl(var(--dancheong))] to-[hsl(var(--gold)/0.85)]';
   };
 
   const displayScore = hidden ? 60 : score;
@@ -363,7 +363,7 @@ function TodayFortuneTab({ fortune, isLoggedIn }: { fortune: FortuneDetail; isLo
           <div key={cat.label} className="glass-card p-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">{cat.icon}</span>
+                {cat.icon && <span aria-hidden="true" className="text-2xl">{cat.icon}</span>}
                 <h3 className="text-lg font-heading font-bold text-foreground m-0">
                   {cat.label}
                 </h3>
@@ -541,7 +541,7 @@ function ZodiacFortuneTab() {
         </button>
 
         <div className="glass-card p-6 text-center">
-          <div className="text-5xl mb-3">{selected.emoji}</div>
+          {selected.emoji && <div aria-hidden="true" className="text-5xl mb-3">{selected.emoji}</div>}
           <h2 className="text-2xl font-heading font-black text-[hsl(var(--gold))] m-0">
             {selected.animal}띠 오늘의 운세
           </h2>
@@ -559,14 +559,14 @@ function ZodiacFortuneTab() {
         </div>
 
         {[
-          { label: '재물운', icon: '\uD83D\uDCB0', score: selected.wealthScore, text: selected.wealthText },
-          { label: '연애운', icon: '\u2764\uFE0F', score: selected.loveScore, text: selected.loveText },
-          { label: '건강운', icon: '\uD83C\uDF3F', score: selected.healthScore, text: selected.healthText },
+          { label: '재물운', icon: '', score: selected.wealthScore, text: selected.wealthText },
+          { label: '연애운', icon: '', score: selected.loveScore, text: selected.loveText },
+          { label: '건강운', icon: '', score: selected.healthScore, text: selected.healthText },
         ].map((cat) => (
           <div key={cat.label} className="glass-card p-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">{cat.icon}</span>
+                {cat.icon && <span aria-hidden="true" className="text-2xl">{cat.icon}</span>}
                 <h3 className="text-lg font-heading font-bold text-foreground m-0">{cat.label}</h3>
               </div>
               <span className="text-xl font-heading font-black text-[hsl(var(--gold))]">{cat.score}</span>
@@ -629,9 +629,11 @@ function ZodiacFortuneTab() {
             onClick={() => setSelected(zodiac)}
             className="glass-card p-4 text-center hover:border-[hsl(var(--gold)/0.5)] transition-all group"
           >
-            <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">
-              {zodiac.emoji}
-            </div>
+            {zodiac.emoji && (
+              <div aria-hidden="true" className="text-3xl mb-2 group-hover:scale-110 motion-safe:transition-transform">
+                {zodiac.emoji}
+              </div>
+            )}
             <p className="text-sm font-bold text-foreground m-0">{zodiac.animal}</p>
             <p className="text-xs text-[hsl(var(--text-secondary))] m-0 mt-1">
               {zodiac.jiji}({zodiac.hanja})
@@ -749,12 +751,12 @@ function CompatibilityTab() {
           <div className="glass-card p-8 text-center">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="text-center">
-                <div className="text-4xl mb-1">{result.emoji1}</div>
+                {result.emoji1 && <div aria-hidden="true" className="text-4xl mb-1">{result.emoji1}</div>}
                 <p className="text-sm font-bold text-foreground m-0">{result.animal1}띠</p>
               </div>
-              <div className="text-3xl text-[hsl(var(--gold))]">&hearts;</div>
+              <div aria-hidden="true" className="text-3xl text-[hsl(var(--gold))]">+</div>
               <div className="text-center">
-                <div className="text-4xl mb-1">{result.emoji2}</div>
+                {result.emoji2 && <div aria-hidden="true" className="text-4xl mb-1">{result.emoji2}</div>}
                 <p className="text-sm font-bold text-foreground m-0">{result.animal2}띠</p>
               </div>
             </div>
@@ -771,14 +773,14 @@ function CompatibilityTab() {
           </div>
 
           {[
-            { label: '연애 궁합', icon: '\u2764\uFE0F', data: result.love },
-            { label: '업무 궁합', icon: '\uD83D\uDCBC', data: result.work },
-            { label: '우정 궁합', icon: '\uD83E\uDD1D', data: result.friendship },
+            { label: '연애 궁합', icon: '', data: result.love },
+            { label: '업무 궁합', icon: '', data: result.work },
+            { label: '우정 궁합', icon: '', data: result.friendship },
           ].map((cat) => (
             <div key={cat.label} className="glass-card p-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">{cat.icon}</span>
+                  {cat.icon && <span aria-hidden="true" className="text-2xl">{cat.icon}</span>}
                   <h3 className="text-lg font-heading font-bold text-foreground m-0">{cat.label}</h3>
                 </div>
                 <span className="text-xl font-heading font-black" style={{ color: getScoreColor(cat.data.score) }}>
