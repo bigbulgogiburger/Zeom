@@ -75,6 +75,11 @@
   --ohaeng-metal: 30 5% 65%;
   --ohaeng-water: 220 45% 30%;
 
+  /* Brand colors — official compliance (Kakao/Naver) */
+  --brand-kakao: 54 100% 50%;
+  --brand-kakao-fg: 0 0% 10%;
+  --brand-naver: 143 97% 40%;
+
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-gold: 0 12px 40px hsl(var(--gold) / 0.12), 0 4px 12px hsl(var(--gold) / 0.06);
 
@@ -171,6 +176,11 @@
   --color-ohaeng-earth: hsl(var(--ohaeng-earth));
   --color-ohaeng-metal: hsl(var(--ohaeng-metal));
   --color-ohaeng-water: hsl(var(--ohaeng-water));
+
+  /* Brand colors */
+  --color-brand-kakao: hsl(var(--brand-kakao));
+  --color-brand-kakao-fg: hsl(var(--brand-kakao-fg));
+  --color-brand-naver: hsl(var(--brand-naver));
 
   /* shadow는 inline 값 (Tailwind v4 @theme inline 의 var() 참조 quirk 회피) */
   --shadow-gold: 0 12px 40px hsl(var(--gold) / 0.12), 0 4px 12px hsl(var(--gold) / 0.06);

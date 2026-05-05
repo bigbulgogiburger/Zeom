@@ -171,8 +171,7 @@ export default function ReferralPage() {
                 <div className="flex gap-3">
                   <Button
                     onClick={handleKakaoShare}
-                    className="flex-1 min-h-[44px] font-bold rounded-xl"
-                    style={{ backgroundColor: '#FEE500', color: '#191919' }}
+                    className="flex-1 min-h-[44px] font-bold rounded-xl bg-[hsl(var(--brand-kakao))] text-[hsl(var(--brand-kakao-fg))] hover:bg-[hsl(var(--brand-kakao))]/90"
                   >
                     카카오톡 공유
                   </Button>

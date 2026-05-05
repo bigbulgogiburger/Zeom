@@ -48,7 +48,7 @@ export default async function SharePage({ searchParams }: Props) {
   const getScoreColor = (s: number) => {
     if (s >= 80) return 'hsl(var(--gold))';
     if (s >= 60) return 'hsl(var(--gold)/0.85)';
-    if (s >= 40) return '#8B6914';
+    if (s >= 40) return 'hsl(var(--gold-deep))';
     return 'hsl(var(--dancheong))';
   };
 
