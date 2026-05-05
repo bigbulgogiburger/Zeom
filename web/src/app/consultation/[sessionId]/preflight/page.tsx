@@ -41,6 +41,13 @@ export default function PreflightPage() {
 
   async function checkPermissions() {
     setChecking(true);
+    // 재호출 시 이전 preview stream을 명시적으로 종료 — 카메라 LED/메모리 leak 방지
+    const prev = previewStreamRef.current;
+    if (prev) {
+      prev.getTracks().forEach((t) => t.stop());
+      previewStreamRef.current = null;
+      if (videoPreviewRef.current) videoPreviewRef.current.srcObject = null;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,

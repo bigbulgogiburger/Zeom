@@ -90,8 +90,13 @@ export default function NewRefundPage() {
       return;
     }
     if (step === 2) {
-      if (!reason.trim()) {
+      const trimmed = reason.trim();
+      if (!trimmed) {
         setMessage('환불 사유를 입력해주세요.');
+        return;
+      }
+      if (trimmed.length < 10) {
+        setMessage('환불 사유는 10자 이상 입력해주세요.');
         return;
       }
       setStep(3);

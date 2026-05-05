@@ -808,4 +808,45 @@ html.js-anim .fade-up.visible {
   .no-print {
     display: none;
   }
+
+  /* 영수증 인쇄 최적화 — Card/Surface 배경 흰색, 텍스트 검정, 그림자 제거 */
+  main,
+  [class*="bg-["],
+  .skeleton {
+    background: white !important;
+    color: black !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 카드 테두리 명확화 — print 컨텍스트 전용 (hsl 직접) */
+  [class*="border-"] {
+    border-color: hsl(0 0% 27%) !important;
+  }
+
+  /* Sticky 요소를 인쇄 시 정적으로 — 페이지 분할 방해 방지 */
+  [class*="sticky"],
+  [class*="fixed"] {
+    position: static !important;
+  }
+
+  /* 인쇄 시 페이지 끝에서 카드 분리 방지 */
+  article,
+  section,
+  [class*="rounded-"] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  a {
+    color: black !important;
+    text-decoration: none !important;
+  }
 }

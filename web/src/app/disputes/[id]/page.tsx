@@ -147,38 +147,29 @@ export default function DisputeDetailPage() {
 
   const timeline: TimelineEntry[] = useMemo(() => {
     if (!dispute) return [];
-    const entries: TimelineEntry[] = [
+    const status = dispute.status;
+    const reviewStarted = status === 'IN_REVIEW' || status === 'RESOLVED';
+    const resolved = status === 'RESOLVED';
+    return [
       {
         id: 'created',
         label: '분쟁 접수',
         at: dispute.createdAt,
         variant: 'done',
       },
-    ];
-    if (dispute.status === 'IN_REVIEW' || dispute.status === 'RESOLVED') {
-      entries.push({
+      {
         id: 'review',
-        label: '관리자 검토 시작',
-        at: dispute.updatedAt,
-        variant: dispute.status === 'IN_REVIEW' ? 'active' : 'done',
-      });
-    }
-    if (dispute.status === 'RESOLVED' && dispute.resolvedAt) {
-      entries.push({
+        label: '관리자 검토',
+        at: reviewStarted ? dispute.updatedAt : '',
+        variant: resolved ? 'done' : reviewStarted ? 'active' : 'pending',
+      },
+      {
         id: 'resolved',
         label: '해결 완료',
-        at: dispute.resolvedAt,
-        variant: 'done',
-      });
-    } else {
-      entries.push({
-        id: 'pending',
-        label: '해결 대기',
-        at: '',
-        variant: 'pending',
-      });
-    }
-    return entries;
+        at: resolved && dispute.resolvedAt ? dispute.resolvedAt : '',
+        variant: resolved ? 'done' : 'pending',
+      },
+    ];
   }, [dispute]);
 
   const thread: ThreadEntry[] = useMemo(() => {

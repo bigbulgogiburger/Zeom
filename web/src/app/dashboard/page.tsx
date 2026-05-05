@@ -153,12 +153,15 @@ export default function DashboardPage() {
         setWallet(walletRes.value);
       }
 
-      if (bookingsRes.status === 'fulfilled' && bookingsRes.value) {
+      if (bookingsRes.status === 'fulfilled' && Array.isArray(bookingsRes.value)) {
         const list = bookingsRes.value;
         const now = Date.now();
         const upcomingList = list
           .filter((b) => UPCOMING_STATUSES.has(b.status))
-          .filter((b) => new Date(b.startAt).getTime() >= now)
+          .filter((b) => {
+            const t = new Date(b.startAt).getTime();
+            return Number.isFinite(t) && t >= now;
+          })
           .sort(
             (a, b) =>
               new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
@@ -170,7 +173,10 @@ export default function DashboardPage() {
         setFortune(fortuneRes.value);
       }
 
-      if (consultationsRes.status === 'fulfilled' && consultationsRes.value) {
+      if (
+        consultationsRes.status === 'fulfilled' &&
+        Array.isArray(consultationsRes.value)
+      ) {
         setConsultations(consultationsRes.value);
         const reviewed = consultationsRes.value.filter((c) => c.hasReview).length;
         setReviewCount(reviewed);
@@ -245,7 +251,9 @@ export default function DashboardPage() {
             <PageTitle>대시보드</PageTitle>
             {me?.email && (
               <p className="m-0 mt-1 text-sm text-[hsl(var(--text-secondary))]">
-                {me.name ? `${me.name}님, 오늘도 평안하세요.` : `${me.email}`}
+                {me.name && me.name.trim()
+                  ? `${me.name.trim()}님, 오늘도 평안하세요.`
+                  : me.email}
               </p>
             )}
           </div>
