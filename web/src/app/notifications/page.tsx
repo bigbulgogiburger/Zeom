@@ -210,7 +210,6 @@ export default function NotificationsPage() {
         </div>
       ) : notifications.length === 0 ? (
         <EmptyStateCard
-          icon="📭"
           title="알림이 없습니다"
           description="새로운 알림이 오면 여기에 표시됩니다"
           variant="empty"
@@ -247,7 +246,7 @@ export default function NotificationsPage() {
                           <span className="block w-2 h-2 rounded-full bg-[hsl(var(--gold))]" />
                         )}
                         <span
-                          className="text-[10px] text-[#6b5c4d]"
+                          className="text-[10px] text-[hsl(var(--text-muted))]"
                           title={formatFullDate(n.createdAt)}
                         >
                           {getRelativeTime(n.createdAt)}
@@ -259,7 +258,7 @@ export default function NotificationsPage() {
                         {n.title}
                       </p>
                       {n.body && (
-                        <p className="text-xs text-[#6b5c4d] mt-1 line-clamp-2">
+                        <p className="text-xs text-[hsl(var(--text-muted))] mt-1 line-clamp-2">
                           {n.body}
                         </p>
                       )}
@@ -267,7 +266,7 @@ export default function NotificationsPage() {
 
                     {/* Arrow */}
                     {n.link && (
-                      <ChevronRight className="w-4 h-4 text-[#6b5c4d] shrink-0 mt-1" />
+                      <ChevronRight className="w-4 h-4 text-[hsl(var(--text-muted))] shrink-0 mt-1" />
                     )}
                   </div>
                 </div>
