@@ -99,9 +99,9 @@ export default function CreditHistoryPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className={`text-lg font-bold font-heading ${
+                    <div className={`text-lg font-bold font-heading tabular ${
                       item.remainingUnits > 0
-                        ? 'text-green-500'
+                        ? 'text-[hsl(var(--success))]'
                         : 'text-[hsl(var(--text-secondary))]'
                     }`}>
                       {item.remainingUnits} / {item.totalUnits}회

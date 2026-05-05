@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getCreditBalance, getWallet, getCashProducts, purchaseCredit } from '../../../components/api-client';
 import { RequireLogin } from '../../../components/route-guard';
 import { Card, EmptyState, InlineError, InlineSuccess, PageTitle } from '../../../components/ui';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
 
 type CashProduct = {
   id: number;
@@ -116,13 +117,13 @@ export default function CreditBuyPage() {
     return (
       <RequireLogin>
         <main className="max-w-[900px] mx-auto px-6 sm:px-8 py-10 grid gap-8">
-          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-12">
+          <div className="rounded-2xl border border-[hsl(var(--gold)/0.2)] bg-[hsl(var(--surface))] p-12">
             <div className="text-center flex flex-col gap-6 items-center">
-              <div className="text-6xl animate-bounce">
-                &#127916;&#10024;
+              <div className="motion-safe:animate-bounce text-[hsl(var(--gold))]">
+                <CheckCircle2 aria-hidden="true" className="size-16" />
               </div>
-              <div className="text-2xl font-black font-heading bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent">
-                구매 완료!
+              <div className="font-heading text-2xl font-bold text-[hsl(var(--gold))]">
+                구매 완료
               </div>
               {creditBalance !== null && (
                 <div className="text-lg text-[hsl(var(--text-primary))]">
@@ -183,9 +184,9 @@ export default function CreditBuyPage() {
 
         {/* Failure state */}
         {purchaseStatus === 'failed' && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8">
+          <div className="rounded-2xl border border-[hsl(var(--dancheong)/0.3)] bg-[hsl(var(--surface))] p-8">
             <div className="text-center flex flex-col gap-4 items-center">
-              <div className="text-4xl">&#9888;&#65039;</div>
+              <AlertTriangle aria-hidden="true" className="size-10 text-[hsl(var(--dancheong))]" />
               <div className="text-lg font-bold text-[hsl(var(--dancheong))] font-heading">
                 구매 실패
               </div>

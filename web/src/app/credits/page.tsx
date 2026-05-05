@@ -6,6 +6,7 @@ import { getCreditBalance, purchaseCredit } from '../../components/api-client';
 import { RequireLogin } from '../../components/route-guard';
 import { Card, ConfirmDialog, PageTitle } from '../../components/ui';
 import { toast } from 'sonner';
+import { Ticket } from 'lucide-react';
 
 type CreditProduct = {
   id: number;
@@ -75,13 +76,11 @@ export default function CreditsPage() {
 
         {/* Current balance */}
         {credits !== null && (
-          <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-6">
+          <div className="rounded-2xl border border-[hsl(var(--gold)/0.2)] bg-[hsl(var(--surface))] p-6">
             <div className="flex items-center justify-center gap-4 py-3">
-              <span className="text-lg" aria-hidden="true">&#127915;</span>
-              <span className="font-heading font-bold text-lg">
-                현재 보유 상담권:
-              </span>
-              <span className="font-heading font-black text-3xl text-[hsl(var(--gold))]">
+              <Ticket aria-hidden="true" className="size-6 text-[hsl(var(--gold))]" />
+              <span className="font-heading font-bold text-lg">현재 보유 상담권:</span>
+              <span className="font-heading font-bold text-3xl text-[hsl(var(--gold))] tabular">
                 {credits}회
               </span>
             </div>
