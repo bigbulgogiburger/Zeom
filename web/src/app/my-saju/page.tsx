@@ -35,16 +35,16 @@ type SajuChart = {
 };
 
 const OHAENG_COLORS: Record<string, string> = {
-  '\uBAA9': '#2E8B57',
-  '\uD654': '#DC143C',
-  '\uD1A0': '#DAA520',
-  '\uAE08': '#C0C0C0',
-  '\uC218': '#191970',
-  wood: '#2E8B57',
-  fire: '#DC143C',
-  earth: '#DAA520',
-  metal: '#C0C0C0',
-  water: '#191970',
+  '\uBAA9': 'hsl(var(--ohaeng-wood))',
+  '\uD654': 'hsl(var(--ohaeng-fire))',
+  '\uD1A0': 'hsl(var(--ohaeng-earth))',
+  '\uAE08': 'hsl(var(--ohaeng-metal))',
+  '\uC218': 'hsl(var(--ohaeng-water))',
+  wood: 'hsl(var(--ohaeng-wood))',
+  fire: 'hsl(var(--ohaeng-fire))',
+  earth: 'hsl(var(--ohaeng-earth))',
+  metal: 'hsl(var(--ohaeng-metal))',
+  water: 'hsl(var(--ohaeng-water))',
 };
 
 const OHAENG_KR: Record<string, string> = {

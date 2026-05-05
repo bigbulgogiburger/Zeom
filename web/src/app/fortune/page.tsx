@@ -122,11 +122,11 @@ const MOCK_FORTUNE: FortuneDetail = {
 };
 
 const OHAENG_COLORS: Record<string, string> = {
-  wood: '#2E8B57',
-  fire: '#DC143C',
-  earth: '#DAA520',
-  metal: '#C0C0C0',
-  water: '#191970',
+  wood: 'hsl(var(--ohaeng-wood))',
+  fire: 'hsl(var(--ohaeng-fire))',
+  earth: 'hsl(var(--ohaeng-earth))',
+  metal: 'hsl(var(--ohaeng-metal))',
+  water: 'hsl(var(--ohaeng-water))',
 };
 
 const OHAENG_LABELS: Record<string, string> = {
@@ -176,7 +176,7 @@ function ScoreGauge({ score, size = 'lg', hidden = false }: { score: number; siz
         strokeDasharray={circumference}
         strokeDashoffset={dashOffset}
         transform={`rotate(-90 ${radius + stroke} ${radius + stroke})`}
-        className="transition-all duration-1000"
+        className="transition-all duration-1000 motion-reduce:transition-none"
       />
       <text
         x={radius + stroke}
