@@ -42,7 +42,7 @@ export default function AdminLoginPage() {
 
     setSuccess('관리자 로그인 성공! 이동 중입니다.');
     await refreshMe();
-    router.push('/dashboard');
+    router.push('/admin/dashboard');
   }
 
   return (

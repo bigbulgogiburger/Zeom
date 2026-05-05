@@ -2,21 +2,30 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { CheckCircle2, XCircle, Loader2, Wifi, WifiOff, SignalLow } from 'lucide-react';
 import { RequireLogin } from '../../../../components/route-guard';
-import { Card, InlineError, PageTitle, ActionButton } from '../../../../components/ui';
+import {
+  ActionButton,
+  Card,
+  InlineError,
+  PageTitle,
+} from '../../../../components/ui';
+import { cn } from '@/lib/utils';
+
+type Permission = 'pending' | 'granted' | 'denied';
+type NetworkQuality = 'good' | 'fair' | 'poor';
 
 export default function PreflightPage() {
   const router = useRouter();
   const params = useParams();
   const sessionId = params?.sessionId as string;
 
-  const [cameraPermission, setCameraPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
-  const [micPermission, setMicPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
-  const [networkQuality, setNetworkQuality] = useState<'good' | 'fair' | 'poor'>('good');
+  const [cameraPermission, setCameraPermission] = useState<Permission>('pending');
+  const [micPermission, setMicPermission] = useState<Permission>('pending');
+  const [networkQuality, setNetworkQuality] = useState<NetworkQuality>('good');
   const [message, setMessage] = useState('');
   const [checking, setChecking] = useState(false);
-  const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
-
+  const previewStreamRef = useRef<MediaStream | null>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -24,19 +33,20 @@ export default function PreflightPage() {
     checkNetworkQuality();
 
     return () => {
-      // Cleanup preview stream
-      if (previewStream) {
-        previewStream.getTracks().forEach(track => track.stop());
-      }
+      const stream = previewStreamRef.current;
+      if (stream) stream.getTracks().forEach((t) => t.stop());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function checkPermissions() {
     setChecking(true);
     try {
-      // Use standard WebRTC for preview
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setPreviewStream(stream);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      previewStreamRef.current = stream;
 
       if (videoPreviewRef.current) {
         videoPreviewRef.current.srcObject = stream;
@@ -45,11 +55,10 @@ export default function PreflightPage() {
       setCameraPermission('granted');
       setMicPermission('granted');
     } catch {
-      // Check individually if combined check failed
       try {
         const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
         setCameraPermission('granted');
-        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream.getTracks().forEach((t) => t.stop());
       } catch {
         setCameraPermission('denied');
       }
@@ -57,7 +66,7 @@ export default function PreflightPage() {
       try {
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         setMicPermission('granted');
-        micStream.getTracks().forEach(track => track.stop());
+        micStream.getTracks().forEach((t) => t.stop());
       } catch {
         setMicPermission('denied');
       }
@@ -67,18 +76,19 @@ export default function PreflightPage() {
   }
 
   function checkNetworkQuality() {
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-    if (connection) {
-      const effectiveType = connection.effectiveType;
-      if (effectiveType === '4g') {
-        setNetworkQuality('good');
-      } else if (effectiveType === '3g') {
-        setNetworkQuality('fair');
-      } else {
-        setNetworkQuality('poor');
-      }
+    const navAny = navigator as unknown as {
+      connection?: { effectiveType?: string };
+      mozConnection?: { effectiveType?: string };
+      webkitConnection?: { effectiveType?: string };
+    };
+    const connection = navAny.connection || navAny.mozConnection || navAny.webkitConnection;
+    if (connection?.effectiveType) {
+      const t = connection.effectiveType;
+      if (t === '4g') setNetworkQuality('good');
+      else if (t === '3g') setNetworkQuality('fair');
+      else setNetworkQuality('poor');
     } else {
-      setNetworkQuality('good'); // Default to good if can't detect
+      setNetworkQuality('good');
     }
   }
 
@@ -91,26 +101,31 @@ export default function PreflightPage() {
       setMessage('카메라와 마이크 권한이 필요합니다.');
       return;
     }
-
-    // Clean up preview before entering
-    if (previewStream) {
-      previewStream.getTracks().forEach(track => track.stop());
-    }
-
+    const stream = previewStreamRef.current;
+    if (stream) stream.getTracks().forEach((t) => t.stop());
     router.push(`/consultation/${sessionId}`);
   }
 
-  const getPermissionIcon = (status: string) => {
-    if (status === 'granted') return '✅';
-    if (status === 'denied') return '❌';
-    return '⏳';
-  };
+  function PermissionIcon({ status }: { status: Permission }) {
+    if (status === 'granted')
+      return <CheckCircle2 className="size-7 text-[hsl(var(--success))]" aria-hidden />;
+    if (status === 'denied')
+      return <XCircle className="size-7 text-[hsl(var(--dancheong))]" aria-hidden />;
+    return (
+      <Loader2
+        className="size-7 text-[hsl(var(--text-secondary))] motion-safe:animate-spin"
+        aria-hidden
+      />
+    );
+  }
 
-  const getNetworkIcon = (quality: string) => {
-    if (quality === 'good') return '🟢';
-    if (quality === 'fair') return '🟡';
-    return '🔴';
-  };
+  function NetworkIcon({ quality }: { quality: NetworkQuality }) {
+    if (quality === 'good')
+      return <Wifi className="size-7 text-[hsl(var(--success))]" aria-hidden />;
+    if (quality === 'fair')
+      return <SignalLow className="size-7 text-[hsl(var(--warning))]" aria-hidden />;
+    return <WifiOff className="size-7 text-[hsl(var(--dancheong))]" aria-hidden />;
+  }
 
   return (
     <RequireLogin>
@@ -118,18 +133,16 @@ export default function PreflightPage() {
         <PageTitle>상담 준비 확인</PageTitle>
         <InlineError message={message} />
 
-        {/* Camera Preview */}
         {cameraPermission === 'granted' && (
           <Card>
-            <h3 className="m-0 mb-4 text-lg font-bold font-heading">
-              카메라 미리보기
-            </h3>
-            <div className="relative w-full pb-[56.25%] bg-black rounded-xl overflow-hidden">
+            <h3 className="m-0 mb-4 text-lg font-bold font-heading">카메라 미리보기</h3>
+            <div className="relative w-full pb-[56.25%] bg-[hsl(var(--background))] rounded-xl overflow-hidden">
               <video
                 ref={videoPreviewRef}
                 autoPlay
                 muted
                 playsInline
+                aria-label="카메라 미리보기"
                 className="absolute top-0 left-0 w-full h-full object-cover"
               />
             </div>
@@ -137,72 +150,53 @@ export default function PreflightPage() {
         )}
 
         <Card>
-          <h3 className="m-0 mb-4 text-lg font-bold font-heading">
-            디바이스 점검
-          </h3>
+          <h3 className="m-0 mb-4 text-lg font-bold font-heading">디바이스 점검</h3>
 
           <div className="grid gap-4">
-            {/* Camera Permission */}
-            <div className={`flex justify-between items-center p-4 rounded-xl ${
-              cameraPermission === 'granted'
-                ? 'bg-[hsl(var(--success)/0.15)]'
-                : cameraPermission === 'denied'
-                  ? 'bg-[hsl(var(--dancheong)/0.15)]'
-                  : 'bg-[hsl(var(--surface))]'
-            }`}>
-              <div>
-                <div className="font-bold text-base">
-                  카메라
-                </div>
-                <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">
-                  화상 상담을 위해 필요합니다
-                </div>
-              </div>
-              <div className="text-2xl">
-                {getPermissionIcon(cameraPermission)}
-              </div>
-            </div>
+            <PermissionRow
+              title="카메라"
+              desc="화상 상담을 위해 필요합니다"
+              status={cameraPermission}
+            >
+              <PermissionIcon status={cameraPermission} />
+            </PermissionRow>
 
-            {/* Microphone Permission */}
-            <div className={`flex justify-between items-center p-4 rounded-xl ${
-              micPermission === 'granted'
-                ? 'bg-[hsl(var(--success)/0.15)]'
-                : micPermission === 'denied'
-                  ? 'bg-[hsl(var(--dancheong)/0.15)]'
-                  : 'bg-[hsl(var(--surface))]'
-            }`}>
-              <div>
-                <div className="font-bold text-base">
-                  마이크
-                </div>
-                <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">
-                  음성 상담을 위해 필요합니다
-                </div>
-              </div>
-              <div className="text-2xl">
-                {getPermissionIcon(micPermission)}
-              </div>
-            </div>
+            <PermissionRow
+              title="마이크"
+              desc="음성 상담을 위해 필요합니다"
+              status={micPermission}
+            >
+              <PermissionIcon status={micPermission} />
+            </PermissionRow>
 
-            {/* Network Quality */}
-            <div className="flex justify-between items-center p-4 rounded-xl bg-[hsl(var(--surface))]">
-              <div>
-                <div className="font-bold text-base">
-                  네트워크
-                </div>
-                <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">
-                  {networkQuality === 'good' ? '원활함' : networkQuality === 'fair' ? '보통' : '불안정'}
-                </div>
-              </div>
-              <div className="text-2xl">
-                {getNetworkIcon(networkQuality)}
-              </div>
-            </div>
+            <PermissionRow
+              title="네트워크"
+              desc={
+                networkQuality === 'good'
+                  ? '원활함'
+                  : networkQuality === 'fair'
+                  ? '보통'
+                  : '불안정'
+              }
+              status={
+                networkQuality === 'good'
+                  ? 'granted'
+                  : networkQuality === 'fair'
+                  ? 'pending'
+                  : 'denied'
+              }
+            >
+              <NetworkIcon quality={networkQuality} />
+            </PermissionRow>
           </div>
 
           {(cameraPermission === 'denied' || micPermission === 'denied') && (
-            <div className="mt-6 p-4 bg-[hsl(var(--dancheong)/0.15)] rounded-xl text-sm text-[hsl(var(--dancheong))]">
-              브라우저 설정에서 카메라와 마이크 권한을 허용해주세요.
+            <div
+              role="alert"
+              className="mt-6 p-4 bg-[hsl(var(--dancheong)/0.15)] rounded-xl text-sm text-[hsl(var(--dancheong))]"
+            >
+              브라우저 주소창 옆 자물쇠 아이콘을 눌러 카메라와 마이크 권한을 허용한
+              뒤 다시 확인해주세요.
             </div>
           )}
         </Card>
@@ -219,14 +213,44 @@ export default function PreflightPage() {
           <button
             onClick={checkPermissions}
             disabled={checking}
-            className={`bg-transparent text-[hsl(var(--gold))] border border-[hsl(var(--gold)/0.15)] rounded-full px-6 py-2 text-sm hover:bg-[hsl(var(--gold))]/10 transition-colors ${
-              checking ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-            }`}
+            className={cn(
+              'bg-transparent text-[hsl(var(--gold))] border border-[hsl(var(--gold)/0.3)] rounded-full px-6 py-2 text-sm hover:bg-[hsl(var(--gold)/0.1)] transition-colors font-heading font-bold',
+              checking ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+            )}
           >
             다시 확인
           </button>
         </div>
       </main>
     </RequireLogin>
+  );
+}
+
+function PermissionRow({
+  title,
+  desc,
+  status,
+  children,
+}: {
+  title: string;
+  desc: string;
+  status: Permission;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        'flex justify-between items-center p-4 rounded-xl gap-4',
+        status === 'granted' && 'bg-[hsl(var(--success)/0.15)]',
+        status === 'denied' && 'bg-[hsl(var(--dancheong)/0.15)]',
+        status === 'pending' && 'bg-[hsl(var(--surface))]',
+      )}
+    >
+      <div>
+        <div className="font-bold text-base font-heading">{title}</div>
+        <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">{desc}</div>
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
   );
 }

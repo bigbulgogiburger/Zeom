@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Check } from 'lucide-react';
 
 type SessionData = {
   id: number;
@@ -35,6 +34,8 @@ type SettlementData = {
   settledAt: string;
 };
 
+const REVIEW_COUNTDOWN_SEC = 60;
+
 function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -54,13 +55,62 @@ function formatDateTime(iso: string): string {
 
 function getEndReasonLabel(reason: string | null): string {
   switch (reason) {
-    case 'COMPLETED': return '정상 종료';
-    case 'TIMEOUT': return '시간 만료';
-    case 'CLIENT_DISCONNECT': return '고객 연결 해제';
-    case 'COUNSELOR_DISCONNECT': return '상담사 연결 해제';
-    case 'ERROR': return '오류 발생';
-    default: return reason || '종료';
+    case 'COMPLETED':
+      return '정상 종료';
+    case 'TIMEOUT':
+      return '시간 만료';
+    case 'CLIENT_DISCONNECT':
+      return '고객 연결 해제';
+    case 'COUNSELOR_DISCONNECT':
+      return '상담사 연결 해제';
+    case 'ERROR':
+      return '오류 발생';
+    default:
+      return reason || '종료';
   }
+}
+
+/** 단청 동심원 SVG — 80x80 gold 원 + 8 dot + 중앙 dot. emoji 0 baseline 유지 */
+function DancheongMandala({ size = 80 }: { size?: number }) {
+  const cx = size / 2;
+  const cy = size / 2;
+  const outerR = size / 2 - 2;
+  const dotR = size * 0.325;
+  const angles = [0, 45, 90, 135, 180, 225, 270, 315];
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      role="img"
+      aria-label="상담 완료"
+      className="motion-safe:[animation:scaleIn_0.6s_ease-out]"
+    >
+      <circle
+        cx={cx}
+        cy={cy}
+        r={outerR}
+        fill="hsl(var(--gold) / 0.08)"
+        stroke="hsl(var(--gold))"
+        strokeWidth={2}
+      />
+      <circle cx={cx} cy={cy} r={size * 0.075} fill="hsl(var(--gold))" />
+      {angles.map((deg) => {
+        const rad = (deg * Math.PI) / 180;
+        const x = cx + dotR * Math.cos(rad);
+        const y = cy + dotR * Math.sin(rad);
+        return (
+          <circle
+            key={deg}
+            cx={x}
+            cy={y}
+            r={size * 0.0375}
+            fill="hsl(var(--gold-soft))"
+          />
+        );
+      })}
+    </svg>
+  );
 }
 
 export default function ConsultationCompletePage() {
@@ -72,22 +122,22 @@ export default function ConsultationCompletePage() {
   const [settlement, setSettlement] = useState<SettlementData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [secondsLeft, setSecondsLeft] = useState(REVIEW_COUNTDOWN_SEC);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     async function loadData() {
       try {
-        // Load session data
-        const sessionRes = await apiFetch(`/api/v1/sessions/${sessionId}`, { cache: 'no-store' });
-        if (sessionRes.ok) {
-          setSession(await sessionRes.json());
-        }
+        const sessionRes = await apiFetch(`/api/v1/sessions/${sessionId}`, {
+          cache: 'no-store',
+        });
+        if (sessionRes.ok) setSession(await sessionRes.json());
 
-        // Load settlement data
         try {
           const settlementData = await getSettlementBySession(sessionId);
           setSettlement(settlementData);
         } catch {
-          // Settlement may not exist yet if session just ended
+          /* settlement may not exist yet */
         }
       } catch {
         setError('상담 결과를 불러올 수 없습니다.');
@@ -99,11 +149,24 @@ export default function ConsultationCompletePage() {
     if (sessionId) loadData();
   }, [sessionId]);
 
+  // 60s auto-redirect to review (pausable)
+  useEffect(() => {
+    if (paused || loading) return;
+    if (secondsLeft <= 0) {
+      router.push(`/consultation/${sessionId}/review`);
+      return;
+    }
+    const t = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [secondsLeft, paused, loading, router, sessionId]);
+
   if (loading) {
     return (
       <RequireLogin>
         <main className="max-w-2xl mx-auto px-4 py-8 grid gap-6">
-          <div className="text-center py-16 text-muted-foreground">불러오는 중...</div>
+          <div className="text-center py-16 text-muted-foreground">
+            불러오는 중...
+          </div>
         </main>
       </RequireLogin>
     );
@@ -112,17 +175,39 @@ export default function ConsultationCompletePage() {
   return (
     <RequireLogin>
       <main className="max-w-2xl mx-auto px-4 py-8 grid gap-6">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]" aria-hidden="true">
-            <Check size={32} strokeWidth={2.5} />
-          </div>
-          <h1 className="text-2xl font-bold font-heading">상담이 종료되었습니다</h1>
+        {/* Hero — 80px gold 단청 SVG + 카운트다운 */}
+        <div className="text-center grid place-items-center gap-3">
+          <DancheongMandala size={80} />
+          <h1 className="text-2xl font-bold font-heading text-[hsl(var(--text-primary))]">
+            상담이 종료되었습니다
+          </h1>
           {session?.endReason && (
-            <Badge variant="secondary" className="mt-2">
+            <Badge variant="secondary" className="rounded-full">
               {getEndReasonLabel(session.endReason)}
             </Badge>
           )}
+
+          {/* Countdown */}
+          <div
+            role="status"
+            aria-live="polite"
+            className="mt-2 text-sm text-[hsl(var(--text-secondary))] tabular-nums"
+          >
+            {paused ? (
+              <span>리뷰 자동 이동이 일시 중지되었습니다.</span>
+            ) : (
+              <span>
+                {secondsLeft}초 후 리뷰 작성으로 이동합니다.{' '}
+                <button
+                  type="button"
+                  onClick={() => setPaused(true)}
+                  className="text-[hsl(var(--gold))] underline font-heading font-bold ml-1"
+                >
+                  머무르기
+                </button>
+              </span>
+            )}
+          </div>
         </div>
 
         {error && (
@@ -131,13 +216,12 @@ export default function ConsultationCompletePage() {
           </div>
         )}
 
-        {/* Session Summary */}
         {session && (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">상담 요약</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-3 text-sm">
+            <CardContent className="grid gap-3 text-sm tabular-nums">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">시작 시간</span>
                 <span className="font-medium">{formatDateTime(session.startedAt)}</span>
@@ -151,20 +235,21 @@ export default function ConsultationCompletePage() {
               {session.durationSec != null && session.durationSec > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">실제 상담 시간</span>
-                  <span className="font-bold text-primary">{formatDuration(session.durationSec)}</span>
+                  <span className="font-bold text-primary">
+                    {formatDuration(session.durationSec)}
+                  </span>
                 </div>
               )}
             </CardContent>
           </Card>
         )}
 
-        {/* Settlement Result */}
         {settlement && (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">정산 결과</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-3 text-sm">
+            <CardContent className="grid gap-3 text-sm tabular-nums">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">예약 상담권</span>
                 <span className="font-medium">{settlement.creditsReserved}회</span>
@@ -176,21 +261,28 @@ export default function ConsultationCompletePage() {
               {settlement.creditsRefunded > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">환불 상담권</span>
-                  <span className="font-bold text-green-700">{settlement.creditsRefunded}회</span>
+                  <span className="font-bold text-[hsl(var(--success))]">
+                    {settlement.creditsRefunded}회
+                  </span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between">
                 <span className="text-muted-foreground">실제 상담 시간</span>
-                <span className="font-medium">{formatDuration(settlement.actualDurationSec)}</span>
+                <span className="font-medium">
+                  {formatDuration(settlement.actualDurationSec)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">정산 유형</span>
                 <Badge variant="outline">
-                  {settlement.settlementType === 'NORMAL' ? '정상' :
-                   settlement.settlementType === 'EARLY_END' ? '조기 종료' :
-                   settlement.settlementType === 'TIMEOUT' ? '시간 만료' :
-                   settlement.settlementType}
+                  {settlement.settlementType === 'NORMAL'
+                    ? '정상'
+                    : settlement.settlementType === 'EARLY_END'
+                    ? '조기 종료'
+                    : settlement.settlementType === 'TIMEOUT'
+                    ? '시간 만료'
+                    : settlement.settlementType}
                 </Badge>
               </div>
             </CardContent>
@@ -205,7 +297,6 @@ export default function ConsultationCompletePage() {
           </Card>
         )}
 
-        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button
             onClick={() => router.push(`/consultation/${sessionId}/review`)}
@@ -213,14 +304,14 @@ export default function ConsultationCompletePage() {
           >
             리뷰 작성하기
           </Button>
-          <Link href="/credits/history">
+          <Link href={`/consultation/${sessionId}/summary`}>
             <Button variant="outline" className="w-full">
-              상담권 이용 내역
+              상담 요약 보기
             </Button>
           </Link>
-          <Link href="/bookings/me">
+          <Link href="/credits/history">
             <Button variant="ghost" className="w-full">
-              내 예약 목록
+              상담권 내역
             </Button>
           </Link>
         </div>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { ChevronLeft, FileText } from 'lucide-react';
 import { apiFetch } from '../../../components/api-client';
 import { RequireLogin } from '../../../components/route-guard';
 import { Card, InlineError, PageTitle } from '../../../components/ui';
@@ -21,6 +22,23 @@ type DisputeDetail = {
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+type Speaker = 'user' | 'counselor' | 'admin' | 'system';
+
+type ThreadEntry = {
+  id: string;
+  speaker: Speaker;
+  speakerLabel: string;
+  body: string;
+  at: string;
+};
+
+type TimelineEntry = {
+  id: string;
+  label: string;
+  at: string;
+  variant: 'pending' | 'active' | 'done';
 };
 
 const STATUS_MAP: Record<string, { label: string; className: string }> = {
@@ -52,6 +70,46 @@ const RESOLUTION_TYPE_MAP: Record<string, string> = {
   DISMISS: '기각',
 };
 
+const SPEAKER_STYLE: Record<
+  Speaker,
+  { label: string; border: string; bg: string; text: string }
+> = {
+  user: {
+    label: '나',
+    border: 'border-l-[hsl(var(--text-primary))]',
+    bg: 'bg-[hsl(var(--text-primary)/0.05)]',
+    text: 'text-[hsl(var(--text-primary))]',
+  },
+  counselor: {
+    label: '상담사',
+    border: 'border-l-[hsl(var(--jade))]',
+    bg: 'bg-[hsl(var(--jade)/0.08)]',
+    text: 'text-[hsl(var(--jade))]',
+  },
+  admin: {
+    label: '관리자',
+    border: 'border-l-[hsl(var(--gold))]',
+    bg: 'bg-[hsl(var(--gold)/0.08)]',
+    text: 'text-[hsl(var(--gold))]',
+  },
+  system: {
+    label: '시스템',
+    border: 'border-l-[hsl(var(--text-secondary))]',
+    bg: 'bg-[hsl(var(--surface))]',
+    text: 'text-[hsl(var(--text-secondary))]',
+  },
+};
+
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export default function DisputeDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -59,37 +117,123 @@ export default function DisputeDetailPage() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function loadDispute() {
-    setLoading(true);
-    try {
-      const res = await apiFetch(`/api/v1/disputes/${params.id}`, { cache: 'no-store' });
-      if (!res.ok) {
-        const json = await res.json();
-        setMessage(json.message || '분쟁 정보를 불러올 수 없습니다.');
-        return;
-      }
-      setDispute(await res.json());
-    } catch {
-      setMessage('분쟁 정보를 불러오는 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    if (params.id) loadDispute();
+    if (!params.id) return;
+    let alive = true;
+    async function loadDispute() {
+      setLoading(true);
+      try {
+        const res = await apiFetch(`/api/v1/disputes/${params.id}`, {
+          cache: 'no-store',
+        });
+        if (!alive) return;
+        if (!res.ok) {
+          const json = await res.json();
+          setMessage(json.message || '분쟁 정보를 불러올 수 없습니다.');
+          return;
+        }
+        setDispute(await res.json());
+      } catch {
+        if (alive) setMessage('분쟁 정보를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        if (alive) setLoading(false);
+      }
+    }
+    loadDispute();
+    return () => {
+      alive = false;
+    };
   }, [params.id]);
+
+  const timeline: TimelineEntry[] = useMemo(() => {
+    if (!dispute) return [];
+    const entries: TimelineEntry[] = [
+      {
+        id: 'created',
+        label: '분쟁 접수',
+        at: dispute.createdAt,
+        variant: 'done',
+      },
+    ];
+    if (dispute.status === 'IN_REVIEW' || dispute.status === 'RESOLVED') {
+      entries.push({
+        id: 'review',
+        label: '관리자 검토 시작',
+        at: dispute.updatedAt,
+        variant: dispute.status === 'IN_REVIEW' ? 'active' : 'done',
+      });
+    }
+    if (dispute.status === 'RESOLVED' && dispute.resolvedAt) {
+      entries.push({
+        id: 'resolved',
+        label: '해결 완료',
+        at: dispute.resolvedAt,
+        variant: 'done',
+      });
+    } else {
+      entries.push({
+        id: 'pending',
+        label: '해결 대기',
+        at: '',
+        variant: 'pending',
+      });
+    }
+    return entries;
+  }, [dispute]);
+
+  const thread: ThreadEntry[] = useMemo(() => {
+    if (!dispute) return [];
+    const out: ThreadEntry[] = [
+      {
+        id: 'user-desc',
+        speaker: 'user',
+        speakerLabel: SPEAKER_STYLE.user.label,
+        body: dispute.description,
+        at: dispute.createdAt,
+      },
+    ];
+    if (dispute.status === 'IN_REVIEW') {
+      out.push({
+        id: 'sys-review',
+        speaker: 'system',
+        speakerLabel: SPEAKER_STYLE.system.label,
+        body: '관리자가 분쟁을 검토 중입니다.',
+        at: dispute.updatedAt,
+      });
+    }
+    if (dispute.status === 'RESOLVED') {
+      if (dispute.resolutionNote) {
+        out.push({
+          id: 'admin-note',
+          speaker: 'admin',
+          speakerLabel: SPEAKER_STYLE.admin.label,
+          body: dispute.resolutionNote,
+          at: dispute.resolvedAt ?? dispute.updatedAt,
+        });
+      }
+      if (dispute.resolutionType) {
+        out.push({
+          id: 'sys-resolution',
+          speaker: 'system',
+          speakerLabel: SPEAKER_STYLE.system.label,
+          body: `처리 결과: ${RESOLUTION_TYPE_MAP[dispute.resolutionType] || dispute.resolutionType}`,
+          at: dispute.resolvedAt ?? dispute.updatedAt,
+        });
+      }
+    }
+    return out;
+  }, [dispute]);
 
   return (
     <RequireLogin>
       <main className="max-w-[800px] mx-auto px-6 sm:px-8 py-10 space-y-8">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button
             variant="ghost"
             onClick={() => router.push('/disputes')}
-            className="text-[hsl(var(--gold))] font-heading font-bold"
+            className="text-[hsl(var(--gold))] font-heading font-bold gap-1 px-2"
           >
-            &larr; 목록
+            <ChevronLeft className="size-4" aria-hidden /> 목록
           </Button>
           <PageTitle>분쟁 상세</PageTitle>
         </div>
@@ -120,7 +264,7 @@ export default function DisputeDetailPage() {
                         variant="secondary"
                         className={cn(
                           'font-heading font-bold text-xs rounded-full',
-                          statusInfo.className
+                          statusInfo.className,
                         )}
                       >
                         {statusInfo.label}
@@ -129,56 +273,125 @@ export default function DisputeDetailPage() {
                   })()}
                 </div>
 
-                <div className="grid gap-3 text-sm">
+                <div className="grid gap-2 text-sm tabular-nums">
                   <div>
                     <span className="text-[hsl(var(--text-secondary))]">예약 번호: </span>
                     <span className="font-bold">{dispute.reservationId}</span>
                   </div>
                   <div>
                     <span className="text-[hsl(var(--text-secondary))]">접수일: </span>
-                    <span>{new Date(dispute.createdAt).toLocaleString('ko-KR')}</span>
+                    <span>{formatDateTime(dispute.createdAt)}</span>
                   </div>
-                </div>
-
-                <div className="mt-4 p-4 bg-[hsl(var(--surface))] rounded-xl text-sm">
-                  <div className="text-[hsl(var(--text-secondary))] mb-1">설명</div>
-                  <div className="whitespace-pre-wrap">{dispute.description}</div>
                 </div>
               </div>
             </Card>
 
-            {dispute.status === 'RESOLVED' && (
-              <Card>
-                <div className="space-y-4">
-                  <h3 className="m-0 text-lg font-bold font-heading text-[hsl(var(--gold))]">
-                    해결 결과
-                  </h3>
+            {/* Timeline — left dot column + right card */}
+            <Card>
+              <h3 className="m-0 mb-6 text-lg font-bold font-heading">처리 진행</h3>
+              <ol className="grid grid-cols-[28px_1fr] gap-x-4">
+                {timeline.map((entry, idx) => {
+                  const isLast = idx === timeline.length - 1;
+                  return (
+                    <li key={entry.id} className="contents">
+                      {/* Dot column */}
+                      <div className="flex flex-col items-center">
+                        <span
+                          aria-hidden
+                          className={cn(
+                            'w-3 h-3 rounded-full mt-1.5 shrink-0',
+                            entry.variant === 'done' && 'bg-[hsl(var(--gold))]',
+                            entry.variant === 'active' &&
+                              'bg-[hsl(var(--gold)/0.5)] ring-2 ring-[hsl(var(--gold))]',
+                            entry.variant === 'pending' && 'bg-[hsl(var(--border-subtle))]',
+                          )}
+                        />
+                        {!isLast && (
+                          <span
+                            aria-hidden
+                            className="w-px flex-1 min-h-6 bg-[hsl(var(--border-subtle))] my-1"
+                          />
+                        )}
+                      </div>
 
-                  <div className="grid gap-3 text-sm">
-                    {dispute.resolutionType && (
-                      <div>
-                        <span className="text-[hsl(var(--text-secondary))]">처리 유형: </span>
-                        <span className="font-bold">
-                          {RESOLUTION_TYPE_MAP[dispute.resolutionType] || dispute.resolutionType}
+                      {/* Body column */}
+                      <div className={cn('pb-6', isLast && 'pb-0')}>
+                        <div
+                          className={cn(
+                            'font-bold font-heading text-sm',
+                            entry.variant === 'pending'
+                              ? 'text-[hsl(var(--text-secondary))]'
+                              : 'text-[hsl(var(--text-primary))]',
+                          )}
+                        >
+                          {entry.label}
+                        </div>
+                        {entry.at && (
+                          <div className="text-xs text-[hsl(var(--text-secondary))] mt-1 tabular-nums">
+                            {formatDateTime(entry.at)}
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </Card>
+
+            {/* Thread — 3 speaker colors */}
+            <Card>
+              <h3 className="m-0 mb-6 text-lg font-bold font-heading">대화 기록</h3>
+              <div className="grid gap-4">
+                {thread.map((entry) => {
+                  const style = SPEAKER_STYLE[entry.speaker];
+                  return (
+                    <article
+                      key={entry.id}
+                      className={cn(
+                        'rounded-xl px-4 py-3 border-l-4 grid gap-1',
+                        style.bg,
+                        style.border,
+                      )}
+                    >
+                      <header className="flex items-center justify-between gap-3 flex-wrap">
+                        <span
+                          className={cn(
+                            'font-heading font-bold text-sm',
+                            style.text,
+                          )}
+                        >
+                          {entry.speakerLabel}
                         </span>
-                      </div>
-                    )}
-                    {dispute.resolutionNote && (
-                      <div className="mt-2 p-4 bg-[hsl(var(--surface))] rounded-xl">
-                        <div className="text-[hsl(var(--text-secondary))] mb-1">관리자 메모</div>
-                        <div className="whitespace-pre-wrap">{dispute.resolutionNote}</div>
-                      </div>
-                    )}
-                    {dispute.resolvedAt && (
-                      <div>
-                        <span className="text-[hsl(var(--text-secondary))]">해결일: </span>
-                        <span>{new Date(dispute.resolvedAt).toLocaleString('ko-KR')}</span>
-                      </div>
-                    )}
+                        <time className="text-xs text-[hsl(var(--text-secondary))] tabular-nums">
+                          {formatDateTime(entry.at)}
+                        </time>
+                      </header>
+                      <p className="m-0 whitespace-pre-wrap text-sm text-[hsl(var(--text-primary))]">
+                        {entry.body}
+                      </p>
+                    </article>
+                  );
+                })}
+              </div>
+            </Card>
+
+            {/* Attachments — placeholder section (백엔드 미지원) */}
+            <Card variant="surface">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <FileText
+                    className="size-5 text-[hsl(var(--text-secondary))]"
+                    aria-hidden
+                  />
+                  <div>
+                    <div className="text-sm font-bold font-heading">첨부 파일</div>
+                    <div className="text-xs text-[hsl(var(--text-secondary))]">
+                      현재 분쟁에는 첨부 파일이 없습니다.
+                    </div>
                   </div>
                 </div>
-              </Card>
-            )}
+              </div>
+            </Card>
           </div>
         ) : null}
       </main>
