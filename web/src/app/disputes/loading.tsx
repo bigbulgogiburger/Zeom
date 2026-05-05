@@ -1,16 +1,11 @@
+import { SkeletonCard } from '../../components/ui';
+
 export default function DisputesLoading() {
   return (
-    <main style={{ maxWidth: 1000, margin: '0 auto', padding: '40px 24px', display: 'grid', gap: 16 }}>
-      <div style={{ height: 32, width: 120, background: '#1e293b', borderRadius: 8 }} />
+    <main className="max-w-[1000px] mx-auto px-6 sm:px-8 py-10 grid gap-4">
+      <div className="skeleton h-8 w-32 rounded-md" />
       {[1, 2].map((i) => (
-        <div key={i} style={{ border: '1px solid #334155', background: '#0b1220', borderRadius: 16, padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ height: 18, width: 120, background: '#1e293b', borderRadius: 4 }} />
-            <div style={{ height: 22, width: 50, background: '#1e293b', borderRadius: 999 }} />
-          </div>
-          <div style={{ height: 14, width: '70%', background: '#1e293b', borderRadius: 4, marginBottom: 8 }} />
-          <div style={{ height: 14, width: '30%', background: '#1e293b', borderRadius: 4 }} />
-        </div>
+        <SkeletonCard key={i} lines={3} />
       ))}
     </main>
   );

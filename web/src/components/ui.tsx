@@ -53,9 +53,9 @@ const STATUS_CONFIG: Record<string, { label: string; type: 'success' | 'warning'
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  success: 'bg-[hsl(var(--success))] text-[hsl(35,20%,88%)] hover:bg-[hsl(var(--success))]',
-  warning: 'bg-[hsl(var(--warning))] text-[hsl(24,15%,5%)] hover:bg-[hsl(var(--warning))]',
-  destructive: 'bg-[hsl(var(--dancheong))] text-[hsl(35,20%,88%)] hover:bg-[hsl(var(--dancheong))]',
+  success: 'bg-[hsl(var(--success))] text-[hsl(var(--text-primary))] hover:bg-[hsl(var(--success))]',
+  warning: 'bg-[hsl(var(--warning))] text-[hsl(var(--background))] hover:bg-[hsl(var(--warning))]',
+  destructive: 'bg-[hsl(var(--dancheong))] text-[hsl(var(--text-primary))] hover:bg-[hsl(var(--dancheong))]',
 };
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
@@ -451,6 +451,63 @@ export function SkeletonCard({ lines = 3 }: { lines?: number }) {
         ))}
       </CardContent>
     </ShadcnCard>
+  );
+}
+
+/* ===== ProgressSteps ===== */
+
+export function ProgressSteps({
+  steps,
+  current,
+  className,
+}: {
+  steps: string[];
+  current: number;
+  className?: string;
+}) {
+  return (
+    <ol
+      className={cn('flex items-center gap-2 sm:gap-3 mb-6 flex-wrap', className)}
+      aria-label="단계 진행"
+    >
+      {steps.map((label, i) => {
+        const idx = i + 1;
+        const active = idx === current;
+        const done = idx < current;
+        return (
+          <li key={i} className="flex items-center gap-2 sm:gap-3">
+            <span
+              aria-current={active ? 'step' : undefined}
+              className={cn(
+                'w-8 h-8 rounded-full flex items-center justify-center font-heading font-bold text-sm border tabular-nums shrink-0 transition-colors',
+                done && 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] border-[hsl(var(--gold))]',
+                active && 'bg-[hsl(var(--gold)/0.15)] text-[hsl(var(--gold))] border-[hsl(var(--gold))]',
+                !done && !active &&
+                  'bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))] border-[hsl(var(--border-subtle))]',
+              )}
+            >
+              {done ? <Check className="size-4" aria-hidden /> : idx}
+            </span>
+            <span
+              className={cn(
+                'text-sm font-medium hidden sm:inline',
+                active
+                  ? 'text-[hsl(var(--text-primary))]'
+                  : 'text-[hsl(var(--text-secondary))]',
+              )}
+            >
+              {label}
+            </span>
+            {i < steps.length - 1 && (
+              <span
+                className="w-6 sm:w-8 h-px bg-[hsl(var(--border-subtle))]"
+                aria-hidden
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

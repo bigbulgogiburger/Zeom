@@ -62,7 +62,7 @@ cd web && npm run dev
 cd web && npm test                                # Jest (14 spec, ~129 tests)
 cd web && npm run test:e2e                        # Playwright (13 spec, backend 자동 시작)
 cd web && npx tsc --noEmit                        # 타입 체크 (lint 대용)
-cd web && npm run build                           # 프로덕션 빌드 (75 routes)
+cd web && npm run build                           # 프로덕션 빌드 (~76 routes, /dashboard 사용자/admin 분리)
 
 # Flutter — 디바이스/시뮬레이터에 직접 실행 (build만 X)
 cd app_flutter && flutter run
@@ -79,9 +79,10 @@ cd app_flutter && flutter test
 - **Admin 가드**: 모든 `/api/v1/admin/**` 컨트롤러는 첫 줄에 `authService.requireAdmin(authHeader)`. → `security-checklist.md`
 - **Korean text**: `word-break: keep-all`, Pretendard, 헤딩에 `text-wrap: balance`
 - **Immersive layout 분리**: `consultation/[sessionId]` 진입 시 AppHeader/BottomTabBar는 `usePathname` 가드로 self-hide. `/review`는 chrome 유지(가드에서 segment 비교). root layout 흔들지 않는 게 핵심 — 이유: 다른 라우트 회귀 차단. → `frontend-pages.md`
-- **38 화면 + chrome 토큰 baseline**: Core 9(ZEOM-4) + Auth 7(ZEOM-23 login/signup/forgot/reset/verify/onboarding/auth-callback) + Group C 6(ZEOM-24 faq/terms/privacy/blog×3) + Group D 16(ZEOM-25 mypage×4/wallet+credits×4/fortune+saju/favorites+recommend+referral+share/notifications×2) + chrome(ZEOM-22 AppHeader/BottomTabBar/Logo) — hex/entity/emoji 0건. 신규도 토큰만 — `grep -rEn '#[0-9A-Fa-f]{3,6}\b|&#[0-9]+;' web/src/app web/src/components` 0 보장. **명시 예외**: `--brand-kakao`/`--brand-kakao-fg`/`--brand-naver` 토큰은 공식 브랜드 컴플라이언스로 hex 정의 유지 (ZEOM-25). 동적 inline-style은 score/bar width 등 런타임 값에만 허용. → `docs/ZEOM-21-visual-report.md`, `docs/ZEOM-22-dev-guide.md`, `docs/ZEOM-23-dev-guide.md`, `docs/ZEOM-24-dev-guide.md`, `docs/ZEOM-25-dev-guide.md`
-- **공통 레이아웃 컴포넌트**: 인증·중앙 카드는 `<AuthCard>` (ZEOM-23, max-w 420 + Logo 자동), 정책/블로그 본문은 `.prose` + `<AnchorNav>` 좌측 240px sticky(ZEOM-24, IntersectionObserver+mobile select), 마이페이지·계정 좌측 nav는 `<SidebarNav>` (ZEOM-25, usePathname 기반 + danger 토큰). 도메인 토큰: 오행 5(`--ohaeng-wood/fire/earth/metal/water`, ZEOM-25). → `design-system.md`
-- **E2E web 테스트**: Playwright(`npm run test:e2e`)는 spec 파일 작성·CI용. 시각 회귀는 별도 QA 회차에서 openchrome MCP로 4 viewport(360/768/1024/1440) × 38 화면 + chrome. 로컬 검증 시 docker 사용 금지 — `npm run dev` 기반
+- **50 화면 + chrome 토큰 baseline**: ZEOM-4(Core 9) + ZEOM-22(chrome 3) + ZEOM-23(Auth 7) + ZEOM-24(Group C 6: faq/terms/privacy/blog×3) + ZEOM-25(Group D 16: mypage×4/wallet+credits×4/fortune+saju/favorites+recommend+referral+share/notifications×2) + ZEOM-26(Group E 4: disputes×2/refunds×2) + ZEOM-27(Group F 7: consultation/[sid]/{preflight,complete,summary}+consultation/chat+consultations+sessions+sessions/[id]/chat) + ZEOM-28(Group G 1: /dashboard 사용자) — hex/entity/emoji 0건. 신규도 토큰만 — `grep -rEn '#[0-9A-Fa-f]{3,6}\b|&#[0-9]+;' web/src/app web/src/components` 0 보장. **명시 예외**: `--brand-kakao`/`--brand-kakao-fg`/`--brand-naver` 토큰은 공식 브랜드 컴플라이언스로 hex 정의 유지 (ZEOM-25). 동적 inline-style은 score/bar width 등 런타임 값에만 허용. → `docs/ZEOM-21-visual-report.md`, `docs/ZEOM-22~28-dev-guide.md`
+- **공통 레이아웃 컴포넌트**: `<AuthCard>` (ZEOM-23, max-w 420 + Logo 자동) / `.prose`+`<AnchorNav>` 좌측 240px sticky (ZEOM-24, IntersectionObserver+mobile select) / `<SidebarNav>` (ZEOM-25, usePathname + danger 토큰) / `<ProgressSteps>` (ZEOM-26, 다단계 폼 — refunds/new 3단계 등) / `DancheongMandala` SVG inline (ZEOM-27 consultation/complete, 80px gold 단청 동심원 — emoji 대체). 도메인 토큰: 오행 5(`--ohaeng-wood/fire/earth/metal/water`, ZEOM-25). → `design-system.md`
+- **Dashboard 분리**: `/dashboard`는 사용자 대시보드(`RequireLogin`, ZEOM-28 §4.7) / `/admin/dashboard`는 admin 운영 모니터링(`RequireAdmin`). admin login redirect → `/admin/dashboard`. 이유: app-header 일반 nav가 `/dashboard`를 가리키므로 admin 전용 페이지를 두면 일반 사용자 차단 회귀 → `frontend-pages.md`
+- **E2E web 테스트**: Playwright(`npm run test:e2e`)는 spec 파일 작성·CI용. 시각 회귀는 별도 QA 회차에서 openchrome MCP로 4 viewport(360/768/1024/1440) × 50 화면 + chrome. 로컬 검증 시 docker 사용 금지 — `npm run dev` 기반
 
 ## Path Aliases
 
@@ -117,6 +118,7 @@ docs/         Architecture, OpenAPI spec, PRD, design plans
 | ZEOM-22 / 23 chrome+auth | Logo, AuthCard, PasswordStrengthMeter 패턴 | `docs/ZEOM-22-dev-guide.md`, `docs/ZEOM-23-dev-guide.md` |
 | ZEOM-24 정책/콘텐츠 | shadcn Accordion, AnchorNav, .prose, .stagger-grid | `docs/ZEOM-24-dev-guide.md` |
 | ZEOM-25 사용자 보조 | SidebarNav, 60px serif tabular gold, 오행/브랜드 토큰 | `docs/ZEOM-25-dev-guide.md` |
+| ZEOM-6 / 26-28 분쟁·세션·dashboard | ProgressSteps 다단계, 단청 SVG, dashboard 분리, sessions/chat 분리 결정 | `docs/ZEOM-6-phase4-efg-dev-guide.md` |
 
 ## Skills
 
@@ -181,5 +183,6 @@ docs/         Architecture, OpenAPI spec, PRD, design plans
 2026-04-28: Harness Engineering Integration 섹션 추가(에이전트 디스패치·아티팩트 경로). hook 명령 절대경로화(`$CLAUDE_PROJECT_DIR`)
 2026-05-03: ZEOM-22(chrome 정렬+Logo)/ZEOM-23(인증 7페이지+AuthCard+PasswordStrengthMeter) 누락 분 통합 반영. baseline 9→16 화면+chrome
 2026-05-05: ZEOM-24(정책/콘텐츠 6페이지: shadcn Accordion/AnchorNav/.prose/.stagger-grid) + ZEOM-25(사용자 보조 16페이지: SidebarNav/60px serif tabular gold 잔액/오행 5 토큰/브랜드 3 토큰) main 머지(68fcf41). baseline 16→38 화면+chrome. 공통 레이아웃 컴포넌트 Key Rule 추가. Reference table에 ZEOM-22~25 dev-guide 통합 행. 카카오/네이버 브랜드 hex는 토큰화(`--brand-kakao/-fg/--brand-naver`)로 audit 0건 + 컴플라이언스 양립
+2026-05-06: ZEOM-6 Phase 4(E+F+G 12 페이지) 통합 마이그레이션 — ZEOM-26(disputes/[id] 타임라인+thread, refunds/new ProgressSteps 3단계) + ZEOM-27(preflight emoji→lucide, complete 단청 SVG+60s 카운트다운, summary print stylesheet, consultations status filter Seg) + ZEOM-28(/dashboard 사용자판 신규 + /admin/dashboard 분리). baseline 38→50 화면+chrome. 공통 컴포넌트에 ProgressSteps/DancheongMandala 추가. Key Rule에 Dashboard 분리 추가. 추가 6 deep-dive 버그 수정(stream leak / reason 길이 검증 / me.name 가드 / Array.isArray 가드 / timeline 흐름 / print stylesheet)
 -->
 

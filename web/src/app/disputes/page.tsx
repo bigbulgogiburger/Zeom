@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Scale } from 'lucide-react';
+import { Scale, ChevronRight } from 'lucide-react';
 import { apiFetch } from '../../components/api-client';
 import { RequireLogin } from '../../components/route-guard';
 import { Card, EmptyState, InlineError, PageTitle } from '../../components/ui';
@@ -111,13 +111,19 @@ export default function DisputesPage() {
                 className: '',
               };
               return (
-                <Card
-                  key={d.id}
-                  className="cursor-pointer"
-                >
+                <Card key={d.id} className="cursor-pointer">
                   <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => router.push(`/disputes/${d.id}`)}
-                    className="flex justify-between items-start gap-4 flex-wrap"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push(`/disputes/${d.id}`);
+                      }
+                    }}
+                    aria-label={`${CATEGORY_MAP[d.category] || d.category} 분쟁 상세 보기`}
+                    className="flex justify-between items-start gap-4 flex-wrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--gold)/0.6)] rounded-md"
                   >
                     <div className="flex-1 min-w-[200px]">
                       <div className="flex gap-2 items-center mb-2 flex-wrap">
@@ -128,7 +134,7 @@ export default function DisputesPage() {
                           variant="secondary"
                           className={cn(
                             'font-heading font-bold text-xs rounded-full',
-                            statusInfo.className
+                            statusInfo.className,
                           )}
                         >
                           {statusInfo.label}
@@ -137,18 +143,17 @@ export default function DisputesPage() {
 
                       <div className="grid gap-1 text-sm text-[hsl(var(--text-secondary))]">
                         <div className="line-clamp-2">{d.description}</div>
-                        <div className="mt-2">
+                        <div className="mt-2 tabular-nums">
                           <span>접수일: </span>
-                          <span>
-                            {new Date(d.createdAt).toLocaleString('ko-KR')}
-                          </span>
+                          <span>{new Date(d.createdAt).toLocaleString('ko-KR')}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-[hsl(var(--text-secondary))] text-sm shrink-0">
-                      &rsaquo;
-                    </div>
+                    <ChevronRight
+                      className="size-5 text-[hsl(var(--text-secondary))] shrink-0 mt-1"
+                      aria-hidden
+                    />
                   </div>
                 </Card>
               );
