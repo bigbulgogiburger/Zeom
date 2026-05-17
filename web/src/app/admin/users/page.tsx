@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/components/api-client';
-import { RequireAdmin } from '@/components/route-guard';
 import {
   Card,
   PageTitle,
@@ -141,18 +140,15 @@ export default function AdminUsersPage() {
 
   if (loading && users.length === 0) {
     return (
-      <RequireAdmin>
-        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+      <div className="space-y-6">
           <PageTitle>사용자 관리</PageTitle>
           <SkeletonCard lines={6} />
-        </main>
-      </RequireAdmin>
+        </div>
     );
   }
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <PageTitle>사용자 관리</PageTitle>
 
         <InlineError message={error} />
@@ -232,7 +228,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => { setSuspendTarget(u); setSuspendReason(''); }}
                           disabled={processing}
-                          className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:bg-[hsl(var(--dancheong))/0.75] transition-colors"
+                          className="rounded-full bg-[hsl(var(--dancheong))] text-[hsl(var(--destructive-foreground))] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:bg-[hsl(var(--dancheong))/0.75] transition-colors"
                         >
                           정지
                         </button>
@@ -281,7 +277,7 @@ export default function AdminUsersPage() {
                 <button
                   onClick={handleSuspend}
                   disabled={processing || !suspendReason.trim()}
-                  className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
+                  className="rounded-full bg-[hsl(var(--dancheong))] text-[hsl(var(--destructive-foreground))] text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
                 >
                   {processing ? '처리 중...' : '정지'}
                 </button>
@@ -289,7 +285,6 @@ export default function AdminUsersPage() {
             </div>
           </div>
         )}
-      </main>
-    </RequireAdmin>
+      </div>
   );
 }

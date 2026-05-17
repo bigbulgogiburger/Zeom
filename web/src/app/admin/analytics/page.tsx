@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { RequireAdmin } from '@/components/route-guard';
 import { apiFetch } from '@/components/api-client';
 import {
   Card,
@@ -97,7 +96,7 @@ function RevenueChart({ data }: { data: RevenueDataPoint[] }) {
           const y = chartHeight - chartHeight * ratio + 20;
           return (
             <g key={ratio}>
-              <line x1="50" y1={y} x2="100%" y2={y} stroke="#3d3529" strokeDasharray="4" />
+              <line x1="50" y1={y} x2="100%" y2={y} stroke="hsl(var(--border))" strokeDasharray="4" />
               <text x="46" y={y + 4} textAnchor="end" fill="hsl(var(--text-secondary))" fontSize="10">
                 {formatCurrency(Math.round(maxRevenue * ratio))}
               </text>
@@ -217,8 +216,7 @@ export default function AdminAnalyticsPage() {
 
   if (loading) {
     return (
-      <RequireAdmin>
-        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+      <div className="space-y-6">
           <PageTitle>비즈니스 분석</PageTitle>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <SkeletonCard lines={2} />
@@ -228,14 +226,12 @@ export default function AdminAnalyticsPage() {
             <SkeletonCard lines={2} />
           </div>
           <SkeletonCard lines={8} />
-        </main>
-      </RequireAdmin>
+        </div>
     );
   }
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <PageTitle>비즈니스 분석</PageTitle>
           <div className="flex items-center gap-2">
@@ -243,10 +239,10 @@ export default function AdminAnalyticsPage() {
               <button
                 key={p}
                 onClick={() => handlePeriodChange(p)}
-                className={`px-4 py-1.5 rounded-full text-sm font-bold font-heading transition-colors ${
+                className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${
                   period === p
                     ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))]'
-                    : 'bg-[#3d3529] text-[hsl(var(--text-secondary))] hover:bg-[#4a4235]'
+                    : 'bg-[hsl(var(--surface-2))] text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--surface-2))]/80'
                 }`}
               >
                 {PERIOD_LABELS[p]}
@@ -322,7 +318,6 @@ export default function AdminAnalyticsPage() {
             </Card>
           )}
         </div>
-      </main>
-    </RequireAdmin>
+      </div>
   );
 }

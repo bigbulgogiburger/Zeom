@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import { apiFetch } from '../../../components/api-client';
-import { RequireAdmin } from '../../../components/route-guard';
 import { ActionButton, Card, EmptyState, InlineError, InlineSuccess, PageTitle, StatusBadge } from '../../../components/ui';
 
 type Audit = { id: number; userId: number; action: string; targetType: string; targetId: number; createdAt: string };
@@ -76,8 +75,7 @@ export default function AdminAuditPage() {
   const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <PageTitle>감사로그</PageTitle>
 
         <Card>
@@ -160,7 +158,6 @@ export default function AdminAuditPage() {
             다음
           </ActionButton>
         </div>
-      </main>
-    </RequireAdmin>
+    </div>
   );
 }

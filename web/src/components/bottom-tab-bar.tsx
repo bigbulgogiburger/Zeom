@@ -20,8 +20,10 @@ export default function BottomTabBar() {
 
   // ZEOM-20: immersive route detection — hide chrome on /consultation/[sessionId] and nested
   // routes (e.g. /waiting), EXCEPT /review which keeps full chrome.
+  // ZEOM-8: /admin/* 진입 시 mobile tab bar 도 self-hide.
   const segs = (pathname ?? '').split('/');
   const isImmersive = segs[1] === 'consultation' && !!segs[2] && segs[3] !== 'review';
+  const isAdminRoute = segs[1] === 'admin';
 
   // Trigger bounce animation when active tab changes
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function BottomTabBar() {
     }
   }, [pathname]);
 
-  if (isImmersive) return null;
+  if (isImmersive || isAdminRoute) return null;
 
   return (
     <nav

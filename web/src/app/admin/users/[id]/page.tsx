@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { apiFetch } from '@/components/api-client';
-import { RequireAdmin } from '@/components/route-guard';
 import {
   Card,
   PageTitle,
@@ -133,12 +133,10 @@ export default function AdminUserDetailPage() {
 
   if (loading) {
     return (
-      <RequireAdmin>
-        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+      <div className="space-y-6">
           <PageTitle>사용자 상세</PageTitle>
           <SkeletonCard lines={6} />
-        </main>
-      </RequireAdmin>
+        </div>
     );
   }
 
@@ -147,14 +145,14 @@ export default function AdminUserDetailPage() {
   }
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push('/admin/users')}
-            className="text-[hsl(var(--gold))] font-heading font-bold text-sm hover:underline"
+            className="inline-flex items-center gap-1 text-[hsl(var(--gold))] text-sm font-semibold hover:underline"
           >
-            &larr; 목록으로
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            목록으로
           </button>
           <PageTitle>사용자 상세</PageTitle>
         </div>
@@ -180,7 +178,7 @@ export default function AdminUserDetailPage() {
                   </div>
                   {user.status === 'SUSPENDED' && (
                     <div className="mt-3 p-3 bg-[hsl(var(--dancheong)/0.1)] border border-[hsl(var(--dancheong)/0.3)] rounded-xl">
-                      <p className="text-[#ff6b6b] text-sm font-bold">정지됨</p>
+                      <p className="text-[hsl(var(--destructive))] text-sm font-bold">정지됨</p>
                       {user.suspendedReason && (
                         <p className="text-[hsl(var(--text-secondary))] text-sm mt-1">사유: {user.suspendedReason}</p>
                       )}
@@ -200,7 +198,7 @@ export default function AdminUserDetailPage() {
                   ) : (
                     <button
                       onClick={() => setShowSuspendForm(!showSuspendForm)}
-                      className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-6 py-2.5 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors"
+                      className="rounded-full bg-[hsl(var(--dancheong))] text-[hsl(var(--destructive-foreground))] text-sm font-bold font-heading px-6 py-2.5 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors"
                     >
                       계정 정지
                     </button>
@@ -226,7 +224,7 @@ export default function AdminUserDetailPage() {
                     <button
                       onClick={handleSuspend}
                       disabled={processing || !suspendReason.trim()}
-                      className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
+                      className="rounded-full bg-[hsl(var(--dancheong))] text-[hsl(var(--destructive-foreground))] text-sm font-bold font-heading px-5 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
                     >
                       {processing ? '처리 중...' : '정지 확인'}
                     </button>
@@ -279,7 +277,6 @@ export default function AdminUserDetailPage() {
             </div>
           </>
         )}
-      </main>
-    </RequireAdmin>
+      </div>
   );
 }

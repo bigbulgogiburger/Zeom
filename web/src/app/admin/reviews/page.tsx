@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { Star } from 'lucide-react';
 import { apiFetch } from '@/components/api-client';
-import { RequireAdmin } from '@/components/route-guard';
 import {
   Card,
   PageTitle,
@@ -31,11 +31,21 @@ type ReviewItem = {
 const PAGE_SIZE = 20;
 
 function renderStars(rating: number) {
-  return Array.from({ length: 5 }, (_, i) => (
-    <span key={i} className={i < rating ? 'text-[hsl(var(--gold))]' : 'text-[#3a3530]'}>
-      &#9733;
+  return (
+    <span className="inline-flex items-center" aria-label={`별점 ${rating}/5`}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <Star
+          key={i}
+          className={
+            i < rating
+              ? 'size-4 text-[hsl(var(--gold))] fill-[hsl(var(--gold))]'
+              : 'size-4 text-[hsl(var(--text-secondary))]/40'
+          }
+          aria-hidden="true"
+        />
+      ))}
     </span>
-  ));
+  );
 }
 
 export default function AdminReviewsPage() {
@@ -110,18 +120,15 @@ export default function AdminReviewsPage() {
 
   if (loading && reviews.length === 0) {
     return (
-      <RequireAdmin>
-        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+      <div className="space-y-6">
           <PageTitle>리뷰 모더레이션</PageTitle>
           <SkeletonCard lines={6} />
-        </main>
-      </RequireAdmin>
+        </div>
     );
   }
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <PageTitle>리뷰 모더레이션</PageTitle>
 
         <InlineError message={error} />
@@ -157,7 +164,7 @@ export default function AdminReviewsPage() {
                     <div className="flex items-center gap-3">
                       <span className="font-heading font-bold text-[hsl(var(--gold))]">#{r.id}</span>
                       <StatusBadge value={r.moderationStatus} />
-                      <Badge className="bg-[hsl(var(--dancheong))] text-white rounded-full px-2 py-0.5 text-xs font-bold">
+                      <Badge className="bg-[hsl(var(--dancheong))] text-[hsl(var(--destructive-foreground))] rounded-full px-2 py-0.5 text-xs font-bold">
                         신고 {r.reportedCount}건
                       </Badge>
                     </div>
@@ -195,7 +202,7 @@ export default function AdminReviewsPage() {
                       <button
                         onClick={() => handleModerate(r.id, 'DELETE')}
                         disabled={processing}
-                        className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-4 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
+                        className="rounded-full bg-[hsl(var(--dancheong))] text-[hsl(var(--destructive-foreground))] text-sm font-bold font-heading px-4 py-2 hover:bg-[hsl(var(--dancheong))/0.75] transition-colors disabled:opacity-50"
                       >
                         삭제
                       </button>
@@ -208,7 +215,6 @@ export default function AdminReviewsPage() {
         )}
 
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-      </main>
-    </RequireAdmin>
+      </div>
   );
 }
