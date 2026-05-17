@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { apiFetch } from '@/components/api-client';
-import { Card, PageTitle, InlineError, StatCard, ActionButton, FormField } from '@/components/ui';
+import { DenseCard, PageTitle, InlineError, StatCard, ActionButton, FormField } from '@/components/ui';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Stars } from '@/components/design/stars';
 
 type Profile = {
   id: number;
@@ -18,12 +19,6 @@ type Profile = {
 };
 
 const INTRO_MAX_LENGTH = 400;
-
-function renderStars(rating: number) {
-  const full = Math.floor(rating);
-  const empty = 5 - full;
-  return '★'.repeat(full) + '☆'.repeat(empty);
-}
 
 export default function CounselorProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -105,7 +100,7 @@ export default function CounselorProfilePage() {
     return (
       <div className="flex flex-col gap-6">
         <PageTitle>프로필 설정</PageTitle>
-        <Card>
+        <DenseCard>
           <div className="space-y-4">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="animate-pulse">
@@ -114,7 +109,7 @@ export default function CounselorProfilePage() {
               </div>
             ))}
           </div>
-        </Card>
+        </DenseCard>
       </div>
     );
   }
@@ -127,11 +122,13 @@ export default function CounselorProfilePage() {
       {profile && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard
+            dense
             title="평균 평점"
-            value={profile.ratingAvg > 0 ? `${profile.ratingAvg.toFixed(1)} ${renderStars(Math.round(profile.ratingAvg))}` : '-'}
+            value={profile.ratingAvg > 0 ? <Stars value={profile.ratingAvg} size={14} /> : '-'}
           />
-          <StatCard title="리뷰 수" value={`${profile.reviewCount}건`} />
+          <StatCard dense title="리뷰 수" value={`${profile.reviewCount}건`} />
           <StatCard
+            dense
             title="상태"
             value={profile.isActive ? '활성' : '비활성'}
             hint={profile.isActive ? '현재 상담 가능' : '현재 상담 불가'}
@@ -140,7 +137,7 @@ export default function CounselorProfilePage() {
       )}
 
       {/* Edit form */}
-      <Card>
+      <DenseCard>
         <h3 className="font-heading font-bold text-lg text-[hsl(var(--gold))] mb-4">
           기본 정보
         </h3>
@@ -185,7 +182,7 @@ export default function CounselorProfilePage() {
 
         <InlineError message={error} />
         {success && (
-          <div role="status" className="text-green-500 text-sm font-medium mb-3">
+          <div role="status" className="text-[hsl(var(--success))] text-sm font-medium mb-3">
             {success}
           </div>
         )}
@@ -195,7 +192,7 @@ export default function CounselorProfilePage() {
             프로필 저장
           </ActionButton>
         </div>
-      </Card>
+      </DenseCard>
     </div>
   );
 }

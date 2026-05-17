@@ -30,7 +30,7 @@ export function Stars({ value, size = 16, showValue = true, className }: StarsPr
         ))}
       </span>
       {showValue && (
-        <span className="tabular text-sm text-text-secondary">{clamped.toFixed(1)}</span>
+        <span className="tabular-nums text-sm text-text-secondary">{clamped.toFixed(1)}</span>
       )}
     </span>
   );

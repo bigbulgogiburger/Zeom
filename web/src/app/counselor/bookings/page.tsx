@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { getCounselorBookings } from '@/components/api-client';
-import { Card, PageTitle, InlineError, EmptyState, StatusBadge, StatCard } from '@/components/ui';
+import { DenseCard, PageTitle, InlineError, EmptyState, StatusBadge, StatCard } from '@/components/ui';
 import { Pagination } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,6 +66,7 @@ export default function CounselorBookingsPage() {
 
   const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [viewMode, setViewMode] = useState<'month' | 'week'>('week');
   const [page, setPage] = useState(1);
 
   const loadBookings = useCallback(async () => {
@@ -113,8 +114,25 @@ export default function CounselorBookingsPage() {
       <PageTitle>예약 내역</PageTitle>
 
       {/* Filter bar */}
-      <Card>
+      <DenseCard>
         <div className="flex items-center gap-3 flex-wrap">
+          <div className="inline-flex rounded-md border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-3))] p-1">
+            {(['week', 'month'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setViewMode(mode)}
+                aria-pressed={viewMode === mode}
+                className={`h-8 rounded px-3 text-sm font-heading font-bold transition-colors ${
+                  viewMode === mode
+                    ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))]'
+                    : 'text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--text-primary))]'
+                }`}
+              >
+                {mode === 'week' ? '주간' : '월간'}
+              </button>
+            ))}
+          </div>
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium font-heading text-[hsl(var(--text-primary))] whitespace-nowrap">
               날짜
@@ -154,20 +172,20 @@ export default function CounselorBookingsPage() {
             </Button>
           )}
         </div>
-      </Card>
+      </DenseCard>
 
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatCard title="전체 예약" value={`${totalElements}건`} />
-        <StatCard title="확정됨" value={`${confirmedCount}건`} hint="BOOKED + PAID" />
-        <StatCard title="완료" value={`${completedCount}건`} />
+        <StatCard dense title="전체 예약" value={`${totalElements}건`} />
+        <StatCard dense title="확정됨" value={`${confirmedCount}건`} hint="BOOKED + PAID" />
+        <StatCard dense title="완료" value={`${completedCount}건`} />
       </div>
 
       <InlineError message={error} />
 
       {/* Bookings table */}
       {loading ? (
-        <Card>
+        <DenseCard>
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="animate-pulse flex items-center gap-4">
@@ -179,16 +197,17 @@ export default function CounselorBookingsPage() {
               </div>
             ))}
           </div>
-        </Card>
+        </DenseCard>
       ) : bookings.length === 0 ? (
         <EmptyState
           title="예약 내역이 없습니다"
           desc="조건에 맞는 예약이 없거나, 아직 예약이 등록되지 않았습니다."
         />
       ) : (
-        <Card className="overflow-hidden">
+        <DenseCard className="overflow-hidden">
+          <div className="overflow-x-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-[hsl(var(--surface))]">
               <TableRow className="border-[hsl(var(--gold)/0.15)]">
                 <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">고객명</TableHead>
                 <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">예약시간</TableHead>
@@ -199,23 +218,24 @@ export default function CounselorBookingsPage() {
             </TableHeader>
             <TableBody>
               {bookings.map(booking => (
-                <TableRow key={booking.id} className="border-[hsl(var(--gold)/0.15)]">
+                <TableRow key={booking.id} className="h-10 border-[hsl(var(--gold)/0.15)] odd:bg-[hsl(var(--surface-3))/0.35]">
                   <TableCell className="font-bold font-heading">{booking.customerName}</TableCell>
-                  <TableCell className="text-sm text-[hsl(var(--text-secondary))]">
+                  <TableCell className="text-sm text-[hsl(var(--text-secondary))] tabular-nums">
                     {formatDateTime(booking.startTime)}
                   </TableCell>
                   <TableCell>
                     <StatusBadge value={booking.status} />
                   </TableCell>
-                  <TableCell className="font-heading">{booking.creditsUsed ?? '-'}</TableCell>
-                  <TableCell className="text-sm text-[hsl(var(--text-secondary))]">
+                  <TableCell className="font-heading tabular-nums">{booking.creditsUsed ?? '-'}</TableCell>
+                  <TableCell className="text-sm text-[hsl(var(--text-secondary))] tabular-nums">
                     {formatDate(booking.createdAt)}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </Card>
+          </div>
+        </DenseCard>
       )}
 
       {/* Pagination */}

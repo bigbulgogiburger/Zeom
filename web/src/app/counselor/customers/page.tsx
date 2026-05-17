@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { getCounselorCustomers, getCounselorDashboard } from '@/components/api-client';
-import { Card, PageTitle, InlineError, EmptyState, StatCard, SkeletonCard } from '@/components/ui';
+import { DenseCard, PageTitle, InlineError, EmptyState, StatCard, SkeletonCard } from '@/components/ui';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -35,6 +36,7 @@ export default function CounselorCustomersPage() {
   const [monthSessions, setMonthSessions] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -84,19 +86,33 @@ export default function CounselorCustomersPage() {
       {error && <InlineError message={error} />}
 
       <div className="grid grid-cols-2 gap-6">
-        <StatCard title="전체 고객" value={customers.length} />
+        <StatCard dense title="전체 고객" value={customers.length} />
         <StatCard
+          dense
           title="완료 상담"
           value={monthSessions !== null ? `${monthSessions}건` : '-'}
         />
       </div>
 
+      <DenseCard>
+        <label className="mb-2 block text-sm font-heading font-bold text-[hsl(var(--text-primary))]">
+          고객 검색
+        </label>
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="이름 또는 이메일"
+          className="max-w-[360px] rounded-md border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface-3))] text-[hsl(var(--text-primary))]"
+        />
+      </DenseCard>
+
       {customers.length === 0 && !error ? (
         <EmptyState title="고객이 없습니다" desc="아직 상담 이력이 있는 고객이 없습니다." />
       ) : customers.length > 0 ? (
-        <Card>
+        <DenseCard>
+          <div className="overflow-x-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-[hsl(var(--surface))]">
               <TableRow className="border-[hsl(var(--gold)/0.15)]">
                 <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">고객명</TableHead>
                 <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">이메일</TableHead>
@@ -105,17 +121,20 @@ export default function CounselorCustomersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {customers.map((c) => (
-                <TableRow key={c.userId} className="border-[hsl(var(--gold)/0.1)]">
+              {customers
+                .filter((c) => `${c.name} ${c.email}`.toLowerCase().includes(query.trim().toLowerCase()))
+                .map((c) => (
+                <TableRow key={c.userId} className="h-10 border-[hsl(var(--gold)/0.1)] odd:bg-[hsl(var(--surface-3))/0.35]">
                   <TableCell className="font-medium">{c.name}</TableCell>
                   <TableCell className="text-[hsl(var(--text-secondary))]">{c.email}</TableCell>
-                  <TableCell className="text-right font-bold">{c.totalSessions}회</TableCell>
-                  <TableCell className="text-[hsl(var(--text-secondary))]">{formatDate(c.lastSessionAt)}</TableCell>
+                  <TableCell className="text-right font-bold tabular-nums">{c.totalSessions}회</TableCell>
+                  <TableCell className="text-[hsl(var(--text-secondary))] tabular-nums">{formatDate(c.lastSessionAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </Card>
+          </div>
+        </DenseCard>
       ) : null}
     </div>
   );

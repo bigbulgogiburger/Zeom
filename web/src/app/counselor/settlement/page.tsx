@@ -10,7 +10,7 @@ import {
   updateCounselorBankAccount,
 } from '@/components/api-client';
 import {
-  Card,
+  DenseCard,
   PageTitle,
   InlineError,
   InlineSuccess,
@@ -250,7 +250,7 @@ export default function CounselorSettlementPage() {
       <PageTitle>정산</PageTitle>
 
       {/* Bank Account Section */}
-      <Card>
+      <DenseCard>
         <h3 className="text-lg font-heading font-bold text-[hsl(var(--gold))] mb-4">
           정산 계좌
         </h3>
@@ -294,7 +294,7 @@ export default function CounselorSettlementPage() {
                   value={bankCode}
                   onChange={(e) => setBankCode(e.target.value)}
                   required
-                  className="w-full border-2 border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] rounded-xl px-4 py-3 text-sm text-[hsl(var(--text-primary))] font-heading"
+                  className="w-full rounded-md border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface-3))] px-3 py-2 text-sm text-[hsl(var(--text-primary))] font-heading"
                 >
                   {BANK_CODES.map((bank) => (
                     <option key={bank.code} value={bank.code}>
@@ -311,7 +311,7 @@ export default function CounselorSettlementPage() {
                   onChange={(e) => setAccountNumber(e.target.value.replace(/[^0-9-]/g, ''))}
                   required
                   placeholder="숫자만 입력"
-                  className="w-full border-2 border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] rounded-xl px-4 py-3 text-sm text-[hsl(var(--text-primary))] font-heading"
+                  className="w-full rounded-md border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface-3))] px-3 py-2 text-sm text-[hsl(var(--text-primary))] font-heading"
                 />
               </div>
               <div>
@@ -322,7 +322,7 @@ export default function CounselorSettlementPage() {
                   onChange={(e) => setHolderName(e.target.value)}
                   required
                   placeholder="예금주명"
-                  className="w-full border-2 border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--text-primary))] rounded-xl px-4 py-3 text-sm text-[hsl(var(--text-primary))] font-heading"
+                  className="w-full rounded-md border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface-3))] px-3 py-2 text-sm text-[hsl(var(--text-primary))] font-heading"
                 />
               </div>
             </div>
@@ -350,7 +350,7 @@ export default function CounselorSettlementPage() {
             </div>
           </form>
         )}
-      </Card>
+      </DenseCard>
 
       {/* Summary cards */}
       {loading ? (
@@ -362,14 +362,17 @@ export default function CounselorSettlementPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard
+            dense
             title="총 수입"
             value={dashboard ? formatAmount(dashboard.totalEarnings) : '-'}
           />
           <StatCard
+            dense
             title="완료 상담"
             value={dashboard ? `${dashboard.completedSessions}건` : '-'}
           />
           <StatCard
+            dense
             title="평균 수수료율"
             value="20%"
             hint="플랫폼 수수료"
@@ -385,7 +388,7 @@ export default function CounselorSettlementPage() {
         const canWithdraw = hasBankAccount && pendingAmount >= 10000;
 
         return (
-          <Card>
+          <DenseCard>
             <h3 className="text-lg font-heading font-bold text-[hsl(var(--gold))] mb-4">
               출금 요청
             </h3>
@@ -393,11 +396,13 @@ export default function CounselorSettlementPage() {
               <div className="flex items-center gap-6 flex-wrap">
                 <div>
                   <div className="text-sm text-[hsl(var(--text-secondary))] mb-1">출금 가능 금액</div>
-                  <div className="text-xl font-bold font-heading">{formatAmount(pendingAmount)}</div>
+                  <div className="font-heading text-[clamp(2.5rem,6vw,3.75rem)] font-bold leading-none text-[hsl(var(--gold))] tabular-nums">
+                    {formatAmount(pendingAmount)}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm text-[hsl(var(--text-secondary))] mb-1">대기 건수</div>
-                  <div className="text-xl font-bold font-heading">{pendingSettlements.length}건</div>
+                  <div className="text-xl font-bold font-heading tabular-nums">{pendingSettlements.length}건</div>
                 </div>
               </div>
               {!hasBankAccount && !bankAccountLoading && (
@@ -422,7 +427,7 @@ export default function CounselorSettlementPage() {
                 <InlineSuccess message={successMsg} />
               </div>
             </div>
-          </Card>
+          </DenseCard>
         );
       })()}
 
@@ -448,9 +453,10 @@ export default function CounselorSettlementPage() {
           desc="상담 완료 후 정산 내역이 여기에 표시됩니다."
         />
       ) : (
-        <Card>
+        <DenseCard>
+          <div className="overflow-x-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-[hsl(var(--surface))]">
               <TableRow className="border-b border-[hsl(var(--gold)/0.15)]">
                 <TableHead className="font-heading font-bold text-[hsl(var(--gold))]">기간</TableHead>
                 <TableHead className="font-heading font-bold text-[hsl(var(--gold))] text-right">상담 건수</TableHead>
@@ -463,26 +469,27 @@ export default function CounselorSettlementPage() {
             </TableHeader>
             <TableBody>
               {settlements.map((s) => (
-                <TableRow key={s.id} className="border-b border-[hsl(var(--gold)/0.1)]">
-                  <TableCell className="text-sm">{formatPeriod(s.periodStart, s.periodEnd)}</TableCell>
-                  <TableCell className="text-sm text-right">{s.totalSessions}건</TableCell>
-                  <TableCell className="text-sm text-right">{formatAmount(s.totalAmount)}</TableCell>
-                  <TableCell className="text-sm text-right">{(s.commissionRate * 100).toFixed(0)}%</TableCell>
-                  <TableCell className="text-sm text-right font-bold">{formatAmount(s.netAmount)}</TableCell>
+                <TableRow key={s.id} className="h-10 border-b border-[hsl(var(--gold)/0.1)] odd:bg-[hsl(var(--surface-3))/0.35]">
+                  <TableCell className="text-sm tabular-nums">{formatPeriod(s.periodStart, s.periodEnd)}</TableCell>
+                  <TableCell className="text-sm text-right tabular-nums">{s.totalSessions}건</TableCell>
+                  <TableCell className="text-sm text-right tabular-nums">{formatAmount(s.totalAmount)}</TableCell>
+                  <TableCell className="text-sm text-right tabular-nums">{(s.commissionRate * 100).toFixed(0)}%</TableCell>
+                  <TableCell className="text-sm text-right font-bold tabular-nums">{formatAmount(s.netAmount)}</TableCell>
                   <TableCell className="text-center">
                     <StatusBadge value={STATUS_LABELS[s.status] || s.status} />
                   </TableCell>
-                  <TableCell className="text-sm text-[hsl(var(--text-secondary))]">{formatDate(s.paidAt)}</TableCell>
+                  <TableCell className="text-sm text-[hsl(var(--text-secondary))] tabular-nums">{formatDate(s.paidAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          </div>
           <Pagination
             page={page}
             totalPages={totalPages}
             onPageChange={setPage}
           />
-        </Card>
+        </DenseCard>
       )}
     </div>
   );
