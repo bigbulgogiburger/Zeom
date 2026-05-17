@@ -5,6 +5,7 @@ web/.next/
 # Flutter
 app_flutter/.dart_tool/
 app_flutter/build/
+app_flutter/android/build/
 
 # Java/Gradle
 backend/.gradle/
@@ -37,3 +38,16 @@ app_flutter/flutter_*.log
 .mcp.json
 .openchrome/
 web/test-results/
+
+# Local agent/runtime state
+.claude/settings.local.json
+.claude/.settings.local.json.bak
+.claude/runtime/
+.claude/scheduled_tasks.lock
+.codex/runtime/*
+!.codex/runtime/harness-metrics/
+!.codex/runtime/harness-metrics/aggregate.py
+!.codex/runtime/harness-metrics/aggregate.sh
+!.codex/runtime/harness-metrics/scorecard.md
+.serena/project.local.yml
+.serena/cache/

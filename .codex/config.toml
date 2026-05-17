@@ -1,0 +1,7 @@
+personality = "friendly"
+
+[shell_environment_policy.set]
+HARNESS_MODE = "auto"
+
+[features]
+codex_hooks = true
