@@ -7,6 +7,8 @@ import { getDeviceId } from '../../../components/auth-client';
 import { useAuth } from '../../../components/auth-context';
 import { ActionButton, InlineError, InlineSuccess } from '../../../components/ui';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { ShieldAlert } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [message, setMessage] = useState('');
@@ -51,14 +53,18 @@ export default function AdminLoginPage() {
         {/* Glass-morphism card */}
         <div className="bg-black/30 backdrop-blur-xl border border-[hsl(var(--gold)/0.1)] rounded-2xl p-8 shadow-lg">
           {/* Header */}
-          <div className="text-center mb-8">
-            <span className="inline-block mb-4 px-4 py-1.5 text-xs font-bold tracking-wider uppercase bg-[hsl(var(--gold))]/15 text-[hsl(var(--gold))] rounded-full border border-[hsl(var(--gold))]/20">
-              Admin
-            </span>
-            <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent font-heading m-0">
+          <div className="text-center mb-6">
+            <Badge
+              variant="outline"
+              className="mb-3 inline-flex items-center gap-1 border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]"
+            >
+              <ShieldAlert className="size-3.5" aria-hidden="true" />
+              관리자
+            </Badge>
+            <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] bg-clip-text text-transparent font-heading m-0">
               관리자 로그인
             </h1>
-            <p className="text-[hsl(var(--text-secondary))] text-sm mt-2">
+            <p className="text-[hsl(var(--text-secondary))] text-sm mt-1.5">
               천지연꽃신당 관리자 전용
             </p>
           </div>
@@ -93,6 +99,31 @@ export default function AdminLoginPage() {
                 placeholder="비밀번호"
                 className="min-h-[48px] bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl px-4 py-3 text-[hsl(var(--text-primary))] placeholder:text-[hsl(var(--text-secondary))]/50 focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40 transition-all"
               />
+            </div>
+
+            <div>
+              <label
+                htmlFor="otp"
+                className="block text-sm font-medium text-[hsl(var(--text-secondary))] mb-1.5"
+              >
+                OTP <span className="text-xs text-[hsl(var(--text-secondary))]/70">(선택)</span>
+              </label>
+              <Input
+                id="otp"
+                name="otp"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]*"
+                maxLength={6}
+                placeholder="6자리 인증코드 — 추후 활성화"
+                disabled
+                className="min-h-[44px] tabular-nums bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl px-4 text-[hsl(var(--text-primary))] placeholder:text-[hsl(var(--text-secondary))]/40 disabled:opacity-60"
+                aria-describedby="otp-hint"
+              />
+              <p id="otp-hint" className="mt-1 text-[11px] text-[hsl(var(--text-secondary))]/70">
+                2FA 연동은 백엔드 활성화 이후 자동 적용됩니다.
+              </p>
             </div>
 
             <ActionButton type="submit" loading={loading} className="w-full mt-3">

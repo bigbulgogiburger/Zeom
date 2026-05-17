@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { RequireAdmin } from '@/components/route-guard';
 import {
   getAllSettlements,
   confirmAdminSettlement,
@@ -179,8 +178,7 @@ export default function AdminSettlementsPage() {
 
   if (loading) {
     return (
-      <RequireAdmin>
-        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+      <div className="space-y-6">
           <PageTitle>정산 관리</PageTitle>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <SkeletonCard lines={2} />
@@ -189,14 +187,12 @@ export default function AdminSettlementsPage() {
             <SkeletonCard lines={2} />
           </div>
           <SkeletonCard lines={8} />
-        </main>
-      </RequireAdmin>
+        </div>
     );
   }
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <PageTitle>정산 관리</PageTitle>
 
         <InlineError message={error} />
@@ -299,7 +295,7 @@ export default function AdminSettlementsPage() {
                         {s.status === 'CONFIRMED' && (
                           <button
                             onClick={() => setConfirmAction({ type: 'pay', settlement: s })}
-                            className="rounded-full bg-green-600 text-white text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:opacity-90 transition-opacity"
+                            className="rounded-full bg-[hsl(var(--success))] text-[hsl(var(--destructive-foreground))] text-sm font-bold font-heading px-4 py-1.5 min-h-[28px] hover:opacity-90 transition-opacity"
                           >
                             지급
                           </button>
@@ -441,7 +437,7 @@ export default function AdminSettlementsPage() {
                         setConfirmAction({ type: 'pay', settlement: selectedSettlement });
                         setSelectedSettlement(null);
                       }}
-                      className="rounded-full bg-green-600 text-white font-bold font-heading px-6 py-2.5 hover:opacity-90 transition-opacity"
+                      className="rounded-full bg-[hsl(var(--success))] text-[hsl(var(--destructive-foreground))] font-bold font-heading px-6 py-2.5 hover:opacity-90 transition-opacity"
                     >
                       지급
                     </button>
@@ -466,7 +462,6 @@ export default function AdminSettlementsPage() {
           onConfirm={handleConfirm}
           onCancel={() => setConfirmAction(null)}
         />
-      </main>
-    </RequireAdmin>
+      </div>
   );
 }

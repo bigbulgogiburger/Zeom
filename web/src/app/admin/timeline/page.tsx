@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { RequireAdmin } from '../../../components/route-guard';
+import { ArrowRight } from 'lucide-react';
 import { apiFetch } from '../../../components/api-client';
 import { ActionButton, Card, EmptyState, InlineError, InlineSuccess, PageTitle, StatusBadge } from '../../../components/ui';
 
@@ -125,8 +125,7 @@ export default function AdminTimelinePage() {
   const pagedRows = sortedRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <PageTitle>운영 타임라인</PageTitle>
 
         <Card>
@@ -267,8 +266,8 @@ export default function AdminTimelinePage() {
                 <li key={l.id} className="border border-[hsl(var(--gold)/0.15)] rounded-xl p-5 text-sm bg-[hsl(var(--gold)/0.02)]">
                   <div>
                     <span className="text-[hsl(var(--text-secondary))]">{l.fromStatus || '(none)'}</span>
-                    <span className="mx-2 text-[hsl(var(--gold))]">&rarr;</span>
-                    <span className="font-heading font-bold">{l.toStatus}</span>
+                    <ArrowRight className="mx-2 inline size-3.5 align-[-2px] text-[hsl(var(--gold))]" aria-hidden="true" />
+                    <span className="font-semibold">{l.toStatus}</span>
                   </div>
                   <div className="mt-1.5 text-[hsl(var(--text-secondary))]">reason: {l.reason}</div>
                   <div className="mt-1 text-[hsl(var(--text-secondary))]">{new Date(l.createdAt).toLocaleString('ko-KR')}</div>
@@ -277,7 +276,6 @@ export default function AdminTimelinePage() {
             </ul>
           </Card>
         )}
-      </main>
-    </RequireAdmin>
+      </div>
   );
 }

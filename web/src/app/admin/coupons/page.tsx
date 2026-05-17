@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '@/components/api-client';
-import { RequireAdmin } from '@/components/route-guard';
 import {
   Card,
   PageTitle,
@@ -169,10 +168,8 @@ export default function AdminCouponsPage() {
     "w-full min-h-[44px] rounded-xl border border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface))] px-3 py-2 text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-[hsl(var(--gold))]/30 focus:border-[hsl(var(--gold))]/40";
 
   return (
-    <RequireAdmin>
-      <main className="min-h-[100dvh] bg-[hsl(var(--background))] p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+          <div className="flex items-center justify-between">
             <PageTitle>쿠폰 관리</PageTitle>
             <ActionButton onClick={() => setShowCreate(!showCreate)}>
               {showCreate ? '취소' : '쿠폰 생성'}
@@ -326,7 +323,7 @@ export default function AdminCouponsPage() {
                           ) : isExpired(coupon.validUntil) ? (
                             <Badge variant="destructive">만료</Badge>
                           ) : (
-                            <Badge className="bg-green-900/50 text-green-300 border-green-700">활성</Badge>
+                            <Badge className="bg-[hsl(var(--success)/0.2)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.5)]">활성</Badge>
                           )}
                         </TableCell>
                         <TableCell>
@@ -354,8 +351,6 @@ export default function AdminCouponsPage() {
               <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </div>
           )}
-        </div>
-      </main>
-    </RequireAdmin>
+    </div>
   );
 }

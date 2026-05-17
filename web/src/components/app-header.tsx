@@ -26,9 +26,11 @@ export default function AppHeader() {
 
   // ZEOM-20: immersive route detection — hide chrome on /consultation/[sessionId] and nested
   // routes (e.g. /waiting), EXCEPT /review which keeps full chrome.
+  // ZEOM-8: /admin/* 진입 시 chrome self-hide — admin layout(sidebar+header)이 단독 chrome.
   const seg = pathname.split('/');
   const isImmersive = seg[1] === 'consultation' && !!seg[2] && seg[3] !== 'review';
-  if (isImmersive) return null;
+  const isAdminRoute = seg[1] === 'admin';
+  if (isImmersive || isAdminRoute) return null;
 
   async function logout() {
     await apiFetch('/api/v1/auth/logout', {

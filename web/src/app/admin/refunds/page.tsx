@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '@/components/api-client';
-import { RequireAdmin } from '@/components/route-guard';
 import {
   Card,
   PageTitle,
@@ -131,18 +130,15 @@ export default function AdminRefundsPage() {
 
   if (loading && refunds.length === 0) {
     return (
-      <RequireAdmin>
-        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+      <div className="space-y-6">
           <PageTitle>환불 관리</PageTitle>
           <SkeletonCard lines={6} />
-        </main>
-      </RequireAdmin>
+        </div>
     );
   }
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <PageTitle>환불 관리</PageTitle>
 
         <InlineError message={error} />
@@ -211,7 +207,7 @@ export default function AdminRefundsPage() {
                           <button
                             onClick={() => { setActionTarget({ refund: r, action: 'reject' }); setAdminNote(''); }}
                             disabled={processing}
-                            className="rounded-full bg-[hsl(var(--dancheong))] text-white text-sm font-bold font-heading px-3 py-1.5 min-h-[28px] hover:bg-[hsl(var(--dancheong))/0.75] transition-colors"
+                            className="rounded-full bg-[hsl(var(--dancheong))] text-[hsl(var(--destructive-foreground))] text-sm font-bold font-heading px-3 py-1.5 min-h-[28px] hover:bg-[hsl(var(--dancheong))/0.75] transition-colors"
                           >
                             거절
                           </button>
@@ -256,7 +252,7 @@ export default function AdminRefundsPage() {
                   className={`rounded-full text-sm font-bold font-heading px-5 py-2 transition-colors disabled:opacity-50 ${
                     actionTarget.action === 'approve'
                       ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] hover:bg-[hsl(var(--gold))/0.85]'
-                      : 'bg-[hsl(var(--dancheong))] text-white hover:bg-[hsl(var(--dancheong))/0.75]'
+                      : 'bg-[hsl(var(--dancheong))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--dancheong))/0.75]'
                   }`}
                 >
                   {processing ? '처리 중...' : actionTarget.action === 'approve' ? '승인' : '거절'}
@@ -265,7 +261,6 @@ export default function AdminRefundsPage() {
             </div>
           </div>
         )}
-      </main>
-    </RequireAdmin>
+      </div>
   );
 }

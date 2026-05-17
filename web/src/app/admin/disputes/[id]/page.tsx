@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { apiFetch } from '@/components/api-client';
-import { RequireAdmin } from '@/components/route-guard';
 import {
   Card,
   PageTitle,
@@ -143,24 +143,22 @@ export default function AdminDisputeDetailPage() {
 
   if (loading) {
     return (
-      <RequireAdmin>
-        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+      <div className="space-y-6">
           <PageTitle>분쟁 상세</PageTitle>
           <SkeletonCard lines={8} />
-        </main>
-      </RequireAdmin>
+        </div>
     );
   }
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push('/admin/disputes')}
-            className="text-[hsl(var(--gold))] font-heading font-bold text-sm hover:underline"
+            className="inline-flex items-center gap-1 text-[hsl(var(--gold))] text-sm font-semibold hover:underline"
           >
-            &larr; 목록으로
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            목록으로
           </button>
           <PageTitle>분쟁 상세 #{disputeId}</PageTitle>
         </div>
@@ -288,7 +286,6 @@ export default function AdminDisputeDetailPage() {
             </Card>
           </>
         )}
-      </main>
-    </RequireAdmin>
+      </div>
   );
 }

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/components/api-client';
-import { RequireAdmin } from '@/components/route-guard';
 import {
   Card,
   PageTitle,
@@ -81,18 +80,15 @@ export default function AdminDisputesPage() {
 
   if (loading && disputes.length === 0) {
     return (
-      <RequireAdmin>
-        <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+      <div className="space-y-6">
           <PageTitle>분쟁 관리</PageTitle>
           <SkeletonCard lines={6} />
-        </main>
-      </RequireAdmin>
+        </div>
     );
   }
 
   return (
-    <RequireAdmin>
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-8 py-10 space-y-8">
+    <div className="space-y-6">
         <PageTitle>분쟁 관리</PageTitle>
 
         <InlineError message={error} />
@@ -154,7 +150,6 @@ export default function AdminDisputesPage() {
         )}
 
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-      </main>
-    </RequireAdmin>
+      </div>
   );
 }
