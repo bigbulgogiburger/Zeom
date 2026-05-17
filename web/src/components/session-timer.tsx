@@ -162,8 +162,8 @@ export default function SessionTimer({
   };
 
   const getTextColor = () => {
-    if (isGrace || phase === 'warning1' || phase === 'expired') return '#FFF';
-    if (phase === 'warning3' || phase === 'warning5') return '#FFF';
+    if (isGrace || phase === 'warning1' || phase === 'expired') return 'hsl(var(--destructive-foreground))';
+    if (phase === 'warning3' || phase === 'warning5') return 'hsl(var(--destructive-foreground))';
     return 'hsl(var(--gold))';
   };
 

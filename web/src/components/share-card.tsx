@@ -64,7 +64,7 @@ export default function ShareCard({ fortune, date }: ShareCardProps) {
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'hsl(var(--gold))';
     if (score >= 60) return 'hsl(var(--gold)/0.85)';
-    if (score >= 40) return '#8B6914';
+    if (score >= 40) return 'hsl(var(--gold-muted))';
     return 'hsl(var(--dancheong))';
   };
 
@@ -134,15 +134,13 @@ export default function ShareCard({ fortune, date }: ShareCardProps) {
         )}
         <button
           onClick={handleKakaoShare}
-          className="flex-1 py-2.5 text-sm rounded-lg font-bold"
-          style={{ backgroundColor: '#FEE500', color: '#191919' }}
+          className="flex-1 py-2.5 text-sm rounded-lg font-bold bg-brand-kakao text-brand-kakao-fg"
         >
           카카오톡
         </button>
         <button
           onClick={handleTwitterShare}
-          className="flex-1 py-2.5 text-sm rounded-lg font-bold text-white"
-          style={{ backgroundColor: '#1DA1F2' }}
+          className="flex-1 py-2.5 text-sm rounded-lg font-bold bg-brand-twitter text-brand-twitter-fg"
         >
           트위터
         </button>

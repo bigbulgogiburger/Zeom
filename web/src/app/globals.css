@@ -79,6 +79,9 @@
   --brand-kakao: 54 100% 50%;
   --brand-kakao-fg: 0 0% 10%;
   --brand-naver: 143 97% 40%;
+  --brand-naver-fg: 0 0% 100%;
+  --brand-twitter: 203 89% 53%;
+  --brand-twitter-fg: 0 0% 100%;
 
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-gold: 0 12px 40px hsl(var(--gold) / 0.12), 0 4px 12px hsl(var(--gold) / 0.06);
@@ -181,6 +184,9 @@
   --color-brand-kakao: hsl(var(--brand-kakao));
   --color-brand-kakao-fg: hsl(var(--brand-kakao-fg));
   --color-brand-naver: hsl(var(--brand-naver));
+  --color-brand-naver-fg: hsl(var(--brand-naver-fg));
+  --color-brand-twitter: hsl(var(--brand-twitter));
+  --color-brand-twitter-fg: hsl(var(--brand-twitter-fg));
 
   /* shadow는 inline 값 (Tailwind v4 @theme inline 의 var() 참조 quirk 회피) */
   --shadow-gold: 0 12px 40px hsl(var(--gold) / 0.12), 0 4px 12px hsl(var(--gold) / 0.06);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import SendbirdChat, { SendbirdChatWith } from '@sendbird/chat';
 import { GroupChannelModule, GroupChannelHandler, type GroupChannel } from '@sendbird/chat/groupChannel';
 import type { BaseMessage } from '@sendbird/chat/message';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type ConsultationChatProps = {
@@ -213,7 +214,7 @@ export default function ConsultationChat({
           }}
           aria-label="채팅 닫기"
         >
-          &#10005;
+          <X className="size-4" aria-hidden="true" />
         </button>
       </div>
 
