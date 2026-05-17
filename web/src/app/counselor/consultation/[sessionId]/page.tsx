@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import SendBirdCall from 'sendbird-calls';
 import { apiFetch, getCounselorSessionToken, endSession as apiEndSession, markCounselorReady, getNextConsecutive } from '@/components/api-client';
-import { Card, PageTitle, InlineError } from '@/components/ui';
+import { DenseCard, PageTitle, InlineError, ConfirmDialog } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +21,7 @@ import ConsecutiveSessionModal from '@/app/consultation/components/consecutive-s
 import ConsultationChat from '@/components/consultation-chat';
 import NetworkQuality from '@/components/network-quality';
 import CreditIndicator from '@/components/credit-indicator';
+import { Phone, User } from 'lucide-react';
 
 type Session = {
   id: number;
@@ -70,6 +71,7 @@ export default function CounselorConsultationPage() {
     sendbirdAppId: string;
     channelUrl: string;
   } | null>(null);
+  const [endConfirmOpen, setEndConfirmOpen] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -270,11 +272,13 @@ export default function CounselorConsultationPage() {
     if (session) {
       initializeSendbird();
     }
-  }, [session]);
+    // initializeSendbird is intentionally omitted from deps: it captures
+    // reconnectAttempts (set inside) and would create an infinite re-run loop.
+    // We want initialization to run once per session arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id]);
 
-  async function handleEndSession() {
-    if (!confirm('상담을 종료하시겠습니까?')) return;
-
+  const handleEndSession = useCallback(async () => {
     setLoading(true);
     try {
       if (currentCallRef.current) {
@@ -287,7 +291,7 @@ export default function CounselorConsultationPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [sessionId, router]);
 
   // Called when main timer expires
   const handleTimeUp = useCallback(async () => {
@@ -309,7 +313,7 @@ export default function CounselorConsultationPage() {
 
   const handleGracePeriodEnd = useCallback(() => {
     handleEndSession();
-  }, []);
+  }, [handleEndSession]);
 
   const handleConsecutiveContinue = useCallback((result: { extendedDurationMinutes: number; newEndTime: string; sessionId: number }) => {
     setShowConsecutiveModal(false);
@@ -323,7 +327,7 @@ export default function CounselorConsultationPage() {
     setShowConsecutiveModal(false);
     setConsecutiveInfo(null);
     handleEndSession();
-  }, []);
+  }, [handleEndSession]);
 
   const handleThreshold = useCallback((_threshold: TimerThreshold) => {
     // Threshold alerts handled by SessionTimer component (sound + visual)
@@ -374,11 +378,11 @@ export default function CounselorConsultationPage() {
       <div className="flex flex-col gap-6">
         <PageTitle>상담실</PageTitle>
         <InlineError message={message} />
-        <Card>
+        <DenseCard>
           <div className="text-center py-8 text-[hsl(var(--text-secondary))]">
             세션을 불러오는 중...
           </div>
-        </Card>
+        </DenseCard>
       </div>
     );
   }
@@ -400,20 +404,20 @@ export default function CounselorConsultationPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="text-center py-4">
-            <div className="text-4xl mb-2">📞</div>
+            <Phone className="mx-auto mb-2 size-10 text-[hsl(var(--gold))]" aria-hidden="true" />
             <div className="font-heading font-bold text-lg">{session.customerName}</div>
           </div>
           <DialogFooter className="flex gap-3 justify-center sm:justify-center">
             <Button
               onClick={declineCall}
               variant="outline"
-              className="border-2 border-[hsl(var(--dancheong))] text-[hsl(var(--dancheong))] bg-transparent rounded-full font-heading font-bold hover:bg-[hsl(var(--dancheong))] hover:text-white"
+              className="border-2 border-[hsl(var(--dancheong))] text-[hsl(var(--dancheong))] bg-transparent rounded-full font-heading font-bold hover:bg-[hsl(var(--dancheong))] hover:text-[hsl(var(--text-primary))]"
             >
               거절
             </Button>
             <Button
               onClick={acceptCall}
-              className="bg-green-600 text-white rounded-full font-heading font-bold hover:bg-green-700 px-8"
+              className="bg-[hsl(var(--success))] text-[hsl(var(--text-primary))] rounded-full font-heading font-bold hover:bg-[hsl(var(--success))]/90 px-8"
             >
               수락
             </Button>
@@ -424,8 +428,8 @@ export default function CounselorConsultationPage() {
       {/* Session info + Timer + Quality + Credits */}
       {/* Customer disconnect banner */}
       {customerDisconnected && connectionState === ConnectionState.WAITING && (
-        <div className="bg-[#DAA520]/20 border border-[#DAA520] rounded-xl p-4 text-center">
-          <p className="text-sm font-bold text-[#DAA520]">
+        <div className="bg-[hsl(var(--gold)/0.2)] border border-[hsl(var(--gold))] rounded-xl p-4 text-center">
+          <p className="text-sm font-bold text-[hsl(var(--gold))]">
             고객 연결이 끊어졌습니다. 잠시 기다려주세요.
           </p>
           <p className="text-xs text-[hsl(var(--text-secondary))] mt-1">
@@ -446,7 +450,7 @@ export default function CounselorConsultationPage() {
           />
         )}
 
-        <Card>
+        <DenseCard>
           <h3 className="m-0 mb-2 text-sm font-bold font-heading">고객 정보</h3>
           <div className="space-y-1 text-sm">
             <div>
@@ -457,13 +461,13 @@ export default function CounselorConsultationPage() {
               <Badge
                 className={
                   connectionState === ConnectionState.CONNECTED
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-[hsl(var(--success))] text-[hsl(var(--text-primary))]'
                     : connectionState === ConnectionState.WAITING
                     ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))]'
                     : connectionState === ConnectionState.RINGING
-                    ? 'bg-[hsl(var(--gold-soft))] text-white animate-pulse'
+                    ? 'bg-[hsl(var(--gold-soft))] text-[hsl(var(--background))] animate-pulse motion-reduce:animate-none'
                     : connectionState === ConnectionState.FAILED
-                    ? 'bg-[hsl(var(--dancheong))] text-white'
+                    ? 'bg-[hsl(var(--dancheong))] text-[hsl(var(--text-primary))]'
                     : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))]'
                 }
               >
@@ -471,14 +475,14 @@ export default function CounselorConsultationPage() {
               </Badge>
             </div>
           </div>
-        </Card>
+        </DenseCard>
 
         {callConnected && (
-          <Card>
+          <DenseCard>
             <div className="flex flex-col justify-center h-full">
               <NetworkQuality call={currentCallRef.current} />
             </div>
-          </Card>
+          </DenseCard>
         )}
 
         {callConnected && session.startedAt && (
@@ -492,9 +496,9 @@ export default function CounselorConsultationPage() {
 
       {/* Waiting state */}
       {connectionState === ConnectionState.WAITING && !callConnected && (
-        <Card>
+        <DenseCard>
           <div className="text-center py-12">
-            <div className="text-5xl mb-4">📞</div>
+            <Phone className="mx-auto mb-4 size-12 text-[hsl(var(--gold))]" aria-hidden="true" />
             <div className="font-heading font-bold text-lg text-[hsl(var(--gold))] mb-2">
               고객의 호출을 기다리는 중...
             </div>
@@ -502,13 +506,13 @@ export default function CounselorConsultationPage() {
               고객이 상담실에 입장하면 자동으로 알림이 표시됩니다.
             </div>
           </div>
-        </Card>
+        </DenseCard>
       )}
 
       {/* Video/Audio + Chat Area */}
       {(callConnected || connectionState === ConnectionState.CONNECTED) && (
         <div className={`grid gap-4 ${chatOpen ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
-          <Card className={chatOpen ? 'lg:col-span-2' : ''}>
+          <DenseCard className={chatOpen ? 'lg:col-span-2' : ''}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[400px]">
               {/* Remote Video (Client) */}
               <div className="bg-[hsl(var(--surface))] rounded-lg relative overflow-hidden min-h-[300px]">
@@ -516,15 +520,15 @@ export default function CounselorConsultationPage() {
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
-                  className="w-full h-full object-cover bg-black"
+                  className="w-full h-full object-cover bg-[hsl(var(--background))]"
                 />
                 {!callConnected && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[hsl(var(--text-secondary))]">
-                    <div className="text-5xl mb-2">&#128100;</div>
+                    <User className="mx-auto mb-2 size-12 text-[hsl(var(--text-muted))]" aria-hidden="true" />
                     <div>{session.customerName}</div>
                   </div>
                 )}
-                <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                <div className="absolute top-2 left-2 rounded bg-[hsl(var(--background))/0.72] px-2 py-1 text-xs text-[hsl(var(--text-primary))]">
                   고객
                 </div>
               </div>
@@ -536,20 +540,20 @@ export default function CounselorConsultationPage() {
                   autoPlay
                   muted
                   playsInline
-                  className="w-full h-full object-cover bg-black"
+                  className="w-full h-full object-cover bg-[hsl(var(--background))]"
                 />
                 {!callConnected && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[hsl(var(--text-secondary))]">
-                    <div className="text-5xl mb-2">&#128100;</div>
+                    <User className="mx-auto mb-2 size-12 text-[hsl(var(--text-muted))]" aria-hidden="true" />
                     <div>나 (선생님)</div>
                   </div>
                 )}
-                <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                <div className="absolute top-2 left-2 rounded bg-[hsl(var(--background))/0.72] px-2 py-1 text-xs text-[hsl(var(--text-primary))]">
                   나
                 </div>
               </div>
             </div>
-          </Card>
+          </DenseCard>
 
           {/* Chat Panel */}
           {chatOpen && sendbirdCreds && sendbirdCreds.channelUrl && (
@@ -575,7 +579,7 @@ export default function CounselorConsultationPage() {
           className={`disabled:opacity-50 ${
             audioEnabled
               ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
-              : 'bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
+              : 'bg-[hsl(var(--dancheong))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
           }`}
         >
           {audioEnabled ? '마이크 켜짐' : '마이크 꺼짐'}
@@ -587,7 +591,7 @@ export default function CounselorConsultationPage() {
           className={`disabled:opacity-50 ${
             videoEnabled
               ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
-              : 'bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
+              : 'bg-[hsl(var(--dancheong))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
           }`}
         >
           {videoEnabled ? '카메라 켜짐' : '카메라 꺼짐'}
@@ -632,9 +636,9 @@ export default function CounselorConsultationPage() {
         )}
 
         <Button
-          onClick={handleEndSession}
+          onClick={() => setEndConfirmOpen(true)}
           disabled={loading}
-          className="bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90 rounded-full px-8 disabled:opacity-60"
+          className="bg-[hsl(var(--dancheong))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90 rounded-full px-8 disabled:opacity-60"
         >
           {loading ? '종료 중...' : '상담 종료'}
         </Button>
@@ -651,6 +655,20 @@ export default function CounselorConsultationPage() {
           onEnd={handleConsecutiveEnd}
         />
       )}
+
+      <ConfirmDialog
+        open={endConfirmOpen}
+        title="상담 종료"
+        message="상담을 종료하시겠습니까?"
+        confirmLabel="종료"
+        cancelLabel="취소"
+        variant="danger"
+        onConfirm={() => {
+          setEndConfirmOpen(false);
+          handleEndSession();
+        }}
+        onCancel={() => setEndConfirmOpen(false)}
+      />
     </div>
   );
 }

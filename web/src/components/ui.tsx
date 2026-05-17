@@ -114,17 +114,41 @@ export function Card({
   children,
   className: extraClass,
   variant = 'surface',
+  padding = 'normal',
+}: {
+  children: React.ReactNode;
+  className?: string;
+  variant?: 'surface' | 'glass' | 'elevated';
+  padding?: 'normal' | 'dense' | 'none';
+}) {
+  const paddingClass = {
+    normal: 'p-6 sm:p-8',
+    dense: 'p-4',
+    none: 'p-0',
+  }[padding];
+
+  return (
+    <ShadcnCard className={cn(CARD_VARIANTS[variant], extraClass)}>
+      <CardContent className={paddingClass}>
+        {children}
+      </CardContent>
+    </ShadcnCard>
+  );
+}
+
+export function DenseCard({
+  children,
+  className,
+  variant = 'surface',
 }: {
   children: React.ReactNode;
   className?: string;
   variant?: 'surface' | 'glass' | 'elevated';
 }) {
   return (
-    <ShadcnCard className={cn(CARD_VARIANTS[variant], extraClass)}>
-      <CardContent className="p-6 sm:p-8">
-        {children}
-      </CardContent>
-    </ShadcnCard>
+    <Card className={className} variant={variant} padding="dense">
+      {children}
+    </Card>
   );
 }
 
@@ -135,19 +159,21 @@ export function StatCard({
   value,
   hint,
   trend,
+  dense = false,
 }: {
   title: string;
-  value: string | number;
+  value: React.ReactNode;
   hint?: string;
   trend?: 'up' | 'down';
+  dense?: boolean;
 }) {
   return (
-    <Card variant="surface">
+    <Card variant="surface" padding={dense ? 'dense' : 'normal'}>
       <div className="text-[hsl(var(--gold))] text-sm font-medium mb-2 font-heading">
         {title}
       </div>
       <div className="flex items-center gap-2">
-        <div className="text-3xl font-black leading-tight font-heading text-[hsl(var(--text-primary))]">
+        <div className="text-3xl font-black leading-tight font-heading text-[hsl(var(--text-primary))] tabular-nums">
           {value}
         </div>
         {trend === 'up' && (
@@ -233,7 +259,7 @@ export function EmptyState({
                 'hover:scale-[1.02] active:scale-[0.97]',
                 isError
                   ? 'bg-[hsl(var(--destructive))] text-[hsl(var(--text-primary))] hover:shadow-[0_4px_20px_hsl(var(--destructive)/0.25)]'
-                  : 'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(43,55%,55%)] text-[hsl(var(--background))] hover:shadow-[0_4px_24px_hsl(var(--gold)/0.25)]',
+                  : 'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] hover:shadow-[0_4px_24px_hsl(var(--gold)/0.25)]',
               )}
             >
               {actionLabel}
@@ -245,7 +271,7 @@ export function EmptyState({
               className={cn(
                 'mt-2 inline-flex items-center justify-center gap-2 rounded-full px-8 py-3 font-bold font-heading transition-all no-underline',
                 'hover:scale-[1.02] active:scale-[0.97]',
-                'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(43,55%,55%)] text-[hsl(var(--background))] hover:shadow-[0_4px_24px_hsl(var(--gold)/0.25)]',
+                'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))] hover:shadow-[0_4px_24px_hsl(var(--gold)/0.25)]',
               )}
             >
               {actionLabel}
@@ -284,7 +310,7 @@ export function InlineSuccess({ message }: { message: string }) {
 
 const ACTION_BUTTON_VARIANTS = {
   primary: cn(
-    'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(43,55%,55%)] text-[hsl(var(--background))]',
+    'bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-soft))] text-[hsl(var(--background))]',
     'hover:scale-[1.02] hover:shadow-[0_4px_24px_hsl(var(--gold)/0.25)]',
     'active:scale-[0.97]',
   ),

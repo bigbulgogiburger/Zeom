@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { apiFetch } from '@/components/api-client';
-import { Card, PageTitle, InlineError, EmptyState, StatCard, Pagination } from '@/components/ui';
+import { DenseCard, PageTitle, InlineError, EmptyState, StatCard, Pagination } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Stars } from '@/components/design/stars';
 
 type Review = {
   id: number;
@@ -25,12 +26,6 @@ type ReviewsResponse = {
 };
 
 const PAGE_SIZE = 20;
-
-function renderStars(rating: number) {
-  const full = Math.floor(rating);
-  const empty = 5 - full;
-  return '★'.repeat(full) + '☆'.repeat(empty);
-}
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -102,6 +97,12 @@ export default function CounselorReviewsPage() {
     setReplyError('');
   }
 
+  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
+    const count = reviews.filter((review) => Math.round(review.rating) === rating).length;
+    const ratio = reviews.length > 0 ? Math.round((count / reviews.length) * 100) : 0;
+    return { rating, count, ratio };
+  });
+
   function handleCancelReply() {
     setReplyOpenId(null);
     setReplyText('');
@@ -149,11 +150,32 @@ export default function CounselorReviewsPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <StatCard
+          dense
           title="평균 평점"
-          value={ratingAvg > 0 ? `${ratingAvg.toFixed(1)} ${renderStars(Math.round(ratingAvg))}` : '-'}
+          value={ratingAvg > 0 ? <Stars value={ratingAvg} size={14} /> : '-'}
         />
-        <StatCard title="총 리뷰 수" value={`${totalElements}건`} />
+        <StatCard dense title="총 리뷰 수" value={`${totalElements}건`} />
       </div>
+
+      <DenseCard>
+        <h3 className="mb-3 font-heading text-sm font-bold text-[hsl(var(--text-primary))]">
+          별점 분포
+        </h3>
+        <div className="space-y-2">
+          {ratingDistribution.map((item) => (
+            <div key={item.rating} className="grid grid-cols-[44px_1fr_44px] items-center gap-3 text-sm">
+              <span className="tabular-nums text-[hsl(var(--text-secondary))]">{item.rating}.0</span>
+              <div className="h-2 overflow-hidden rounded-full bg-[hsl(var(--surface-3))]">
+                <div
+                  className="h-full rounded-full bg-[hsl(var(--gold))] motion-reduce:transition-none"
+                  style={{ width: `${item.ratio}%` }}
+                />
+              </div>
+              <span className="text-right tabular-nums text-[hsl(var(--text-secondary))]">{item.count}건</span>
+            </div>
+          ))}
+        </div>
+      </DenseCard>
 
       <InlineError message={error} />
 
@@ -161,13 +183,13 @@ export default function CounselorReviewsPage() {
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
-            <Card key={i}>
+            <DenseCard key={i}>
               <div className="space-y-2">
                 <div className="animate-pulse h-4 w-1/3 bg-[hsl(var(--surface))] rounded" />
                 <div className="animate-pulse h-3 w-2/3 bg-[hsl(var(--surface))] rounded" />
                 <div className="animate-pulse h-3 w-1/2 bg-[hsl(var(--surface))] rounded" />
               </div>
-            </Card>
+            </DenseCard>
           ))}
         </div>
       ) : reviews.length === 0 ? (
@@ -178,7 +200,7 @@ export default function CounselorReviewsPage() {
       ) : (
         <div className="flex flex-col gap-4">
           {reviews.map(review => (
-            <Card key={review.id}>
+            <DenseCard key={review.id}>
               {/* Header: customer + date + rating */}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -189,9 +211,7 @@ export default function CounselorReviewsPage() {
                     {formatDate(review.createdAt)}
                   </span>
                 </div>
-                <span className="text-[hsl(var(--gold))] font-heading font-bold text-sm">
-                  {renderStars(review.rating)}
-                </span>
+                <Stars value={review.rating} size={14} />
               </div>
 
               {/* Comment */}
@@ -262,7 +282,7 @@ export default function CounselorReviewsPage() {
                   </Button>
                 </div>
               )}
-            </Card>
+            </DenseCard>
           ))}
         </div>
       )}

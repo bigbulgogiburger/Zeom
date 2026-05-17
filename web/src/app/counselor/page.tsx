@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCounselorTodayBookings, startSession } from '@/components/api-client';
-import { Card, PageTitle, InlineError, EmptyState, StatusBadge, ActionButton } from '@/components/ui';
+import { DenseCard, PageTitle, InlineError, EmptyState, StatusBadge, ActionButton } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -67,30 +67,30 @@ export default function CounselorDashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <Card>
+        <DenseCard>
           <div className="text-[hsl(var(--gold))] text-sm font-medium mb-1 font-heading">
             오늘 전체 상담
           </div>
-          <div className="text-2xl font-black leading-tight font-heading text-[hsl(var(--text-primary))]">
+          <div className="text-2xl font-black leading-tight font-heading text-[hsl(var(--text-primary))] tabular-nums">
             {bookings.length}건
           </div>
-        </Card>
-        <Card>
+        </DenseCard>
+        <DenseCard>
           <div className="text-[hsl(var(--gold))] text-sm font-medium mb-1 font-heading">
             대기 중
           </div>
-          <div className="text-2xl font-black leading-tight font-heading text-[hsl(var(--text-primary))]">
+          <div className="text-2xl font-black leading-tight font-heading text-[hsl(var(--text-primary))] tabular-nums">
             {upcomingBookings.length}건
           </div>
-        </Card>
-        <Card>
+        </DenseCard>
+        <DenseCard>
           <div className="text-[hsl(var(--gold))] text-sm font-medium mb-1 font-heading">
             완료
           </div>
-          <div className="text-2xl font-black leading-tight font-heading text-[hsl(var(--text-primary))]">
+          <div className="text-2xl font-black leading-tight font-heading text-[hsl(var(--text-primary))] tabular-nums">
             {completedBookings.length}건
           </div>
-        </Card>
+        </DenseCard>
       </div>
 
       <InlineError message={error} />
@@ -104,7 +104,7 @@ export default function CounselorDashboardPage() {
         {loading ? (
           <div className="grid gap-6">
             {[1, 2, 3].map(i => (
-              <Card key={i}>
+              <DenseCard key={i}>
                 <div className="animate-pulse flex items-center gap-4">
                   <div className="h-10 w-10 bg-[hsl(var(--surface))] rounded-full" />
                   <div className="flex-1 space-y-2">
@@ -112,7 +112,7 @@ export default function CounselorDashboardPage() {
                     <div className="h-3 w-1/4 bg-[hsl(var(--surface))] rounded" />
                   </div>
                 </div>
-              </Card>
+              </DenseCard>
             ))}
           </div>
         ) : bookings.length === 0 ? (
@@ -123,7 +123,7 @@ export default function CounselorDashboardPage() {
         ) : (
           <div className="grid gap-6">
             {bookings.map((booking) => (
-              <Card key={booking.id}>
+              <DenseCard key={booking.id}>
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -150,13 +150,13 @@ export default function CounselorDashboardPage() {
                   {booking.status === 'IN_PROGRESS' && (
                     <Button
                       onClick={() => router.push(`/counselor/consultation/${booking.id}`)}
-                      className="bg-green-600 text-white font-heading font-bold rounded-full hover:bg-green-700"
+                      className="bg-[hsl(var(--success))] text-[hsl(var(--text-primary))] font-heading font-bold rounded-full hover:bg-[hsl(var(--success))]/90"
                     >
                       상담 중 - 입장
                     </Button>
                   )}
                 </div>
-              </Card>
+              </DenseCard>
             ))}
           </div>
         )}

@@ -9,7 +9,7 @@ import {
   endSession as apiEndSession,
   saveCounselorMemo,
 } from '@/components/api-client';
-import { Card, PageTitle, InlineError, EmptyState, StatusBadge } from '@/components/ui';
+import { DenseCard, PageTitle, InlineError, EmptyState, StatusBadge, ConfirmDialog } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -19,6 +19,7 @@ import SessionTimer from '@/components/session-timer';
 import ConsultationChat from '@/components/consultation-chat';
 import NetworkQuality from '@/components/network-quality';
 import CreditIndicator from '@/components/credit-indicator';
+import { AlertTriangle, Phone, User } from 'lucide-react';
 
 type Booking = {
   id: number;
@@ -87,12 +88,17 @@ export default function CounselorRoomPage() {
 
   // Loading
   const [ending, setEnding] = useState(false);
+  const [endConfirmOpen, setEndConfirmOpen] = useState(false);
 
   // Refs
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const currentCallRef = useRef<any>(null);
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref mirror of bookings so the Sendbird onRinging listener (registered once
+  // inside initializeSendbird) always sees the latest list.
+  const bookingsRef = useRef<Booking[]>([]);
+  useEffect(() => { bookingsRef.current = bookings; }, [bookings]);
 
   // Load today's bookings
   async function loadBookings() {
@@ -157,9 +163,10 @@ export default function CounselorRoomPage() {
       // Set up incoming call listener
       SendBirdCall.addListener('counselor-listener', {
         onRinging: (call: any) => {
-          // Try to match incoming call to a booking
+          // Read latest bookings via ref — listener is registered once on mount,
+          // and `bookings` state captured here would be the stale initial [].
           const callerId = call.caller?.userId || '';
-          const matched = bookings.find(b =>
+          const matched = bookingsRef.current.find(b =>
             (b.status === 'BOOKED' || b.status === 'PAID') &&
             callerId.includes(String(b.id))
           );
@@ -278,8 +285,6 @@ export default function CounselorRoomPage() {
   }
 
   async function handleEndSession() {
-    if (!confirm('상담을 종료하시겠습니까?')) return;
-
     setEnding(true);
     try {
       // Save memo before ending if there is content
@@ -403,13 +408,13 @@ export default function CounselorRoomPage() {
         <Badge
           className={
             roomState === RoomState.IN_CALL
-              ? 'bg-green-600 text-white'
+              ? 'bg-[hsl(var(--success))] text-[hsl(var(--text-primary))]'
               : roomState === RoomState.WAITING && sendbirdReady
               ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))]'
               : roomState === RoomState.RINGING
-              ? 'bg-[hsl(var(--gold-soft))] text-white animate-pulse'
+              ? 'bg-[hsl(var(--gold-soft))] text-[hsl(var(--background))] animate-pulse motion-reduce:animate-none'
               : roomState === RoomState.FAILED
-              ? 'bg-[hsl(var(--dancheong))] text-white'
+              ? 'bg-[hsl(var(--dancheong))] text-[hsl(var(--text-primary))]'
               : 'bg-[hsl(var(--surface))] text-[hsl(var(--text-secondary))]'
           }
         >
@@ -437,9 +442,9 @@ export default function CounselorRoomPage() {
         <>
           {/* Waiting indicator with next booking info */}
           {roomState === RoomState.WAITING && (
-            <Card>
+            <DenseCard>
               <div className="text-center py-8">
-                <div className="text-5xl mb-4">📞</div>
+                <Phone className="mx-auto mb-4 size-12 text-[hsl(var(--gold))]" aria-hidden="true" />
                 <div className="font-heading font-bold text-lg text-[hsl(var(--gold))] mb-2">
                   고객의 호출을 기다리는 중...
                 </div>
@@ -449,8 +454,8 @@ export default function CounselorRoomPage() {
                       다음 예약 고객
                     </div>
                     <div className="inline-flex items-center gap-3 bg-[hsl(var(--surface))] rounded-xl px-5 py-3">
-                      <div className="w-10 h-10 rounded-full bg-[hsl(var(--gold))]/20 flex items-center justify-center text-lg">
-                        👤
+                      <div className="flex size-10 items-center justify-center rounded-full bg-[hsl(var(--gold))]/20">
+                        <User className="size-5 text-[hsl(var(--gold))]" aria-hidden="true" />
                       </div>
                       <div className="text-left">
                         <div className="font-heading font-bold text-[hsl(var(--text-primary))]">
@@ -474,14 +479,14 @@ export default function CounselorRoomPage() {
                   </div>
                 )}
               </div>
-            </Card>
+            </DenseCard>
           )}
 
           {/* Failed / reconnect */}
           {roomState === RoomState.FAILED && (
-            <Card>
+            <DenseCard>
               <div className="text-center py-6">
-                <div className="text-3xl mb-3">⚠️</div>
+                <AlertTriangle className="mx-auto mb-3 size-8 text-[hsl(var(--dancheong))]" aria-hidden="true" />
                 <div className="font-heading font-bold text-[hsl(var(--dancheong))] mb-3">
                   연결에 실패했습니다
                 </div>
@@ -495,7 +500,7 @@ export default function CounselorRoomPage() {
                   다시 연결
                 </Button>
               </div>
-            </Card>
+            </DenseCard>
           )}
 
           {/* Today's remaining bookings */}
@@ -504,12 +509,12 @@ export default function CounselorRoomPage() {
               오늘 남은 예약
             </h3>
             {bookingsLoading ? (
-              <Card>
+              <DenseCard>
                 <div className="animate-pulse space-y-3">
                   <div className="h-4 w-1/3 bg-[hsl(var(--surface))] rounded" />
                   <div className="h-3 w-1/4 bg-[hsl(var(--surface))] rounded" />
                 </div>
-              </Card>
+              </DenseCard>
             ) : waitingBookings.length === 0 ? (
               <EmptyState
                 title="오늘 남은 예약이 없습니다"
@@ -518,7 +523,7 @@ export default function CounselorRoomPage() {
             ) : (
               <div className="grid gap-3">
                 {waitingBookings.map((booking) => (
-                  <Card key={booking.id}>
+                  <DenseCard key={booking.id}>
                     <div className="flex items-center justify-between gap-4 flex-wrap">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -541,7 +546,7 @@ export default function CounselorRoomPage() {
                         </div>
                       </div>
                     </div>
-                  </Card>
+                  </DenseCard>
                 ))}
               </div>
             )}
@@ -561,7 +566,7 @@ export default function CounselorRoomPage() {
                 onTimeUp={handleTimeUp}
               />
             )}
-            <Card>
+            <DenseCard>
               <h3 className="m-0 mb-2 text-sm font-bold font-heading">고객 정보</h3>
               <div className="space-y-1 text-sm">
                 <div>
@@ -575,14 +580,14 @@ export default function CounselorRoomPage() {
                   </div>
                 )}
               </div>
-            </Card>
+            </DenseCard>
 
             {callConnected && (
-              <Card>
+              <DenseCard>
                 <div className="flex flex-col justify-center h-full">
                   <NetworkQuality call={currentCallRef.current} />
                 </div>
-              </Card>
+              </DenseCard>
             )}
 
             {callConnected && callStartTime && (
@@ -596,7 +601,7 @@ export default function CounselorRoomPage() {
 
           {/* Video + Chat area */}
           <div className={`grid gap-4 ${chatOpen ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
-            <Card className={chatOpen ? 'lg:col-span-2' : ''}>
+            <DenseCard className={chatOpen ? 'lg:col-span-2' : ''}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[400px]">
                 {/* Remote Video (Client) */}
                 <div className="bg-[hsl(var(--surface))] rounded-lg relative overflow-hidden min-h-[300px]">
@@ -604,15 +609,15 @@ export default function CounselorRoomPage() {
                     ref={remoteVideoRef}
                     autoPlay
                     playsInline
-                    className="w-full h-full object-cover bg-black"
+                  className="w-full h-full object-cover bg-[hsl(var(--background))]"
                   />
                   {!callConnected && (
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[hsl(var(--text-secondary))]">
-                      <div className="text-5xl mb-2">&#128100;</div>
+                      <User className="mx-auto mb-2 size-12 text-[hsl(var(--text-muted))]" aria-hidden="true" />
                       <div>{callerInfo.customerName}</div>
                     </div>
                   )}
-                  <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                  <div className="absolute top-2 left-2 rounded bg-[hsl(var(--background))/0.72] px-2 py-1 text-xs text-[hsl(var(--text-primary))]">
                     고객
                   </div>
                 </div>
@@ -624,20 +629,20 @@ export default function CounselorRoomPage() {
                     autoPlay
                     muted
                     playsInline
-                    className="w-full h-full object-cover bg-black"
+                  className="w-full h-full object-cover bg-[hsl(var(--background))]"
                   />
                   {!callConnected && (
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[hsl(var(--text-secondary))]">
-                      <div className="text-5xl mb-2">&#128100;</div>
+                      <User className="mx-auto mb-2 size-12 text-[hsl(var(--text-muted))]" aria-hidden="true" />
                       <div>나 (선생님)</div>
                     </div>
                   )}
-                  <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                  <div className="absolute top-2 left-2 rounded bg-[hsl(var(--background))/0.72] px-2 py-1 text-xs text-[hsl(var(--text-primary))]">
                     나
                   </div>
                 </div>
               </div>
-            </Card>
+            </DenseCard>
 
             {/* Chat Panel */}
             {chatOpen && sendbirdCreds && sendbirdCreds.channelUrl && (
@@ -655,12 +660,12 @@ export default function CounselorRoomPage() {
           </div>
 
           {/* Memo area */}
-          <Card>
+          <DenseCard>
             <div className="flex items-center justify-between mb-2">
               <h3 className="m-0 text-base font-bold font-heading">상담 메모</h3>
               <div className="flex items-center gap-2">
                 {memoSaved && (
-                  <span className="text-xs text-green-600 font-medium">저장됨</span>
+                  <span className="text-xs text-[hsl(var(--success))] font-medium">저장됨</span>
                 )}
                 <Button
                   onClick={handleSaveMemo}
@@ -677,7 +682,7 @@ export default function CounselorRoomPage() {
               placeholder="상담 중 메모를 작성하세요..."
               className="bg-[hsl(var(--surface))] border-[hsl(var(--gold)/0.15)] rounded-xl text-[hsl(var(--text-primary))] min-h-[100px] font-heading"
             />
-          </Card>
+          </DenseCard>
 
           {/* Controls */}
           <div className="flex gap-3 justify-center flex-wrap">
@@ -687,7 +692,7 @@ export default function CounselorRoomPage() {
               className={`disabled:opacity-50 ${
                 audioEnabled
                   ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
-                  : 'bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
+                  : 'bg-[hsl(var(--dancheong))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
               }`}
             >
               {audioEnabled ? '마이크 켜짐' : '마이크 꺼짐'}
@@ -699,7 +704,7 @@ export default function CounselorRoomPage() {
               className={`disabled:opacity-50 ${
                 videoEnabled
                   ? 'bg-[hsl(var(--gold))] text-[hsl(var(--background))] font-heading font-bold hover:bg-[hsl(var(--gold-soft))]'
-                  : 'bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
+                  : 'bg-[hsl(var(--dancheong))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90'
               }`}
             >
               {videoEnabled ? '카메라 켜짐' : '카메라 꺼짐'}
@@ -732,15 +737,29 @@ export default function CounselorRoomPage() {
             )}
 
             <Button
-              onClick={handleEndSession}
+              onClick={() => setEndConfirmOpen(true)}
               disabled={ending}
-              className="bg-[hsl(var(--dancheong))] text-white font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90 rounded-full px-8 disabled:opacity-60"
+              className="bg-[hsl(var(--dancheong))] text-[hsl(var(--text-primary))] font-heading font-bold hover:bg-[hsl(var(--dancheong))]/90 rounded-full px-8 disabled:opacity-60"
             >
               {ending ? '종료 중...' : '상담 종료'}
             </Button>
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={endConfirmOpen}
+        title="상담 종료"
+        message="상담을 종료하시겠습니까? 진행 중인 메모는 자동 저장됩니다."
+        confirmLabel="종료"
+        cancelLabel="취소"
+        variant="danger"
+        onConfirm={() => {
+          setEndConfirmOpen(false);
+          handleEndSession();
+        }}
+        onCancel={() => setEndConfirmOpen(false)}
+      />
     </div>
   );
 }

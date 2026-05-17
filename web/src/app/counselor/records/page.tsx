@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { apiFetch } from '@/components/api-client';
-import { Card, PageTitle, InlineError, InlineSuccess, EmptyState, SkeletonCard, Pagination, StatusBadge } from '@/components/ui';
+import { DenseCard, PageTitle, InlineError, InlineSuccess, EmptyState, SkeletonCard, Pagination, StatusBadge } from '@/components/ui';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 type ConsultationRecord = {
@@ -48,6 +49,7 @@ export default function CounselorRecordsPage() {
   const [memoText, setMemoText] = useState('');
   const [savingMemo, setSavingMemo] = useState(false);
   const [memoSuccess, setMemoSuccess] = useState<number | null>(null);
+  const [query, setQuery] = useState('');
 
   async function loadRecords(p: number) {
     setLoading(true);
@@ -129,12 +131,26 @@ export default function CounselorRecordsPage() {
 
       {error && <InlineError message={error} />}
 
+      <DenseCard>
+        <label className="mb-2 block text-sm font-heading font-bold text-[hsl(var(--text-primary))]">
+          기록 검색
+        </label>
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="고객명, 종료 사유, 메모"
+          className="max-w-[420px] rounded-md border-[hsl(var(--gold)/0.15)] bg-[hsl(var(--surface-3))] text-[hsl(var(--text-primary))]"
+        />
+      </DenseCard>
+
       {records.length === 0 && !error ? (
         <EmptyState title="상담 기록이 없습니다" desc="아직 완료된 상담이 없습니다." />
       ) : (
         <div className="flex flex-col gap-4">
-          {records.map((r) => (
-            <Card key={r.sessionId}>
+          {records
+            .filter((r) => `${r.customerName} ${r.endReason ?? ''} ${r.memo ?? ''}`.toLowerCase().includes(query.trim().toLowerCase()))
+            .map((r) => (
+            <DenseCard key={r.sessionId}>
               <div className="flex flex-col gap-3">
                 {/* Header: customer + date */}
                 <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -150,7 +166,7 @@ export default function CounselorRecordsPage() {
                 <div className="flex items-center gap-3 flex-wrap">
                   <span className="text-sm">
                     <span className="text-[hsl(var(--text-secondary))]">소요 시간: </span>
-                    <span className="font-bold">{formatDuration(r.durationSec)}</span>
+                    <span className="font-bold tabular-nums">{formatDuration(r.durationSec)}</span>
                   </span>
                   {r.endReason && <StatusBadge value={r.endReason} />}
                 </div>
@@ -201,7 +217,7 @@ export default function CounselorRecordsPage() {
                   )}
                 </div>
               </div>
-            </Card>
+            </DenseCard>
           ))}
         </div>
       )}

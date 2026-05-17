@@ -1,14 +1,17 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { Fragment, useEffect, useState, useCallback } from 'react';
 import { apiFetch } from '@/components/api-client';
-import { Card, PageTitle, InlineError, EmptyState, ActionButton } from '@/components/ui';
+import { DenseCard, PageTitle, InlineError, EmptyState, ActionButton } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type Slot = { startAt: string; endAt: string; id?: number };
+
+const WEEKDAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
+const TIME_BLOCKS = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
 function formatSlotTime(iso: string) {
   const d = new Date(iso);
@@ -30,6 +33,21 @@ export default function CounselorSchedulePage() {
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+
+  const weekStart = new Date();
+  const currentDay = weekStart.getDay() || 7;
+  weekStart.setDate(weekStart.getDate() - currentDay + 1);
+  weekStart.setHours(0, 0, 0, 0);
+
+  function slotState(dayIndex: number, time: string): 'saved' | 'pending' | 'empty' {
+    const target = new Date(weekStart);
+    target.setDate(weekStart.getDate() + dayIndex);
+    const dateKey = target.toISOString().slice(0, 10);
+    const startKey = `${dateKey}T${time}:00`;
+    if (pendingSlots.some((slot) => slot.startAt === startKey)) return 'pending';
+    if (savedSlots.some((slot) => slot.startAt.slice(0, 16) === startKey.slice(0, 16))) return 'saved';
+    return 'empty';
+  }
 
   const loadSchedule = useCallback(async () => {
     setLoading(true);
@@ -125,7 +143,7 @@ export default function CounselorSchedulePage() {
       </Alert>
 
       {/* Add slot form */}
-      <Card>
+      <DenseCard>
         <h3 className="font-heading font-bold text-lg text-[hsl(var(--gold))] mb-4">
           슬롯 추가
         </h3>
@@ -164,14 +182,65 @@ export default function CounselorSchedulePage() {
             슬롯 추가
           </Button>
         </div>
-      </Card>
+      </DenseCard>
 
       <InlineError message={error} />
       {success && (
-        <div role="status" className="text-green-500 text-sm font-medium">
+        <div role="status" className="text-[hsl(var(--success))] text-sm font-medium">
           {success}
         </div>
       )}
+
+      <DenseCard>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h3 className="font-heading text-base font-bold text-[hsl(var(--text-primary))]">
+            주간 슬롯
+          </h3>
+          <div className="flex items-center gap-3 text-xs text-[hsl(var(--text-secondary))]">
+            <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-[hsl(var(--gold))]" /> 저장됨</span>
+            <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-[hsl(var(--warning))]" /> 대기</span>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <div className="grid min-w-[720px] grid-cols-[72px_repeat(7,1fr)] gap-px rounded-md border border-[hsl(var(--border-subtle))] bg-[hsl(var(--border-subtle))]">
+            <div className="bg-[hsl(var(--surface-3))] p-2 text-xs font-heading text-[hsl(var(--text-secondary))]">시간</div>
+            {WEEKDAY_LABELS.map((label, dayIndex) => (
+              <div key={label} className="bg-[hsl(var(--surface-3))] p-2 text-center text-xs font-heading font-bold text-[hsl(var(--text-primary))]">
+                {label}
+                <span className="ml-1 tabular-nums text-[hsl(var(--text-secondary))]">
+                  {new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + dayIndex).getDate()}
+                </span>
+              </div>
+            ))}
+            {TIME_BLOCKS.map((time) => (
+              <Fragment key={time}>
+                <div key={`${time}-label`} className="bg-[hsl(var(--surface-3))] p-2 text-xs tabular-nums text-[hsl(var(--text-secondary))]">
+                  {time}
+                </div>
+                {WEEKDAY_LABELS.map((label, dayIndex) => {
+                  const state = slotState(dayIndex, time);
+                  return (
+                    <button
+                      key={`${label}-${time}`}
+                      type="button"
+                      aria-pressed={state !== 'empty'}
+                      className={`h-9 bg-[hsl(var(--surface))] text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--gold))] ${
+                        state === 'saved'
+                          ? 'text-[hsl(var(--gold))] shadow-[inset_0_0_0_1px_hsl(var(--gold))]'
+                          : state === 'pending'
+                          ? 'text-[hsl(var(--warning))] shadow-[inset_0_0_0_1px_hsl(var(--warning))]'
+                          : 'text-[hsl(var(--text-muted))] hover:bg-[hsl(var(--surface-hover))]'
+                      }`}
+                    >
+                      {state === 'empty' ? '빈 슬롯' : state === 'saved' ? '예약 가능' : '저장 대기'}
+                    </button>
+                  );
+                })}
+              </Fragment>
+            ))}
+          </div>
+        </div>
+      </DenseCard>
 
       {/* Pending slots to save */}
       {pendingSlots.length > 0 && (
@@ -181,7 +250,7 @@ export default function CounselorSchedulePage() {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {pendingSlots.map((slot, idx) => (
-              <Card key={idx}>
+              <DenseCard key={idx}>
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <div className="font-heading font-bold text-sm">
@@ -200,7 +269,7 @@ export default function CounselorSchedulePage() {
                     삭제
                   </Button>
                 </div>
-              </Card>
+              </DenseCard>
             ))}
           </div>
           <div className="flex justify-end">
@@ -217,7 +286,7 @@ export default function CounselorSchedulePage() {
           현재 등록된 스케줄
         </h3>
         {loading ? (
-          <Card>
+          <DenseCard>
             <div className="space-y-2">
               {[1, 2, 3].map(i => (
                 <div key={i} className="animate-pulse flex items-center gap-4">
@@ -226,7 +295,7 @@ export default function CounselorSchedulePage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </DenseCard>
         ) : savedSlots.length === 0 ? (
           <EmptyState
             title="등록된 스케줄이 없습니다"
@@ -235,14 +304,14 @@ export default function CounselorSchedulePage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {savedSlots.map((slot, idx) => (
-              <Card key={slot.id ?? idx}>
+              <DenseCard key={slot.id ?? idx}>
                 <div className="font-heading font-bold text-sm">
                   {formatSlotTime(slot.startAt)}
                 </div>
                 <div className="text-[hsl(var(--text-secondary))] text-xs">
                   ~ {formatSlotTime(slot.endAt)}
                 </div>
-              </Card>
+              </DenseCard>
             ))}
           </div>
         )}
