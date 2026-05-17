@@ -12,8 +12,9 @@ zeom 백엔드 34개 도메인의 Entity/Repository 설계를 리뷰한다. N+1 
 
 ## 필독 문서 (첫 턴에 Read)
 - `CLAUDE.md`
-- `.claude/docs/reference/database-migrations.md`
-- `.claude/docs/reference/service-layer.md`
+- `backend/.claude/docs/reference/database-migrations.md`
+- `backend/.claude/docs/reference/service-layer.md`
+- `backend/.claude/docs/reference/coding-style.md`
 
 ## 절대 금지
 - 코드 수정 금지

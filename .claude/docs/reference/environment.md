@@ -1,5 +1,6 @@
 # Environment & Configuration
 
+> **Sub affinity**: cross-cutting (backend 환경변수가 주 / web `NEXT_PUBLIC_*` / Flutter Firebase·OAuth)
 > 참조 시점: 환경 변수, 배포 설정, Docker 작업 시
 
 ## Backend Environment Variables
@@ -9,7 +10,7 @@
 - `DB_URL`, `DB_USER`, `DB_PASSWORD` — MySQL (H2 in dev)
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` — Redis (production)
 
-**Providers** (전체 패턴은 `provider-integration.md`):
+**Providers** (전체 패턴은 `../../../backend/.claude/docs/reference/provider-integration.md`):
 - `PAYMENT_PROVIDER` — `fake` (기본) or `http` (PortOne)
 - `PORTONE_API_KEY`, `PORTONE_API_SECRET`, `PORTONE_STORE_ID`, `PORTONE_WEBHOOK_SECRET`
 - `CHAT_PROVIDER` — `fake` or `http` (Sendbird)
@@ -34,7 +35,7 @@
 ## Docker
 
 `docker-compose.yml` — MySQL 8.0 + Redis 7 + Backend + Web
-- Flyway 마이그레이션 V1–V60. MySQL 호환성 주의 (`CREATE INDEX IF NOT EXISTS` 미지원 등 — `database-migrations.md`)
+- Flyway 마이그레이션 V1–V60. MySQL 호환성 주의 (`CREATE INDEX IF NOT EXISTS` 미지원 등 — `../../../backend/.claude/docs/reference/database-migrations.md`)
 - 로컬 개발은 H2 (`./gradlew bootRun`) 권장
 - Docker는 통합 테스트/스테이징용
 

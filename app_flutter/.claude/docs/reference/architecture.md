@@ -1,5 +1,6 @@
 # Flutter Architecture
 
+> **Sub affinity**: app_flutter 전용
 > 참조 시점: `app_flutter/` 작업 (feature 추가, 라우팅, API 호출, 상태 관리)
 
 ## 개요

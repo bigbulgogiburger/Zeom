@@ -12,7 +12,8 @@ zeom 핵심 보안 불변식을 강제한다: **모든 `/api/v1/admin/**` 컨트
 
 ## 필독 문서 (첫 턴에 Read)
 - `CLAUDE.md`
-- `.claude/docs/reference/security-checklist.md`
+- `backend/.claude/docs/reference/security-checklist.md`
+- `backend/CLAUDE.md` (Key Rules — admin 가드 첫 줄 규약)
 
 ## 절대 금지
 - 코드 수정 금지

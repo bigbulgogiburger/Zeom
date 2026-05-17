@@ -12,7 +12,8 @@ zeom 백엔드 도메인 서비스의 Read/Write 분리, 트랜잭션 범위 적
 
 ## 필독 문서 (첫 턴에 Read)
 - `CLAUDE.md`
-- `.claude/docs/reference/service-layer.md`
+- `backend/.claude/docs/reference/service-layer.md`
+- `backend/.claude/docs/reference/coding-style.md`
 
 ## 절대 금지
 - 코드 수정 금지 (판단+제안만)

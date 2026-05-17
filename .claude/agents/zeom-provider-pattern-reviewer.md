@@ -12,8 +12,8 @@ zeom의 5종 외부 통합(payment/chat/notification/oauth/sms)이 일관된 Pro
 
 ## 필독 문서 (첫 턴에 Read)
 - `CLAUDE.md`
-- `.claude/docs/reference/provider-integration.md`
-- `.claude/docs/reference/sendbird-guide.md`
+- `backend/.claude/docs/reference/provider-integration.md`
+- `.claude/docs/reference/sendbird-guide.md` (cross-cutting at root)
 
 ## 절대 금지
 - 코드 수정 금지

@@ -1,5 +1,6 @@
 # Security Checklist
 
+> **Sub affinity**: backend (주 — admin 가드·JWT·CORS·멱등성) · web (쿠키/헤더 양립 클라이언트) · app_flutter (JWT 헤더·OAuth)
 > 참조 시점: 인증/인가 변경, admin 엔드포인트 추가, CORS·세션·결제 멱등성 작업
 
 ## 개요

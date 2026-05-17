@@ -39,11 +39,15 @@ app_flutter/flutter_*.log
 .openchrome/
 web/test-results/
 
-# Local agent/runtime state
+# Local agent/runtime state (root + nested .claude in sub-projects)
 .claude/settings.local.json
+**/.claude/settings.local.json
 .claude/.settings.local.json.bak
+**/.claude/.settings.local.json.bak
 .claude/runtime/
+**/.claude/runtime/
 .claude/scheduled_tasks.lock
+**/.claude/scheduled_tasks.lock
 .codex/runtime/*
 !.codex/runtime/harness-metrics/
 !.codex/runtime/harness-metrics/aggregate.py

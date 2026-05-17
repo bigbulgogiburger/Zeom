@@ -1,5 +1,6 @@
 # Backend API Reference
 
+> **Sub affinity**: backend (주) · web/app_flutter (호출하는 엔드포인트 확인)
 > 참조 시점: API 엔드포인트 추가/수정 시
 
 ## 개요
@@ -68,7 +69,7 @@ user_{userId}        // 고객
 counselor_{counselorId}  // 상담사
 ```
 
-채널 네이밍: `consultation-{reservationId}`. 상세는 `sendbird-guide.md`.
+채널 네이밍: `consultation-{reservationId}`. 상세는 `../../../.claude/docs/reference/sendbird-guide.md` (cross-cutting).
 
 ## Key Endpoints
 

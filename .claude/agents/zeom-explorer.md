@@ -12,9 +12,9 @@ zeom 모노레포(backend/ web/ app_flutter/)의 구조, 패키지/도메인 구
 
 ## 필독 문서 (첫 턴에 Read)
 - `CLAUDE.md`
-- `.claude/docs/reference/backend-api.md`
-- `.claude/docs/reference/frontend-pages.md`
-- `.claude/docs/reference/flutter-architecture.md`
+- `backend/CLAUDE.md` + `backend/.claude/docs/reference/api-layer.md`
+- `web/CLAUDE.md` + `web/.claude/docs/reference/frontend-pages.md`
+- `app_flutter/CLAUDE.md` + `app_flutter/.claude/docs/reference/architecture.md`
 
 ## 절대 금지
 - 코드 수정 금지 (탐색+설명만)

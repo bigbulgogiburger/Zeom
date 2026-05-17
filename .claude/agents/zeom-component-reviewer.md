@@ -12,8 +12,10 @@ zeom 웹(Next.js 15 App Router + React 19 + Tailwind v4 + shadcn/ui)의 컴포�
 
 ## 필독 문서 (첫 턴에 Read)
 - `CLAUDE.md`
-- `.claude/docs/reference/design-system.md`
-- `.claude/docs/reference/frontend-pages.md`
+- `web/CLAUDE.md`
+- `web/.claude/docs/reference/design-system.md`
+- `web/.claude/docs/reference/frontend-pages.md`
+- `web/.claude/docs/reference/coding-style.md`
 - `web/src/app/globals.css` (디자인 토큰 정의)
 
 ## 절대 금지

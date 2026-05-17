@@ -12,8 +12,9 @@ tools: Read, Grep, Glob, Bash
 
 ## 필독 문서 (첫 턴에 Read)
 - `CLAUDE.md`
-- `.claude/docs/reference/security-checklist.md`
-- `.claude/docs/reference/backend-api.md`
+- `backend/.claude/docs/reference/security-checklist.md`
+- `backend/.claude/docs/reference/api-layer.md`
+- (web 측 XSS/CSRF 검토 시) `web/.claude/docs/reference/frontend-pages.md`
 
 ## 절대 금지
 - 코드 수정 금지 (판단+제안만)

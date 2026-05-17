@@ -1,5 +1,6 @@
 # Sendbird Integration Guide
 
+> **Sub affinity**: cross-cutting (backend · web · app_flutter 모두 — userId prefix 규약 동일)
 > 참조 시점: 채팅·화상통화 작업 (Sendbird 채널/세션/userId 관련 변경)
 
 ## 개요

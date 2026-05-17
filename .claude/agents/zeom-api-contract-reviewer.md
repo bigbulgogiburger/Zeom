@@ -12,9 +12,10 @@ zeom 백엔드 REST API의 호환성, 응답 포맷 일관성, 에러 핸들링,
 
 ## 필독 문서 (첫 턴에 Read)
 - `CLAUDE.md`
-- `.claude/docs/reference/backend-api.md`
+- `backend/.claude/docs/reference/api-layer.md`
 - `docs/openapi.yaml`
-- `.claude/docs/reference/frontend-pages.md` (소비처 파악)
+- `web/.claude/docs/reference/frontend-pages.md` (web 소비처 파악)
+- `app_flutter/.claude/docs/reference/architecture.md` (Flutter 소비처)
 
 ## 절대 금지
 - 코드 수정 금지

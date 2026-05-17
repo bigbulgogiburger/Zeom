@@ -1,5 +1,6 @@
 # Design System — Organic Warmth Dark
 
+> **Sub affinity**: web 전용 (Tailwind v4 토큰 · shadcn/ui · design barrel)
 > 참조 시점: UI 컴포넌트, 색상, 폰트, 레이아웃, 페이지 마이그레이션, design primitive 추가/수정 시
 > 마지막 큰 변경: ZEOM-2/3/4/17 sweep (Phase 0 토큰 → Phase 1 primitives → P1·P2·P3 페이지 적용)
 

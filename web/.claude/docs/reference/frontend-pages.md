@@ -1,5 +1,6 @@
 # Frontend Pages Reference
 
+> **Sub affinity**: web 전용
 > 참조 시점: 페이지 추가/수정, 라우팅, layout group 작업, 컴포넌트 인벤토리 확인 시
 > 마지막 큰 변경: ZEOM-4 sweep (P1·P2·P3 9 화면 마이그레이션 + immersive layout 분리)
 

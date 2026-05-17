@@ -1,5 +1,6 @@
 # Service Layer Patterns
 
+> **Sub affinity**: backend 전용
 > 참조 시점: 백엔드 도메인 서비스 추가/수정, 트랜잭션 경계 결정, 예외 처리
 
 ## 개요

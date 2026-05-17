@@ -1,5 +1,6 @@
 # Provider Integration
 
+> **Sub affinity**: backend (주 — 인터페이스+fake/real 패턴) · web/app_flutter (env 토글 결과로 동작 차이 발생)
 > 참조 시점: 외부 SDK/API 통합 추가, fake↔real 전환, 환경별 동작 디버깅
 
 ## 개요

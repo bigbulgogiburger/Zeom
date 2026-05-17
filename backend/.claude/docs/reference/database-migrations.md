@@ -1,5 +1,6 @@
 # Database & Migrations
 
+> **Sub affinity**: backend 전용
 > 참조 시점: 스키마 변경, Flyway 마이그레이션 추가, JPA Entity 동기화
 
 ## 개요
