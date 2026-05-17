@@ -74,12 +74,12 @@ export function SocialLoginButtons({ mode }: SocialLoginButtonsProps) {
       )}
 
       <div className="flex flex-col gap-3">
-        {/* ZEOM-23: Kakao/Naver brand 색은 공식 컴플라이언스 — hex 의도적 유지 */}
+        {/* ZEOM-23: Kakao/Naver brand 색은 공식 컴플라이언스 토큰으로 유지 */}
         <button
           type="button"
           onClick={() => handleSocialLogin('kakao')}
           disabled={socialLoading !== null}
-          className="w-full min-h-[44px] rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-opacity disabled:opacity-50 bg-[#FEE500] text-[#191919]"
+          className="w-full min-h-[44px] rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-opacity disabled:opacity-50 bg-brand-kakao text-brand-kakao-fg"
         >
           {socialLoading === 'kakao' ? kakaoLoadingLabel : kakaoLabel}
         </button>
@@ -87,7 +87,7 @@ export function SocialLoginButtons({ mode }: SocialLoginButtonsProps) {
           type="button"
           onClick={() => handleSocialLogin('naver')}
           disabled={socialLoading !== null}
-          className="w-full min-h-[44px] rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-opacity disabled:opacity-50 bg-[#03C75A] text-white"
+          className="w-full min-h-[44px] rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-opacity disabled:opacity-50 bg-brand-naver text-brand-naver-fg"
         >
           {socialLoading === 'naver' ? naverLoadingLabel : naverLabel}
         </button>

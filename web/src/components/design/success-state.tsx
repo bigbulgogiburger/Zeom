@@ -59,7 +59,22 @@ export function SuccessState({
         {icon === 'check' ? (
           <Check size={36} className="text-gold" strokeWidth={3} aria-hidden="true" />
         ) : (
-          <span className="text-4xl" aria-hidden="true">🪷</span>
+          <svg
+            width="44"
+            height="44"
+            viewBox="0 0 44 44"
+            role="img"
+            aria-label="연꽃 문양"
+          >
+            <circle cx="22" cy="22" r="20" fill="none" stroke="hsl(var(--gold))" strokeWidth="1.5" />
+            <circle cx="22" cy="22" r="4" fill="hsl(var(--gold))" />
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
+              const r = 14;
+              const x = 22 + r * Math.cos((deg * Math.PI) / 180);
+              const y = 22 + r * Math.sin((deg * Math.PI) / 180);
+              return <circle key={deg} cx={x} cy={y} r="2.5" fill="hsl(var(--gold-soft))" />;
+            })}
+          </svg>
         )}
       </div>
 

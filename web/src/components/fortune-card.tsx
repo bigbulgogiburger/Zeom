@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from './auth-context';
 import { apiFetch } from './api-client';
-import { Eye, Palette, Hash, Compass } from 'lucide-react';
+import { ChevronDown, Eye, Palette, Hash, Compass } from 'lucide-react';
 
 type FortuneCategory = {
   label: string;
@@ -159,9 +159,10 @@ export default function FortuneCard() {
             </span>
             <span className="text-sm text-[hsl(var(--text-secondary))] ml-1">/ 100</span>
           </div>
-          <span className={`text-[hsl(var(--text-secondary))] text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>
-            &#9662;
-          </span>
+          <ChevronDown
+            className={`size-4 text-[hsl(var(--text-secondary))] transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+            aria-hidden="true"
+          />
         </div>
       </button>
 

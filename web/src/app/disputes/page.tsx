@@ -22,15 +22,23 @@ type Dispute = {
 const STATUS_MAP: Record<string, { label: string; className: string }> = {
   OPEN: {
     label: '접수됨',
-    className: 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]',
+    className: 'bg-[hsl(var(--warning))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--warning))]',
+  },
+  IN_PROGRESS: {
+    label: '검토중',
+    className: 'bg-[hsl(var(--gold))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--gold))]',
   },
   IN_REVIEW: {
     label: '검토중',
-    className: 'bg-[hsl(var(--gold))] text-white hover:bg-[hsl(var(--gold))]',
+    className: 'bg-[hsl(var(--gold))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--gold))]',
   },
   RESOLVED: {
     label: '해결됨',
-    className: 'bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]',
+    className: 'bg-[hsl(var(--success))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--success))]',
+  },
+  CLOSED: {
+    label: '종료됨',
+    className: 'bg-[hsl(var(--text-muted))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--text-muted))]',
   },
 };
 

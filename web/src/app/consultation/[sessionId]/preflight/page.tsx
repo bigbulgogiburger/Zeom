@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { CheckCircle2, XCircle, Loader2, Wifi, WifiOff, SignalLow } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, Wifi, WifiOff, SignalLow, MonitorCheck, MonitorX } from 'lucide-react';
 import { RequireLogin } from '../../../../components/route-guard';
 import {
   ActionButton,
@@ -22,6 +22,7 @@ export default function PreflightPage() {
 
   const [cameraPermission, setCameraPermission] = useState<Permission>('pending');
   const [micPermission, setMicPermission] = useState<Permission>('pending');
+  const [browserSupport, setBrowserSupport] = useState<Permission>('pending');
   const [networkQuality, setNetworkQuality] = useState<NetworkQuality>('good');
   const [message, setMessage] = useState('');
   const [checking, setChecking] = useState(false);
@@ -29,7 +30,8 @@ export default function PreflightPage() {
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    checkPermissions();
+    const supported = checkBrowserSupport();
+    if (supported) checkPermissions();
     checkNetworkQuality();
 
     return () => {
@@ -39,8 +41,31 @@ export default function PreflightPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function detectBrowserSupport() {
+    return (
+      typeof navigator !== 'undefined' &&
+      !!navigator.mediaDevices?.getUserMedia &&
+      typeof RTCPeerConnection !== 'undefined'
+    );
+  }
+
+  function checkBrowserSupport() {
+    const supported = detectBrowserSupport();
+    setBrowserSupport(supported ? 'granted' : 'denied');
+    if (!supported) {
+      setCameraPermission('denied');
+      setMicPermission('denied');
+      setMessage('현재 브라우저는 화상 상담에 필요한 WebRTC 기능을 지원하지 않습니다.');
+    }
+    return supported;
+  }
+
   async function checkPermissions() {
     setChecking(true);
+    if (!checkBrowserSupport()) {
+      setChecking(false);
+      return;
+    }
     // 재호출 시 이전 preview stream을 명시적으로 종료 — 카메라 LED/메모리 leak 방지
     const prev = previewStreamRef.current;
     if (prev) {
@@ -100,10 +125,14 @@ export default function PreflightPage() {
   }
 
   function canEnterRoom() {
-    return cameraPermission === 'granted' && micPermission === 'granted';
+    return browserSupport === 'granted' && cameraPermission === 'granted' && micPermission === 'granted';
   }
 
   function enterRoom() {
+    if (browserSupport !== 'granted') {
+      setMessage('지원되는 최신 브라우저에서 다시 시도해주세요.');
+      return;
+    }
     if (!canEnterRoom()) {
       setMessage('카메라와 마이크 권한이 필요합니다.');
       return;
@@ -134,6 +163,19 @@ export default function PreflightPage() {
     return <WifiOff className="size-7 text-[hsl(var(--dancheong))]" aria-hidden />;
   }
 
+  function BrowserIcon({ status }: { status: Permission }) {
+    if (status === 'granted')
+      return <MonitorCheck className="size-7 text-[hsl(var(--success))]" aria-hidden />;
+    if (status === 'denied')
+      return <MonitorX className="size-7 text-[hsl(var(--dancheong))]" aria-hidden />;
+    return (
+      <Loader2
+        className="size-7 text-[hsl(var(--text-secondary))] motion-safe:animate-spin"
+        aria-hidden
+      />
+    );
+  }
+
   return (
     <RequireLogin>
       <main className="max-w-[800px] mx-auto px-6 sm:px-8 py-10 space-y-8">
@@ -160,6 +202,18 @@ export default function PreflightPage() {
           <h3 className="m-0 mb-4 text-lg font-bold font-heading">디바이스 점검</h3>
 
           <div className="grid gap-4">
+            <PermissionRow
+              title="브라우저"
+              desc={
+                browserSupport === 'granted'
+                  ? '화상 상담 지원'
+                  : 'WebRTC 지원이 필요합니다'
+              }
+              status={browserSupport}
+            >
+              <BrowserIcon status={browserSupport} />
+            </PermissionRow>
+
             <PermissionRow
               title="카메라"
               desc="화상 상담을 위해 필요합니다"
@@ -197,7 +251,16 @@ export default function PreflightPage() {
             </PermissionRow>
           </div>
 
-          {(cameraPermission === 'denied' || micPermission === 'denied') && (
+          {browserSupport === 'denied' && (
+            <div
+              role="alert"
+              className="mt-6 p-4 bg-[hsl(var(--dancheong)/0.15)] rounded-xl text-sm text-[hsl(var(--dancheong))]"
+            >
+              최신 Chrome, Safari, Edge처럼 WebRTC를 지원하는 브라우저에서 접속해주세요.
+            </div>
+          )}
+
+          {browserSupport === 'granted' && (cameraPermission === 'denied' || micPermission === 'denied') && (
             <div
               role="alert"
               className="mt-6 p-4 bg-[hsl(var(--dancheong)/0.15)] rounded-xl text-sm text-[hsl(var(--dancheong))]"

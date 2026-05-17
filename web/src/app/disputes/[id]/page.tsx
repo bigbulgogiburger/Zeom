@@ -44,15 +44,23 @@ type TimelineEntry = {
 const STATUS_MAP: Record<string, { label: string; className: string }> = {
   OPEN: {
     label: '접수됨',
-    className: 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]',
+    className: 'bg-[hsl(var(--warning))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--warning))]',
+  },
+  IN_PROGRESS: {
+    label: '검토중',
+    className: 'bg-[hsl(var(--gold))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--gold))]',
   },
   IN_REVIEW: {
     label: '검토중',
-    className: 'bg-[hsl(var(--gold))] text-white hover:bg-[hsl(var(--gold))]',
+    className: 'bg-[hsl(var(--gold))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--gold))]',
   },
   RESOLVED: {
     label: '해결됨',
-    className: 'bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]',
+    className: 'bg-[hsl(var(--success))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--success))]',
+  },
+  CLOSED: {
+    label: '종료됨',
+    className: 'bg-[hsl(var(--text-muted))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--text-muted))]',
   },
 };
 
@@ -148,8 +156,8 @@ export default function DisputeDetailPage() {
   const timeline: TimelineEntry[] = useMemo(() => {
     if (!dispute) return [];
     const status = dispute.status;
-    const reviewStarted = status === 'IN_REVIEW' || status === 'RESOLVED';
-    const resolved = status === 'RESOLVED';
+    const reviewStarted = status === 'IN_PROGRESS' || status === 'IN_REVIEW' || status === 'RESOLVED' || status === 'CLOSED';
+    const resolved = status === 'RESOLVED' || status === 'CLOSED';
     return [
       {
         id: 'created',
@@ -183,7 +191,7 @@ export default function DisputeDetailPage() {
         at: dispute.createdAt,
       },
     ];
-    if (dispute.status === 'IN_REVIEW') {
+    if (dispute.status === 'IN_PROGRESS' || dispute.status === 'IN_REVIEW') {
       out.push({
         id: 'sys-review',
         speaker: 'system',
@@ -192,7 +200,7 @@ export default function DisputeDetailPage() {
         at: dispute.updatedAt,
       });
     }
-    if (dispute.status === 'RESOLVED') {
+    if (dispute.status === 'RESOLVED' || dispute.status === 'CLOSED') {
       if (dispute.resolutionNote) {
         out.push({
           id: 'admin-note',

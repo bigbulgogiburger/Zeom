@@ -90,7 +90,10 @@ describe('AuthProvider', () => {
     );
 
     await waitFor(() => {
-      expect(mockApiFetch).toHaveBeenCalledWith('/api/v1/auth/me', { cache: 'no-store' });
+      expect(mockApiFetch).toHaveBeenCalledWith('/api/v1/auth/me', {
+        cache: 'no-store',
+        silent: true,
+      });
     });
   });
 

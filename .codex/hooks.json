@@ -1,0 +1,50 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \".codex/hooks/harness-context-inject.sh\"",
+            "statusMessage": "Harness context injection..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \".codex/hooks/compile-check.sh\"",
+            "statusMessage": "Harness compile check..."
+          }
+        ],
+        "matcher": "Edit|Write"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \".codex/hooks/review-gate.sh\"",
+            "statusMessage": "Harness review gate..."
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \".codex/hooks/persist-checkpoint.sh\"",
+            "statusMessage": "Harness checkpoint save..."
+          }
+        ]
+      }
+    ]
+  }
+}
