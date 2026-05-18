@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Star } from 'lucide-react';
 import { ActionButton, InlineError, InlineSuccess } from './ui';
 
 type ReviewFormProps = {
@@ -102,12 +103,14 @@ export default function ReviewForm({ onSubmit, counselorName }: ReviewFormProps)
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
               aria-label={`${star}점`}
             >
-              <span style={{
-                color: star <= displayRating ? 'hsl(var(--gold))' : 'hsl(var(--text-secondary))',
-                transition: 'color var(--transition-fast)',
-              }}>
-                ★
-              </span>
+              <Star
+                aria-hidden="true"
+                size={28}
+                strokeWidth={1.5}
+                fill={star <= displayRating ? 'hsl(var(--gold))' : 'transparent'}
+                stroke={star <= displayRating ? 'hsl(var(--gold))' : 'hsl(var(--text-secondary))'}
+                style={{ transition: 'all var(--transition-fast)' }}
+              />
             </button>
           ))}
         </div>

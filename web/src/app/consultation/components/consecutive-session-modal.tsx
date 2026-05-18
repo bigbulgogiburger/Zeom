@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { Bell } from 'lucide-react';
 import { continueNextSession } from '@/components/api-client';
 
 type ConsecutiveSessionModalProps = {
@@ -68,7 +69,7 @@ export default function ConsecutiveSessionModal({
       backdropFilter: 'blur(4px)',
     }}>
       <div style={{
-        background: 'hsl(var(--text-primary))',
+        background: 'hsl(var(--surface))',
         borderRadius: '16px',
         padding: '32px',
         maxWidth: '420px',
@@ -77,13 +78,13 @@ export default function ConsecutiveSessionModal({
         boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         border: '2px solid hsl(var(--gold))',
       }}>
-        <div style={{ fontSize: '40px', marginBottom: '16px' }}>
-          🔔
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <Bell aria-hidden="true" size={40} strokeWidth={1.75} color="hsl(var(--gold))" />
         </div>
         <h2 style={{
           fontSize: '20px',
           fontWeight: 700,
-          color: 'hsl(var(--background))',
+          color: 'hsl(var(--text-primary))',
           marginBottom: '8px',
         }}>
           다음 예약이 있습니다

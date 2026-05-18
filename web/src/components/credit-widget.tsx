@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Ticket } from 'lucide-react';
 import { getCreditBalance } from './api-client';
 import { useAuth } from './auth-context';
 
@@ -60,7 +61,7 @@ export default function CreditWidget() {
       onMouseEnter={(e) => e.currentTarget.style.opacity = '0.85'}
       onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
     >
-      <span aria-hidden="true">🎫</span>
+      <Ticket aria-hidden="true" className="size-4" />
       {loading ? (
         <span>...</span>
       ) : credits !== null ? (

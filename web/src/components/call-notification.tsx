@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -79,7 +80,9 @@ export default function CallNotification({
         </DialogHeader>
 
         <div className="text-center py-6">
-          <div className="text-5xl mb-3 animate-pulse">📞</div>
+          <div className="flex justify-center mb-3 animate-pulse motion-reduce:animate-none">
+            <Phone aria-hidden="true" className="size-12 text-[hsl(var(--gold))]" />
+          </div>
           <div className="font-heading font-bold text-xl mb-2">
             {callerInfo.customerName} 고객님
           </div>

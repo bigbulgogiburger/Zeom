@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Check } from 'lucide-react';
+import { AlertTriangle, Check, Flower2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiFetch, startSession } from '@/components/api-client';
 import { RequireLogin } from '@/components/route-guard';
@@ -453,14 +453,14 @@ export default function MyBookingsPage() {
         ) : loadError ? (
           <EmptyState
             variant="error"
-            icon="!"
+            icon={<AlertTriangle aria-hidden="true" className="size-12 text-[hsl(var(--destructive))]" />}
             title="잠시 문제가 발생했습니다"
             body="예약 목록을 불러오지 못했습니다. 다시 시도해주세요."
             cta={{ label: '다시 시도', onClick: () => load() }}
           />
         ) : filteredBookings.length === 0 ? (
           <EmptyState
-            icon="🪷"
+            icon={<Flower2 aria-hidden="true" className="size-12 text-[hsl(var(--gold))]" />}
             title={
               activeTab === 'upcoming'
                 ? '예정된 상담이 없습니다'
