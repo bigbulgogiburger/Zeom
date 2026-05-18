@@ -1,9 +1,10 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { EmptyState } from '@/components/design';
 
 interface EmptyStateCardProps {
-  icon?: string;
+  icon?: ReactNode;
   title: string;
   description?: string;
   actionLabel?: string;
@@ -25,7 +26,7 @@ export function EmptyStateCard({
 }: EmptyStateCardProps) {
   return (
     <EmptyState
-      icon={icon ? <span aria-hidden="true">{icon}</span> : undefined}
+      icon={icon}
       title={title}
       body={description}
       cta={actionLabel ? { label: actionLabel, href: actionHref, onClick: onAction } : undefined}
